@@ -3,16 +3,13 @@
 # Main module
 module Mod_Main
 
-    # Import block
-    import Base
-
     # Include block
     include("include.jl")
+    include("core/fem.jl")
 
-    testMesh = Mod_Mesh_T.generateTestMesh2D()
-    print("Elements in test mesh:\n")
-    Mod_Mesh_T.printElementsMesh2D(testMesh)
-    print("\n")
-    print("Nodes in test mesh\n")
-    Mod_Mesh_T.printNodesMesh2D(testMesh)
+    # Import block
+    import Base
+    import Mod_FEM
+
+    Mod_FEM.fem2D()
 end  # Mod_Main
