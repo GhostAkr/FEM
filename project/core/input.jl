@@ -23,8 +23,31 @@ module Mod_Input
         meshTo = meshFrom
     end
 
-    function testMateriaProperties(targetProcessPars::processPars)  # Test material (steel)
+    function testMaterialProperties(targetProcessPars::processPars)  # Test material (steel)
         targetProcessPars = Dict(Mod_Mat_Props.poisC => 0.3, Mod_Mat_Props.youngMod => 2000)
+    end
+
+    function testLoad(targetProcessPars::processPars)
+        force = Vector(1, 0)
+        targetProcessPars.load = Dict(5 => force, 10 => force, 15 => force, 20 => force, 25 => force)
+    end
+
+    function testBC(targetProcessPars::processPars)
+        bc = Mod_Mat_Props.fixedXY
+        targetProcessPars.bc = Dict(1 => bc, 6 => bc, 11 => bc, 16 => bc, 21 => bc)
+    end
+
+    function printProcessPars(processPars::processPars)
+        print("Nodes:\n")
+        Mod_Mesh_T.printNodesMesh2D(processPars.mesh)
+        print("Elements:\n")
+        Mod_Mesh_T.printElementsMesh2D(processPars.mesh)
+        print("Material:\n")
+        print(processPars.materialProperties, "\n")
+        print("Boundary conditions:\n")
+        print(processPars.bc, "\n")
+        print("Loads:\n")
+        print(processPars.load, "\n")
     end
 
 end  # Mod_Input
