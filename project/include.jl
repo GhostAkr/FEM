@@ -2,3 +2,4 @@
 
 # Mesh
 include("mesh/mesh_t.jl")
+include("core/fem.jl")
