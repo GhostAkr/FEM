@@ -1,5 +1,5 @@
 # Mesh type
-module Mod_Mesh_T
+module Mesh_T
 
 export Mesh2D_T, generateTestMesh2D, printNodesMesh2D, printElementsMesh2D
 
@@ -46,4 +46,4 @@ function printElementsMesh2D(mesh::Mesh2D_T)
     print("\n")
 end  # printElementsMesh2D
 
-end  # Mod_Mesh_T
+end  # Mesh_T
