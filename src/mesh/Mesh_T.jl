@@ -1,6 +1,3 @@
-# Mesh type
-module Mesh_T
-
 export Mesh2D_T, generateTestMesh2D, printNodesMesh2D, printElementsMesh2D
 
 struct Mesh2D_T
@@ -19,7 +16,6 @@ function generateTestMesh2D()  # Simple mesh built on a square 1x1
     nodeIndex = 1
     for i in 0:0.25:1
         for j in 0:0.25:1
-            print("i = ", i, "; j = ", j, "\n")
             resultMesh.nodes[nodeIndex] = (j, i)
             nodeIndex += 1
         end
@@ -45,5 +41,3 @@ function printElementsMesh2D(mesh::Mesh2D_T)
     end
     print("\n")
 end  # printElementsMesh2D
-
-end  # Mesh_T
