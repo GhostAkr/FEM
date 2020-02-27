@@ -1,6 +1,6 @@
 # Material properties
 
-module Mod_Mat_Props
+module Material
 
 export materialProperty
 
@@ -10,4 +10,4 @@ export materialProperty
     youngMod  # Young's modulus
 end
 
-end  # Mod_Mat_Props
+end  # Material

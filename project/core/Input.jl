@@ -1,30 +1,30 @@
 # Input parameters handling: material parameters, mesh
 
-module Mod_Input
+module Input
 
 export processPars, importMesh, testBC, testLoad, testMaterialProperties, printProcessPars
 
-include("material.jl")
-include("load.jl")
-include("../mesh/mesh_t.jl")
+#include("Material.jl")
+#include("Load.jl")
+#include("../mesh/Mesh_T.jl")
 
-using Mod_Mat_Props
-using Mod_Mesh_T
-using Mod_Load
+using Material
+using Mesh_T
+using Load
 
 struct processPars
-    materialProperties::Dict{Mod_Mat_Props.materialProperty, Real}
-    bc::Dict{Int, Mod_Load.bc}  # {NumberOfPoint, TypeOfBC}
+    materialProperties::Dict{Material.materialProperty, Real}
+    bc::Dict{Int, Load.bc}  # {NumberOfPoint, TypeOfBC}
     load::Dict{Int, Vector{Real}}  # {NumberOfPoint, ForceVector}
-    mesh::Mod_Mesh_T.Mesh2D_T
+    mesh::Mesh_T.Mesh2D_T
 end
 
-function importMesh(meshTo::Mod_Mesh_T.Mesh2D_T, meshFrom::Mod_Mesh_T.Mesh2D_T)
+function importMesh(meshTo::Mesh_T.Mesh2D_T, meshFrom::Mesh_T.Mesh2D_T)
     meshTo = meshFrom
 end
 
 function testMaterialProperties(targetProcessPars::processPars)  # Test material (steel)
-    targetProcessPars = Dict(Mod_Mat_Props.poisC => 0.3, Mod_Mat_Props.youngMod => 2000)
+    targetProcessPars = Dict(Material.poisC => 0.3, Material.youngMod => 2000)
 end
 
 function testLoad(targetProcessPars::processPars)
@@ -33,15 +33,15 @@ function testLoad(targetProcessPars::processPars)
 end
 
 function testBC(targetProcessPars::processPars)
-    bc = Mod_Mat_Props.fixedXY
+    bc = Material.fixedXY
     targetProcessPars.bc = Dict(1 => bc, 6 => bc, 11 => bc, 16 => bc, 21 => bc)
 end
 
 function printProcessPars(processPars::processPars)
     print("Nodes:\n")
-    Mod_Mesh_T.printNodesMesh2D(processPars.mesh)
+    Mesh_T.printNodesMesh2D(processPars.mesh)
     print("Elements:\n")
-    Mod_Mesh_T.printElementsMesh2D(processPars.mesh)
+    Mesh_T.printElementsMesh2D(processPars.mesh)
     print("Material:\n")
     print(processPars.materialProperties, "\n")
     print("Boundary conditions:\n")
@@ -50,5 +50,5 @@ function printProcessPars(processPars::processPars)
     print(processPars.load, "\n")
 end
 
-end  # Mod_Input
+end  # Input
 
