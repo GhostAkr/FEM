@@ -15,10 +15,11 @@ function fem2D()
     E = parameters.materialProperties[youngMod]
     elasticityMatrix = [1 nu 0; nu 1 0; 0 0 ((1 - nu) / 2)]
     elasticityMatrix *= E / (1 - nu ^ 2)
-    for elementNum in eachindex(parameters.mesh.elements)
-        println("Element #", elementNum)
-        stiffnessMatrix(elasticityMatrix, parameters, elementNum)
-    end
+    #for elementNum in eachindex(parameters.mesh.elements)
+    #    println("Element #", elementNum)
+    #    stiffnessMatrix(elasticityMatrix, parameters, elementNum)
+    #end
+    stiffnessMatrix(elasticityMatrix, parameters, 1)
 end
 
 end  # Core
