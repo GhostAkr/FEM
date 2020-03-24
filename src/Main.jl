@@ -4,5 +4,3 @@ using CoreFEM
 using HCubature
 
 CoreFEM.fem2D()
-
-f(x) = x
