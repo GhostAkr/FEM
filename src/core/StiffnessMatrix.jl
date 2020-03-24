@@ -20,9 +20,11 @@ function stiffnessMatrix(elasticityMatrix::AbstractArray, parameters::processPar
     thickness = 1
     rLim = Dict{limits, Real}(lower => -1, upper => 1)
     sLim = Dict{limits, Real}(lower => -1, upper => 1)
-    M = 6400  # Number of sections by r
-    N = 6400  # Number of sections by s
-    #multipleIntegral.cellMethod(F, rLim, sLim, M, N)
-    println("Test result = ", multipleIntegral.cellMethod(testIntegralFunc, rLim, sLim, M, N))
+    M = 3200  # Number of sections by r
+    N = 3200  # Number of sections by s
+    F_For_Integrate(r, s) = F(r, s, xCoords, yCoords, elasticityMatrix)
+    multipleIntegral.integrateMatrix(F, cell, rLim, sLim)
+    #multipleIntegral.cellMethod(F_For_Integrate, rLim, sLim, M, N)
+    #println("Test result = ", multipleIntegral.cellMethod(testIntegralFunc, rLim, sLim, M, N))
 end
 
