@@ -14,17 +14,18 @@ function F(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}, elasticityMat
     return BTransp * elasticityMatrix * B * det(J)
 end
 
+
+
 function stiffnessMatrix(elasticityMatrix::AbstractArray, parameters::processPars, elementNum::Int)
     xCoords = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][1] for i in 1:4]
     yCoords = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][2] for i in 1:4]
     thickness = 1
     rLim = Dict{limits, Real}(lower => -1, upper => 1)
     sLim = Dict{limits, Real}(lower => -1, upper => 1)
-    M = 3200  # Number of sections by r
-    N = 3200  # Number of sections by s
-    F_For_Integrate(r, s) = F(r, s, xCoords, yCoords, elasticityMatrix)
-    multipleIntegral.integrateMatrix(F, cell, rLim, sLim)
-    #multipleIntegral.cellMethod(F_For_Integrate, rLim, sLim, M, N)
-    #println("Test result = ", multipleIntegral.cellMethod(testIntegralFunc, rLim, sLim, M, N))
+    M = 500  # Number of sections by r
+    N = 500  # Number of sections by s
+    FIntegrate(r, s) = F(r, s, xCoords, yCoords, elasticityMatrix)  # F representation for integrating (depends only on r and s)
+    K = multipleIntegral.cellMethodMatrix(FIntegrate, rLim, sLim, M, N)
+    print(K)
 end
 
