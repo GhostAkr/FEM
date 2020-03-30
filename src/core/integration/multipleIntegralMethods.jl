@@ -31,8 +31,6 @@ end
 #Integrating matrix of functions
 # F should return matrix depending on two variables, See StiffnessMatrix.jl for details
 function cellMethodMatrix(F::Function, rLimits::Dict{limits, Real}, sLimits::Dict{limits, Real}, n_r_Sections::Int, n_s_Sections::Int)
-    println("F(1, 1) = ", F(1, 1)[1, 1])
-    println("Calculating with cell method")
     hr = (rLimits[upper] - rLimits[lower]) / n_r_Sections
     hs = (sLimits[upper] - sLimits[lower]) / n_s_Sections
     rPoints = collect(Float64, rLimits[lower]:hr:rLimits[upper])
@@ -44,7 +42,6 @@ function cellMethodMatrix(F::Function, rLimits::Dict{limits, Real}, sLimits::Dic
     # Going through all matrix elements. Integrating each one.
     for k in 1:nOfRows
         for l in 1:nOfCols
-            println("[k, l] = ", "[", k, ", ", l, "]")
             # Integrating [k, l] matrix element
             for i in rPoints
                 #println("i = ", i)

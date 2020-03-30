@@ -26,6 +26,6 @@ function stiffnessMatrix(elasticityMatrix::AbstractArray, parameters::processPar
     N = 500  # Number of sections by s
     FIntegrate(r, s) = F(r, s, xCoords, yCoords, elasticityMatrix)  # F representation for integrating (depends only on r and s)
     K = multipleIntegral.cellMethodMatrix(FIntegrate, rLim, sLim, M, N)
-    print(K)
+    return K
 end
 
