@@ -10,6 +10,18 @@ using DelimitedFiles
 
 export fem2D
 
+function assemblyFEM2D(pars::processPars, targetMatrix::Array, currentElementMatrix::Array, elementNum::Number)
+    element = pars.mesh.elements[elementNum]
+    for i in eachindex(element)
+        for j in eachindex(element)
+            targetMatrix[2 * element[i] - 1, 2 * element[j] - 1] += currentElementMatrix[2 * i - 1, 2 * j - 1]
+            targetMatrix[2 * element[i] - 1, 2 * element[j]] += currentElementMatrix[2 * i - 1, 2 * j]
+            targetMatrix[2 * element[i], 2 * element[j] - 1] += currentElementMatrix[2 * i, 2 * j - 1]
+            targetMatrix[2 * element[i], 2 * element[j]] += currentElementMatrix[2 * i, 2 * j]
+        end
+    end
+end  # assemblyFEM2D
+
 function fem2D()
     parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D())
     nu = parameters.materialProperties[poisC]
@@ -17,16 +29,29 @@ function fem2D()
     elasticityMatrix = [1 nu 0; nu 1 0; 0 0 ((1 - nu) / 2)]
     elasticityMatrix *= E / (1 - nu ^ 2)
     names = Array{String}(undef, 16)
+    # For now already generated stiffness matrices are used to improve calculation speed for tests.
+    # In future block with stiffness matrices calculated should be uncomment.
+    ensembleMatrix = zeros(Real, 2 * size(parameters.mesh.nodes)[1], 2 * size(parameters.mesh.nodes)[1])
     for elementNum in eachindex(parameters.mesh.elements)
-        println("Element #", elementNum)
-        K = stiffnessMatrix(elasticityMatrix, parameters, elementNum)
-        fileName = "K" * string(elementNum)
-        file = open(fileName, "w")
-        close(file)
-        open(fileName, "a") do file
-            writedlm(file, K)
+        KName = "stiffness/" * "K" * string(elementNum)
+        open(KName, "r") do file
+            K = readdlm(file)
+            assemblyFEM2D(parameters, ensembleMatrix, K, elementNum)
         end
     end
-end
+    open("stiffness/globalK", "w") do f
+        writedlm(f, ensembleMatrix)
+    end
+    # for elementNum in eachindex(parameters.mesh.elements)
+    #    println("Element #", elementNum)
+    #    K = stiffnessMatrix(elasticityMatrix, parameters, elementNum)
+    #    fileName = "K" * string(elementNum)
+    #    file = open(fileName, "w")
+    #    close(file)
+    #    open(fileName, "a") do file
+    #        writedlm(file, K)
+    #    end
+    # end
+end  # fem2D
 
 end  # Core
