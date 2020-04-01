@@ -22,6 +22,16 @@ function assemblyFEM2D(pars::processPars, targetMatrix::Array, currentElementMat
     end
 end  # assemblyFEM2D
 
+ function constructLoads(pars::processPars)
+    loads = pars.load
+    loadsVector = zeros(Real, 2 * size(pars.mesh.nodes)[1])
+    for (node, load) in pars.load
+        loadsVector[2 * node - 1] = load[1]
+        loadsVector[2 * node] = load[2]
+    end
+    return loadsVector
+ end  # constructLoads
+
 function fem2D()
     parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D())
     nu = parameters.materialProperties[poisC]
@@ -38,9 +48,6 @@ function fem2D()
             K = readdlm(file)
             assemblyFEM2D(parameters, ensembleMatrix, K, elementNum)
         end
-    end
-    open("stiffness/globalK", "w") do f
-        writedlm(f, ensembleMatrix)
     end
     # for elementNum in eachindex(parameters.mesh.elements)
     #    println("Element #", elementNum)
