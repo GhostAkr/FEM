@@ -19,7 +19,7 @@ end
 # Test input
 testMaterialProperties() = Dict(poisC => 0.3, youngMod => 2000)
 testLoad() = Dict(5 => [1, 0], 10 => [1, 0], 15 => [1, 0], 20 => [1, 0], 25 => [1, 0])
-testBC() = Dict(1 => fixedXY, 6 => fixedXY, 11 => fixedXY, 16 => fixedXY, 21 => fixedXY)
+testBC() = Dict(1 => fixedX, 6 => fixedX, 11 => fixedX, 16 => fixedX, 21 => fixedX)
 
 function printProcessPars(processPars::processPars)
     print("Nodes:\n")
