@@ -6,6 +6,7 @@ include("Input.jl")
 include("StiffnessMatrix.jl")
 
 using MeshFEM
+using Load
 using DelimitedFiles
 
 export fem2D
@@ -32,6 +33,20 @@ end  # assemblyFEM2D
     return loadsVector
  end  # constructLoads
 
+ function applyConstraints(pars::processPars, loads::Array, globalK::Array)
+    for (node, bc) in pars.bc
+        if bc == fixedX
+            applyFixedX(node, loads, globalK)
+        elseif bc == fixedY
+            applyFixedY(node, loads, globalK)
+        elseif bc == fixedXY
+            applyFixedXY(node, loads, globalK)
+        else
+            println("Unhandled boundary condition")
+        end
+    end
+ end  # applyConstraints
+
 function fem2D()
     parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D())
     nu = parameters.materialProperties[poisC]
@@ -49,6 +64,15 @@ function fem2D()
             assemblyFEM2D(parameters, ensembleMatrix, K, elementNum)
         end
     end
+    loadVector = constructLoads(parameters)
+    applyConstraints(parameters, loadVector, ensembleMatrix)
+    open("equation/K", "w") do file
+        writedlm(file, ensembleMatrix)
+    end
+    open("equation/F", "w") do file
+        writedlm(file, loadVector)
+    end
+
     # for elementNum in eachindex(parameters.mesh.elements)
     #    println("Element #", elementNum)
     #    K = stiffnessMatrix(elasticityMatrix, parameters, elementNum)
