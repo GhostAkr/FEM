@@ -7,6 +7,7 @@ include("StiffnessMatrix.jl")
 
 using MeshFEM
 using DelimitedFiles
+using BaseInterface
 
 export fem2D
 
@@ -81,6 +82,7 @@ function fem2D()
     open("equation/result", "w") do file
         writedlm(file, result)
     end
+    BaseInterface.exportToCSV(result, parameters)
     return result
     # for elementNum in eachindex(parameters.mesh.elements)
     #    println("Element #", elementNum)
