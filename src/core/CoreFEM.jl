@@ -6,7 +6,6 @@ include("Input.jl")
 include("StiffnessMatrix.jl")
 
 using MeshFEM
-using Load
 using DelimitedFiles
 
 export fem2D
@@ -23,7 +22,7 @@ function assemblyFEM2D(pars::processPars, targetMatrix::Array, currentElementMat
     end
 end  # assemblyFEM2D
 
- function constructLoads(pars::processPars)
+function constructLoads(pars::processPars)
     loads = pars.load
     loadsVector = zeros(Real, 2 * size(pars.mesh.nodes)[1])
     for (node, load) in pars.load
@@ -31,9 +30,9 @@ end  # assemblyFEM2D
         loadsVector[2 * node] = load[2]
     end
     return loadsVector
- end  # constructLoads
+end  # constructLoads
 
- function applyConstraints(pars::processPars, loads::Array, globalK::Array)
+function applyConstraints(pars::processPars, loads::Array, globalK::Array)
     for (node, bc) in pars.bc
         if bc == fixedX
             applyFixedX(node, loads, globalK)
@@ -45,7 +44,13 @@ end  # assemblyFEM2D
             println("Unhandled boundary condition")
         end
     end
- end  # applyConstraints
+end  # applyConstraints
+
+# Since Julia provides native workaround with linear algebra elements the best solution in most cases
+# is to use standart syntax to solve linear equations system.
+# According to official documentation Julia will choose the best solving method by itself.
+# If it's not, there should be a way to control it.
+solve(globalK::Array, loadVector::Array) = globalK \ loadVector
 
 function fem2D()
     parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D())
@@ -72,7 +77,11 @@ function fem2D()
     open("equation/F", "w") do file
         writedlm(file, loadVector)
     end
-
+    result = solve(ensembleMatrix, loadVector)
+    open("equation/result", "w") do file
+        writedlm(file, result)
+    end
+    return result
     # for elementNum in eachindex(parameters.mesh.elements)
     #    println("Element #", elementNum)
     #    K = stiffnessMatrix(elasticityMatrix, parameters, elementNum)
