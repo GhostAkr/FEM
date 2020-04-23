@@ -62,13 +62,25 @@ function fem2D()
     names = Array{String}(undef, 16)
     # For now already generated stiffness matrices are used to improve calculation speed for tests.
     # In future block with stiffness matrices calculated should be uncomment.
+    # for elementNum in eachindex(parameters.mesh.elements)
+    #    println("Element #", elementNum)
+    #    K = stiffnessMatrix(elasticityMatrix, parameters, elementNum)
+    #    fileName = "stiffness/K" * string(elementNum)
+    #    file = open(fileName, "w")
+    #    close(file)
+    #    open(fileName, "a") do file
+    #        writedlm(file, K)
+    #    end
+    # end
     ensembleMatrix = zeros(Real, 2 * size(parameters.mesh.nodes)[1], 2 * size(parameters.mesh.nodes)[1])
     for elementNum in eachindex(parameters.mesh.elements)
-        KName = "stiffness/" * "K" * string(elementNum)
-        open(KName, "r") do file
-            K = readdlm(file)
-            assemblyFEM2D(parameters, ensembleMatrix, K, elementNum)
-        end
+        K = stiffnessMatrix(elasticityMatrix, parameters, elementNum)
+        assemblyFEM2D(parameters, ensembleMatrix, K, elementNum)
+        # KName = "stiffness/" * "K" * string(elementNum)
+        # open(KName, "r") do file
+        #     K = readdlm(file)
+        #     assemblyFEM2D(parameters, ensembleMatrix, K, elementNum)
+        # end
     end
     loadVector = constructLoads(parameters)
     applyConstraints(parameters, loadVector, ensembleMatrix)
@@ -84,16 +96,6 @@ function fem2D()
     end
     BaseInterface.exportToCSV(result, parameters)
     return result
-    # for elementNum in eachindex(parameters.mesh.elements)
-    #    println("Element #", elementNum)
-    #    K = stiffnessMatrix(elasticityMatrix, parameters, elementNum)
-    #    fileName = "K" * string(elementNum)
-    #    file = open(fileName, "w")
-    #    close(file)
-    #    open(fileName, "a") do file
-    #        writedlm(file, K)
-    #    end
-    # end
 end  # fem2D
 
 end  # Core

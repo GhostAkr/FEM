@@ -28,8 +28,9 @@ function cellMethod(f::Function, rLimits::Dict{limits, Real}, sLimits::Dict{limi
     return sum
 end
 
-#Integrating matrix of functions
+# Integrating matrix of functions
 # F should return matrix depending on two variables, See StiffnessMatrix.jl for details
+# !IMPORTANT! Probably incorrect. For now gauss method can be used (and it's definitely more efficient).
 function cellMethodMatrix(F::Function, rLimits::Dict{limits, Real}, sLimits::Dict{limits, Real}, n_r_Sections::Int, n_s_Sections::Int)
     hr = (rLimits[upper] - rLimits[lower]) / n_r_Sections
     hs = (sLimits[upper] - sLimits[lower]) / n_s_Sections
@@ -58,3 +59,55 @@ function cellMethodMatrix(F::Function, rLimits::Dict{limits, Real}, sLimits::Dic
     end
     return resultMatrix
 end
+
+# Multiple integration method with Gauss method. Interval of integration should be equal to [-1; 1]
+# F should depend on two variables
+function gaussMethod(F::Function, intOrder::Int)
+    rArray = Array  # Array of integration points by r coordinate
+    sArray = Array  # Array of integration points by s coordinate
+    weights = Array  # Array of integration weights
+    if intOrder == 2
+        r = [-1 / sqrt(3), 1 / sqrt(3)]
+        s = [-1 / sqrt(3), 1 / sqrt(3)]
+        weights = [1, 1]
+    else
+        println("That integration order is not supported")
+    end
+    resultSum = 0
+    for i in 1:intOrder
+        for j in 1:intOrder
+            resultSum += (weights[i] * weights[j] * F(r[i], s[j]))
+        end
+    end
+    return resultSum
+end  # gaussMethod
+
+# F should return matrix depending on two variables, See StiffnessMatrix.jl for details
+function gaussMethodMatrix(F::Function, intOrder::Int)
+    rArray = Array  # Array of integration points by r coordinate
+    sArray = Array  # Array of integration points by s coordinate
+    weights = Array  # Array of integration weights
+    if intOrder == 2
+        r = [-1 / sqrt(3), 1 / sqrt(3)]
+        s = [-1 / sqrt(3), 1 / sqrt(3)]
+        weights = [1, 1]
+    else
+        println("That integration order is not supported")
+    end
+    nOfRows = size(F(1, 1))[1]
+    nOfCols = size(F(1, 1))[2]
+    resultMatrix = Matrix{Float64}(undef, nOfRows, nOfCols)
+    for k in 1:nOfRows
+        for l in 1:nOfCols
+            # Integrating [k, l] element of source matrix
+            resultSum = 0
+            for i in 1:intOrder
+                for j in 1:intOrder
+                    resultSum += (weights[i] * weights[j] * F(r[i], s[j])[k, l])
+                end
+            end
+            resultMatrix[k, l] = resultSum
+        end
+    end
+    return resultMatrix
+end  # gaussMethodMatrix
