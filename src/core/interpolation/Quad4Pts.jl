@@ -37,34 +37,69 @@ dh4x(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = jacGlobToLocInv(r
 dh4y(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = jacGlobToLocInv(r, s, xCoords, yCoords)[2, 1] * dh4r(r, s) + jacGlobToLocInv(r, s, xCoords, yCoords)[2, 2] * dh4s(r, s)
 
 # TODO: For now this is not effective
+# function gradMatr(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
+#     resultMatrix = Array{Float64, 2}(undef, 3, 8)
+#     resultMatrix[1, 1] = dh1x(r, s, xCoords, yCoords)
+#     resultMatrix[1, 2] = 0
+#     resultMatrix[1, 3] = dh2x(r, s, xCoords, yCoords)
+#     resultMatrix[1, 4] = 0
+#     resultMatrix[1, 5] = dh3x(r, s, xCoords, yCoords)
+#     resultMatrix[1, 6] = 0
+#     resultMatrix[1, 7] = dh4x(r, s, xCoords, yCoords)
+#     resultMatrix[1, 8] = 0
+
+#     resultMatrix[2, 1] = 0
+#     resultMatrix[2, 2] = dh1y(r, s, xCoords, yCoords)
+#     resultMatrix[2, 3] = 0
+#     resultMatrix[2, 4] = dh2y(r, s, xCoords, yCoords)
+#     resultMatrix[2, 5] = 0
+#     resultMatrix[2, 6] = dh3y(r, s, xCoords, yCoords)
+#     resultMatrix[2, 7] = 0
+#     resultMatrix[2, 8] = dh4y(r, s, xCoords, yCoords)
+
+#     resultMatrix[3, 1] = dh1y(r, s, xCoords, yCoords)
+#     resultMatrix[3, 2] = dh1x(r, s, xCoords, yCoords)
+#     resultMatrix[3, 3] = dh2y(r, s, xCoords, yCoords)
+#     resultMatrix[3, 4] = dh2x(r, s, xCoords, yCoords)
+#     resultMatrix[3, 5] = dh3y(r, s, xCoords, yCoords)
+#     resultMatrix[3, 6] = dh3x(r, s, xCoords, yCoords)
+#     resultMatrix[3, 7] = dh4y(r, s, xCoords, yCoords)
+#     resultMatrix[3, 8] = dh4x(r, s, xCoords, yCoords)
+
+#     return resultMatrix
+# end
+
+# Precalculated version
 function gradMatr(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
     resultMatrix = Array{Float64, 2}(undef, 3, 8)
-    resultMatrix[1, 1] = dh1x(r, s, xCoords, yCoords)
+    resultMatrix[1, 1] = 1 + s
     resultMatrix[1, 2] = 0
-    resultMatrix[1, 3] = dh2x(r, s, xCoords, yCoords)
+    resultMatrix[1, 3] = -(1 + s)
     resultMatrix[1, 4] = 0
-    resultMatrix[1, 5] = dh3x(r, s, xCoords, yCoords)
+    resultMatrix[1, 5] = -(1 - s)
     resultMatrix[1, 6] = 0
-    resultMatrix[1, 7] = dh4x(r, s, xCoords, yCoords)
+    resultMatrix[1, 7] = 1 - s
     resultMatrix[1, 8] = 0
 
     resultMatrix[2, 1] = 0
-    resultMatrix[2, 2] = dh1y(r, s, xCoords, yCoords)
+    resultMatrix[2, 2] = 1 + r
     resultMatrix[2, 3] = 0
-    resultMatrix[2, 4] = dh2y(r, s, xCoords, yCoords)
+    resultMatrix[2, 4] = 1 - r
     resultMatrix[2, 5] = 0
-    resultMatrix[2, 6] = dh3y(r, s, xCoords, yCoords)
+    resultMatrix[2, 6] = -(1 - r)
     resultMatrix[2, 7] = 0
-    resultMatrix[2, 8] = dh4y(r, s, xCoords, yCoords)
+    resultMatrix[2, 8] = -(1 + r)
 
-    resultMatrix[3, 1] = dh1y(r, s, xCoords, yCoords)
-    resultMatrix[3, 2] = dh1x(r, s, xCoords, yCoords)
-    resultMatrix[3, 3] = dh2y(r, s, xCoords, yCoords)
-    resultMatrix[3, 4] = dh2x(r, s, xCoords, yCoords)
-    resultMatrix[3, 5] = dh3y(r, s, xCoords, yCoords)
-    resultMatrix[3, 6] = dh3x(r, s, xCoords, yCoords)
-    resultMatrix[3, 7] = dh4y(r, s, xCoords, yCoords)
-    resultMatrix[3, 8] = dh4x(r, s, xCoords, yCoords)
+    resultMatrix[3, 1] = 1 + r
+    resultMatrix[3, 2] = 1 + s
+    resultMatrix[3, 3] = 1 - r
+    resultMatrix[3, 4] = -(1 + s)
+    resultMatrix[3, 5] = -(1 - r)
+    resultMatrix[3, 6] = -(1 - s)
+    resultMatrix[3, 7] = -(1 + r)
+    resultMatrix[3, 8] = 1 - s
+
+    resultMatrix *= 0.25
 
     return resultMatrix
 end
