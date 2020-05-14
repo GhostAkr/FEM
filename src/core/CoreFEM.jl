@@ -23,13 +23,45 @@ function assemblyFEM2D(pars::processPars, targetMatrix::Array, currentElementMat
     end
 end  # assemblyFEM2D
 
-function constructLoads(pars::processPars)
-    loads = pars.load
+function assemblyLoads(pars::processPars)
     loadsVector = zeros(Real, 2 * size(pars.mesh.nodes)[1])
-    for (node, load) in pars.load
-        loadsVector[2 * node - 1] = load[1]
-        loadsVector[2 * node] = load[2]
-    end
+    # for (node, load) in pars.load
+    #     loadsVector[2 * node - 1] = load[1]
+    #     loadsVector[2 * node] = load[2]
+    # end
+    # for node in [5, 10, 15, 20, 25]
+        F = elementLoad(4, pars)  # TODO: In this simple case loads vectors will be the same for all elements, so we just use 1. Need to make it depending on element
+        loadsVector[2 * 5 - 1] += F[7]
+        loadsVector[2 * 5] += F[8]
+
+        loadsVector[2 * 10 - 1] += F[1]
+        loadsVector[2 * 10] += F[2]
+
+        F = elementLoad(8, pars)
+        loadsVector[2 * 10 - 1] += F[7]
+        loadsVector[2 * 10] += F[8]
+
+        loadsVector[2 * 15 - 1] += F[1]
+        loadsVector[2 * 15] += F[2]
+
+        F = elementLoad(12, pars)
+        loadsVector[2 * 15 - 1] += F[7]
+        loadsVector[2 * 15] += F[8]
+
+        loadsVector[2 * 20 - 1] += F[1]
+        loadsVector[2 * 20] += F[2]
+
+        F = elementLoad(16, pars)
+        loadsVector[2 * 20 - 1] += F[7]
+        loadsVector[2 * 20] += F[8]
+
+        loadsVector[2 * 25 - 1] += F[1]
+        loadsVector[2 * 25] += F[2]
+    # end
+    # for elementNum in eachindex(pars.mesh.elements)
+    #     element = pars.mesh.elements[elementNum]
+    #     H = elementLoad(elementNum)
+    # end
     return loadsVector
 end  # constructLoads
 
@@ -66,13 +98,9 @@ function fem2D()
     ensembleMatrix = zeros(Real, 2 * size(parameters.mesh.nodes)[1], 2 * size(parameters.mesh.nodes)[1])
     for elementNum in eachindex(parameters.mesh.elements)
         K = stiffnessMatrix(elasticityMatrix, parameters, elementNum)
-        if elementNum == 1
-            println("Element #", elementNum, "; Nodes: ", parameters.mesh.elements[elementNum])
-            println(K)
-        end
         assemblyFEM2D(parameters, ensembleMatrix, K, elementNum)
     end
-    loadVector = constructLoads(parameters)
+    loadVector = assemblyLoads(parameters)
     applyConstraints(parameters, loadVector, ensembleMatrix)
     open("equation/K", "w") do file
         writedlm(file, ensembleMatrix)
@@ -80,6 +108,14 @@ function fem2D()
     open("equation/F", "w") do file
         writedlm(file, loadVector)
     end
+    println("Size of K is ", size(ensembleMatrix))
+    println("Size of F is ", size(loadVector), "\n")
+    println("11th row in K: ")
+    for i in 1:size(ensembleMatrix)[1]
+        print(ensembleMatrix[11, i], "; ")
+    end
+    println()
+    println("11th element in F: ", loadVector[11], "\n")
     result = solve(ensembleMatrix, loadVector)
     open("equation/result", "w") do file
         writedlm(file, result)

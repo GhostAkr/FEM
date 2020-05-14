@@ -27,6 +27,8 @@ dh4s(r, s) = (-1 - r) / 4
 jacGlobToLoc(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = [dxr(r, s, xCoords) dxs(r, s, xCoords); dyr(r, s, yCoords) dys(r, s, yCoords)]  # Jacobi's matrix for conversion from local coordinates to global
 jacGlobToLocInv(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = inv(jacGlobToLoc(r, s, xCoords, yCoords))
 
+DetJs(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = sqrt(dxr(r, s, xCoords)^2 + dyr(r, s, yCoords)^2)
+
 dh1x(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = jacGlobToLocInv(r, s, xCoords, yCoords)[1, 1] * dh1r(r, s) + jacGlobToLocInv(r, s, xCoords, yCoords)[1, 2] * dh1s(r, s)
 dh1y(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = jacGlobToLocInv(r, s, xCoords, yCoords)[2, 1] * dh1r(r, s) + jacGlobToLocInv(r, s, xCoords, yCoords)[2, 2] * dh1s(r, s)
 dh2x(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = jacGlobToLocInv(r, s, xCoords, yCoords)[1, 1] * dh2r(r, s) + jacGlobToLocInv(r, s, xCoords, yCoords)[1, 2] * dh2s(r, s)
@@ -103,6 +105,16 @@ function gradMatr(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
 
     return resultMatrix
 end
+
+# Precalculated displacements interpolation H matrix
+function displInterpMatr(r, s)
+    result = zeros(Real, 2, 8)
+    result[1, 1] = 0.5 * (1 + s)
+    result[1, 7] = 0.5 * (1 - s)
+    result[2, 2] = 0.5 * (1 + s)
+    result[2, 8] = 0.5 * (1 - s)
+    return result
+end  # displInterpMatr
 
 interFunc = [h1, h2, h3, h4]  # Array of interpolation functions
 

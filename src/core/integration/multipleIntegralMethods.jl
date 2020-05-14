@@ -95,7 +95,11 @@ function gaussMethodMatrix(F::Function, intOrder::Int)
         println("That integration order is not supported")
     end
     nOfRows = size(F(1, 1))[1]
-    nOfCols = size(F(1, 1))[2]
+    if length(size(F(1, 1))) == 1
+        nOfCols = 1
+    else
+        nOfCols = size(F(1, 1))[2]
+    end
     resultMatrix = Matrix{Float64}(undef, nOfRows, nOfCols)
     for k in 1:nOfRows
         for l in 1:nOfCols

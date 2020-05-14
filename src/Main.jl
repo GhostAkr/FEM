@@ -3,4 +3,4 @@
 using CoreFEM
 using multipleIntegral
 
-CoreFEM.fem2D()
+Res = CoreFEM.fem2D()

@@ -17,7 +17,7 @@ struct processPars
 end
 
 # Test input
-testMaterialProperties() = Dict(poisC => 0.3, youngMod => (2000))
+testMaterialProperties() = Dict(poisC => 0.3, youngMod => 20000)
 testLoad() = Dict(5 => [1000000, 0], 10 => [1000000, 0], 15 => [1000000, 0], 20 => [1000000, 0], 25 => [1000000, 0])
 testBC() = Dict(1 => fixedXY, 6 => fixedXY, 11 => fixedXY, 16 => fixedXY, 21 => fixedXY)
 
