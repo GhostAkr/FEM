@@ -115,3 +115,31 @@ function gaussMethodMatrix(F::Function, intOrder::Int)
     end
     return resultMatrix
 end  # gaussMethodMatrix
+
+# F should return matrix depending on one variable
+function gauss1DMethodMatrix(F::Function, intOrder::Int)
+    if intOrder == 2
+        x = [-1 / sqrt(3), 1 / sqrt(3)]
+        weights = [1, 1]
+    else
+        println("That integration order is not supported")
+    end
+    nOfRows = size(F(1))[1]
+    if length(size(F(1))) == 1
+        nOfCols = 1
+    else
+        nOfCols = size(F(1))[2]
+    end
+    resultMatrix = Matrix{Float64}(undef, nOfRows, nOfCols)
+    for k in 1:nOfRows
+        for l in 1:nOfCols
+            # Integrating [k, l] element of source matrix
+            resultSum = 0
+            for i in 1:intOrder
+                resultSum += (weights[i] * F(x[i])[k, l])
+            end
+            resultMatrix[k, l] = resultSum
+        end
+    end
+    return resultMatrix
+end  # gauss1DMethodMatrix

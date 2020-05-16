@@ -34,10 +34,10 @@ function elementLoad(elementNum::Int, pars::processPars)
     xCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][1] for i in 1:4]
     yCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][2] for i in 1:4]
     load = [100000; 0]  # TODO: Test load. Need to take it from input instead.
-    FIntegrate(r, s) = transpose(Quad4Pts.displInterpMatr(r, s)) * load * Quad4Pts.DetJs(r, s, xCoords, yCoords)
-    
+    println("Det(Js) = ", Quad4Pts.DetJs(1, 5, xCoords, yCoords))
+    FIntegrate(s) = transpose(Quad4Pts.displInterpMatr(1, s)) * load * Quad4Pts.DetJs(1, s, xCoords, yCoords)
     IntegrationOrder = 2
-    F = multipleIntegral.gaussMethodMatrix(FIntegrate, IntegrationOrder)
+    F = multipleIntegral.gauss1DMethodMatrix(FIntegrate, IntegrationOrder)
     println("F: \n", F, "\n")
     return F
 end  # elementLoad

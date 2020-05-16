@@ -1,29 +1,29 @@
 export Mesh2D_T, generateTestMesh2D, printNodesMesh2D, printElementsMesh2D
 
 struct Mesh2D_T
-    nodes::Vector{Tuple{Vararg{Real}}}  # Matrix of nodes (contains node's coordinates)
+    nodes::Vector{Tuple{Vararg{Float64}}}  # Matrix of nodes (contains node's coordinates)
     elements::Vector{Tuple{Vararg{Int}}}  # Matrix of elements (contains elements's nodes)
 end  # Mesh2D_T
 
 function generateTestMesh2D()  # Simple mesh built on a square 1x1
     # Parameters
-    nOfNodes = 25
-    nOfElements = 16
+    nOfNodes = 9
+    nOfElements = 4  # For square mesh it should be square of smth
     dimension = 2
     nodesPerElement = 4
     # Creation
-    resultMesh = Mesh2D_T(Vector{Tuple{Vararg{Real}}}(undef, nOfNodes), Vector{Tuple{Vararg{Int}}}(undef, nOfElements))
+    resultMesh = Mesh2D_T(Vector{Tuple{Vararg{Float64}}}(undef, nOfNodes), Vector{Tuple{Vararg{Int}}}(undef, nOfElements))
     nodeIndex = 1
-    for i in 0:0.25:1
-        for j in 0:0.25:1
+    for i in 0:50:100
+        for j in 0:50:100
             resultMesh.nodes[nodeIndex] = (j, i)
             nodeIndex += 1
         end
     end
     for i in eachindex(resultMesh.elements)
-        blNum = i + div(i - 1, nodesPerElement)  # Bottom left node of element
-        element = Tuple{blNum, blNum + 1, blNum + 6, blNum + 5}
-        resultMesh.elements[i] = (blNum, blNum + 1, blNum + 6, blNum + 5)
+        blNum = i + div(i - 1, sqrt(nOfElements))  # Bottom left node of element
+        element = Tuple{blNum, blNum + 1, blNum + 4, blNum + 3}
+        resultMesh.elements[i] = (blNum, blNum + 1, blNum + 4, blNum + 3)
     end
     return resultMesh
 end  # generateRandomMesh2D
