@@ -5,16 +5,9 @@
 export processPars, importMesh, testBC, testLoad, testMaterialProperties, printProcessPars
 
 include("Material.jl")
+include("InputVars.jl")
 
-#using Material
 using MeshFEM
-
-struct processPars
-    materialProperties::Dict{materialProperty, Real}
-    bc::Dict{Int, bc}  # {NumberOfPoint, TypeOfBC}
-    load::Dict{Int, Vector{Real}}  # {NumberOfPoint, ForceVector}
-    mesh::Mesh2D_T
-end
 
 # Test input
 testMaterialProperties() = Dict(poisC => 0.3, youngMod => 20000)

@@ -1,10 +1,7 @@
-export applyFixedX, elementLoad
+include("LoadVars.jl")
+include("InputVars.jl")
 
-@enum bc begin
-    fixedX  # Dislpacement fixed by X
-    fixedY  # Dislpacement fixed by Y
-    fixedXY  # Dislpacement fixed by X and Y
-end
+export applyFixedX, applyFixedY, applyFixedXY, elementLoad
 
 function applyFixedX(node::Int, loads::Array, globalK::Array)
     loads[2 * node - 1] = 0
