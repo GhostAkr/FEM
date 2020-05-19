@@ -1,7 +1,17 @@
+# Base variables and types of load part
+
 export bc
 
+"""
+    bc
+
+Enum containing different boundary condition cases:
+- `fixedX` - dislpacement fixed by X;
+- `fixedY` - dislpacement fixed by Y;
+- `fixedXY` - dislpacement fixed by X and Y.
+"""
 @enum bc begin
-    fixedX  # Dislpacement fixed by X
-    fixedY  # Dislpacement fixed by Y
-    fixedXY  # Dislpacement fixed by X and Y
+    fixedX
+    fixedY
+    fixedXY
 end

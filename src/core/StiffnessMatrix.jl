@@ -4,6 +4,11 @@ using Quad4Pts
 using multipleIntegral
 using LinearAlgebra
 
+"""
+    testIntegralFunc(x, y)
+
+Just random function depending on 2 variables: ``f(x, y) = x^2 + y``.
+"""
 testIntegralFunc(x, y) = x ^ 2 + y  # Should give 4/3 after integration
 
 function F(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}, elasticityMatrix::AbstractArray)  # F = B^T * C * B * det(J)

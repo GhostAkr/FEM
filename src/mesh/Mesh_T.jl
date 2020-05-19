@@ -1,11 +1,26 @@
 export Mesh2D_T, generateTestMesh2D, printNodesMesh2D, printElementsMesh2D
 
+"""
+    Mesh2D_T
+
+2D mesh main structure.
+Basically contains 2 fields:
+1. **nodes** - matrix of nodes (contains node's coordinates);
+2. **elements** - matrix of elements (contains elements's nodes).
+"""
 struct Mesh2D_T
-    nodes::Vector{Tuple{Vararg{Float64}}}  # Matrix of nodes (contains node's coordinates)
-    elements::Vector{Tuple{Vararg{Int}}}  # Matrix of elements (contains elements's nodes)
+    "Matrix of nodes (contains node's coordinates)"
+    nodes::Vector{Tuple{Vararg{Float64}}}
+    "Matrix of elements (contains elements's nodes)"
+    elements::Vector{Tuple{Vararg{Int}}}
 end  # Mesh2D_T
 
-function generateTestMesh2D()  # Simple mesh built on a square 1x1
+"""
+    generateTestMesh2D()
+
+Build a simple 2D mesh on a square 100x100 with 4 elements on it.
+"""
+function generateTestMesh2D()
     # Parameters
     nOfNodes = 9
     nOfElements = 4  # For square mesh it should be square of smth
@@ -28,6 +43,12 @@ function generateTestMesh2D()  # Simple mesh built on a square 1x1
     return resultMesh
 end  # generateRandomMesh2D
 
+
+"""
+    printNodesMesh2D(mesh::Mesh2D_T)
+
+Print nodes of given mesh.
+"""
 function printNodesMesh2D(mesh::Mesh2D_T)
     for node in mesh.nodes
         print(node, "\n")
@@ -35,6 +56,12 @@ function printNodesMesh2D(mesh::Mesh2D_T)
     print("\n")
 end  # printMesh2D
 
+
+"""
+    printElementsMesh2D(mesh::Mesh2D_T)
+
+Print elements of given mesh.
+"""
 function printElementsMesh2D(mesh::Mesh2D_T)
     for element in mesh.elements
         print(element, "\n")
