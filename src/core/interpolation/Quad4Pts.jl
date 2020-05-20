@@ -1,3 +1,8 @@
+"""
+    Quad4Pts
+
+Module describing model with bilinear quadrilateral finite elements.
+"""
 module Quad4Pts
 
 h1(r, s) = 0.25 * (1 + r) * (1 + s)
@@ -24,9 +29,43 @@ dh3s(r, s) = (-1 + r) / 4
 dh4r(r, s) = (1 - s) / 4
 dh4s(r, s) = (-1 - r) / 4
 
+"""
+    jacGlobToLoc(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
+
+Jacobi matrix for conversion between different coordinate systems.
+
+# Arguments
+- `r`: r-coordinate;
+- `s`: s-coordinate;
+- `xCoords::Array{Float64}`: x coordinates of each node in current element;
+- `yCoords::Array{Float64}`: y coordinates of each node in current element.
+"""
 jacGlobToLoc(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = [dxr(r, s, xCoords) dxs(r, s, xCoords); dyr(r, s, yCoords) dys(r, s, yCoords)]  # Jacobi's matrix for conversion from local coordinates to global
+
+"""
+    jacGlobToLocInv(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
+
+Inversed Jacobi matrix for conversion between different coordinate systems.
+
+# Arguments
+- `r`: r-coordinate;
+- `s`: s-coordinate;
+- `xCoords::Array{Float64}`: x coordinates of each node in current element;
+- `yCoords::Array{Float64}`: y coordinates of each node in current element.
+"""
 jacGlobToLocInv(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = inv(jacGlobToLoc(r, s, xCoords, yCoords))
 
+"""
+    DetJs(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
+
+Determinant of appropriate Jacobi matrix.
+
+# Arguments
+- `r`: r-coordinate;
+- `s`: s-coordinate;
+- `xCoords::Array{Float64}`: x coordinates of each node in current element;
+- `yCoords::Array{Float64}`: y coordinates of each node in current element.
+"""
 DetJs(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = sqrt(dxs(r, s, xCoords)^2 + dys(r, s, yCoords)^2)
 
 dh1x(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = jacGlobToLocInv(r, s, xCoords, yCoords)[1, 1] * dh1r(r, s) + jacGlobToLocInv(r, s, xCoords, yCoords)[1, 2] * dh1s(r, s)
@@ -71,7 +110,19 @@ dh4y(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = jacGlobToLocInv(r
 #     return resultMatrix
 # end
 
+# TODO: calculate this through appropriate derivatives
 # Precalculated version
+"""
+    gradMatr(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
+
+Gradient matrix ``B`` for element.
+
+# Arguments
+- `r`: r-coordinate;
+- `s`: s-coordinate;
+- `xCoords::Array{Float64}`: x coordinates of each node in current element;
+- `yCoords::Array{Float64}`: y coordinates of each node in current element.
+"""
 function gradMatr(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
     resultMatrix = Array{Float64, 2}(undef, 3, 8)
     resultMatrix[1, 1] = 1 + s
@@ -104,9 +155,18 @@ function gradMatr(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
     resultMatrix *= 0.25
 
     return resultMatrix
-end
+end  # gradMatr
 
 # Precalculated displacements interpolation H matrix
+"""
+    displInterpMatr(r, s)
+
+Displacements interpolation ``H`` matrix.
+
+# Arguments
+- `r`: r-coordinate;
+- `s`: s-coordinate.
+"""
 function displInterpMatr(r, s)
     result = zeros(Real, 2, 8)
     result[1, 1] = 0.5 * (1 + s)
