@@ -1,37 +1,32 @@
-# Modules
+# FEM Modules
 
 ```@contents
 ```
 
 ## MeshFEM
 
-```@docs
-MeshFEM
-```
-
 ```@autodocs
 Modules = [MeshFEM]
-Order = [:type, :function]
+Order = [:module, :type, :function]
 ```
 
 ## BaseInterface
 
-```@docs
-BaseInterface
-```
-
 ```@autodocs
 Modules = [BaseInterface]
-Order = [:type, :function]
+Order = [:module, :type, :function]
 ```
 
 ## CoreFEM
 
-```@docs
-CoreFEM
-```
-
 ```@autodocs
 Modules = [CoreFEM]
-Order = [:type, :function]
+Order = [:module, :type, :function]
+```
+
+## multipleIntegral
+
+```@autodocs
+Modules = [multipleIntegral]
+Order = [:module, :type, :function]
 ```
