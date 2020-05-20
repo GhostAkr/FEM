@@ -1,9 +1,8 @@
-# Alpha
+## Alpha
 
-There are 3 main blocks of this branch:
-
+There are 3 main blocks of FEM project:
 1. core | In progress
 2. mesh | Finished
-3. interface | Not started
+3. interface | In progress
 
-Check appropriate block branch for current progress
+All latest changes you can see in **core** branch.
