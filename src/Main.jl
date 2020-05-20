@@ -1,3 +1,6 @@
-using CoreFEM
+# To provide correct modules loading it's important to execeute Set_Path.jl first.
 
-CoreFEM.fem2D()
+using CoreFEM
+using multipleIntegral
+
+Res = CoreFEM.fem2D()
