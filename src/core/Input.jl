@@ -12,14 +12,14 @@ using MeshFEM
 
 Return test material properties: Poisson's ratio ``\\nu = 0.3``, Young's modulus ``E = 200 * 10^6``.
 """
-testMaterialProperties() = Dict(poisC => 0.3, youngMod => 200 * 10^6)
+testMaterialProperties() = Dict(poisC => 0.3, youngMod => 200000)
 
 """
     testLoad()
 
-Return test load: surface force ``f^s = 100 \\text{Н}`` on the right edge of test plate.
+Return test load: surface force ``f^s = 10 \\text{МПа}`` on the right edge of test plate.
 """
-testLoad() = Dict(3 => [100, 0], 6 => [100, 0], 9 => [100, 0])
+testLoad() = Dict(3 => [10, 0], 6 => [10, 0], 9 => [10, 0])
 
 """
     testBC()
