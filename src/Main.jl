@@ -2,5 +2,6 @@
 
 using CoreFEM
 using multipleIntegral
+using MeshFEM
 
 Res = CoreFEM.fem2D()

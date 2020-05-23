@@ -65,8 +65,8 @@ jacGlobToLocInv(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = inv(ja
 
 # Supporting matrices for calculating gradient matrix
 function TU(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
-    uxy = [1 + s    0   -(1 + s)    0   -(1 - s)    0   1 - s
-           1 + r    0   1 - r       0   -(1 - r)    0   -(1 + r)]
+    uxy = [1 + s    0   -(1 + s)    0   -(1 - s)    0   1 - s       0
+           1 + r    0   1 - r       0   -(1 - r)    0   -(1 + r)    0]
     return 0.25 * jacGlobToLocInv(r, s, xCoords, yCoords) * uxy
 end  # TU
 
