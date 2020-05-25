@@ -38,8 +38,7 @@ function generateTestMesh2D(n::Int)
     end
     for i in eachindex(resultMesh.elements)
         blNum = i + div(i - 1, sqrt(nOfElements))  # Bottom left node of element
-        element = Tuple{blNum, blNum + 1, blNum + (n + 1) + 1, blNum + (n + 1)}
-        resultMesh.elements[i] = (blNum, blNum + 1, blNum + (n + 1) + 1, blNum + (n + 1))
+        resultMesh.elements[i] = (blNum + (n + 1) + 1, blNum + (n + 1), blNum, blNum + 1)
     end
     return resultMesh
 end  # generateRandomMesh2D
