@@ -87,7 +87,8 @@ Determinant of appropriate Jacobi matrix.
 - `xCoords::Array{Float64}`: x coordinates of each node in current element;
 - `yCoords::Array{Float64}`: y coordinates of each node in current element.
 """
-DetJs(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = sqrt(dxs(r, s, xCoords)^2 + dys(r, s, yCoords)^2)
+DetJs(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = sqrt(dxr(r, s, xCoords)^2 + dyr(r, s, yCoords)^2)
+# DetJs(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = sqrt(dxs(r, s, xCoords)^2 + dys(r, s, yCoords)^2)
 
 dh1x(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = jacGlobToLocInv(r, s, xCoords, yCoords)[1, 1] * dh1r(r, s) + jacGlobToLocInv(r, s, xCoords, yCoords)[1, 2] * dh1s(r, s)
 dh1y(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = jacGlobToLocInv(r, s, xCoords, yCoords)[2, 1] * dh1r(r, s) + jacGlobToLocInv(r, s, xCoords, yCoords)[2, 2] * dh1s(r, s)
@@ -175,12 +176,20 @@ Displacements interpolation ``H`` matrix.
 """
 function displInterpMatr(r, s)
     result = zeros(Real, 2, 8)
-    result[1, 1] = 0.5 * (1 + s)
-    result[1, 7] = 0.5 * (1 - s)
-    result[2, 2] = 0.5 * (1 + s)
-    result[2, 8] = 0.5 * (1 - s)
+    result[1, 1] = 0.5 * (1 + r)
+    result[1, 3] = 0.5 * (1 - r)
+    result[2, 2] = 0.5 * (1 + r)
+    result[2, 4] = 0.5 * (1 - r)
     return result
 end  # displInterpMatr
+# function displInterpMatr(r, s)
+#     result = zeros(Real, 2, 8)
+#     result[1, 1] = 0.5 * (1 + s)
+#     result[1, 7] = 0.5 * (1 - s)
+#     result[2, 2] = 0.5 * (1 + s)
+#     result[2, 8] = 0.5 * (1 - s)
+#     return result
+# end  # displInterpMatr
 
 interFunc = [h1, h2, h3, h4]  # Array of interpolation functions
 

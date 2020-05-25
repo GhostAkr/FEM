@@ -50,40 +50,97 @@ function assemblyLoads(pars::processPars)
     loadsVector = zeros(Real, 2 * size(pars.mesh.nodes)[1])
     # TODO: Make this method universal for any mesh and load.
     # for node in [5, 10, 15, 20, 25]
-        F = elementLoad(5, pars)
-        loadsVector[2 * 6 - 1] += F[7]
-        loadsVector[2 * 6] += F[8]
+        # F = elementLoad(5, pars)
+        # println("F on 5 element: ", F)
+        # loadsVector[2 * 6 - 1] += F[7]
+        # loadsVector[2 * 6] += F[8]
 
-        loadsVector[2 * 12 - 1] += F[1]
-        loadsVector[2 * 12] += F[2]
+        # loadsVector[2 * 12 - 1] += F[1]
+        # loadsVector[2 * 12] += F[2]
 
-        F = elementLoad(10, pars)
-        loadsVector[2 * 12 - 1] += F[7]
-        loadsVector[2 * 12] += F[8]
+        # F = elementLoad(10, pars)
+        # println("F on 10 element: ", F)
+        # loadsVector[2 * 12 - 1] += F[7]
+        # loadsVector[2 * 12] += F[8]
 
-        loadsVector[2 * 18 - 1] += F[1]
-        loadsVector[2 * 18] += F[2]
+        # loadsVector[2 * 18 - 1] += F[1]
+        # loadsVector[2 * 18] += F[2]
 
-        F = elementLoad(15, pars)
-        loadsVector[2 * 18 - 1] += F[7]
-        loadsVector[2 * 18] += F[8]
+        # F = elementLoad(15, pars)
+        # println("F on 15 element: ", F)
+        # loadsVector[2 * 18 - 1] += F[7]
+        # loadsVector[2 * 18] += F[8]
 
-        loadsVector[2 * 24 - 1] += F[1]
-        loadsVector[2 * 24] += F[2]
+        # loadsVector[2 * 24 - 1] += F[1]
+        # loadsVector[2 * 24] += F[2]
 
-        F = elementLoad(20, pars)
-        loadsVector[2 * 24 - 1] += F[7]
-        loadsVector[2 * 24] += F[8]
+        # F = elementLoad(20, pars)
+        # println("F on 20 element: ", F)
+        # loadsVector[2 * 24 - 1] += F[7]
+        # loadsVector[2 * 24] += F[8]
 
-        loadsVector[2 * 30 - 1] += F[1]
-        loadsVector[2 * 30] += F[2]
+        # loadsVector[2 * 30 - 1] += F[1]
+        # loadsVector[2 * 30] += F[2]
 
-        F = elementLoad(25, pars)
-        loadsVector[2 * 30 - 1] += F[7]
-        loadsVector[2 * 30] += F[8]
+        # F = elementLoad(25, pars)
+        # println("F on 25 element: ", F)
+        # loadsVector[2 * 30 - 1] += F[7]
+        # loadsVector[2 * 30] += F[8]
 
-        loadsVector[2 * 36 - 1] += F[1]
-        loadsVector[2 * 36] += F[2]
+        # loadsVector[2 * 36 - 1] += F[1]
+        # loadsVector[2 * 36] += F[2]
+
+
+        # F = elementLoad(21, pars)
+        # loadsVector[2 * 31 - 1] += F[1]
+        # loadsVector[2 * 31] += F[2]
+
+        # loadsVector[2 * 32 - 1] += F[3]
+        # loadsVector[2 * 32] += F[4]
+
+        # F = elementLoad(22, pars)
+        # loadsVector[2 * 32 - 1] += F[1]
+        # loadsVector[2 * 32] += F[2]
+
+        # loadsVector[2 * 33 - 1] += F[3]
+        # loadsVector[2 * 33] += F[4]
+
+        # F = elementLoad(23, pars)
+        # loadsVector[2 * 33 - 1] += F[1]
+        # loadsVector[2 * 33] += F[2]
+
+        # loadsVector[2 * 34 - 1] += F[3]
+        # loadsVector[2 * 34] += F[4]
+
+        # F = elementLoad(24, pars)
+        # loadsVector[2 * 34 - 1] += F[1]
+        # loadsVector[2 * 34] += F[2]
+
+        # loadsVector[2 * 35 - 1] += F[3]
+        # loadsVector[2 * 35] += F[4]
+
+        # F = elementLoad(25, pars)
+        # loadsVector[2 * 35 - 1] += F[1]
+        # loadsVector[2 * 35] += F[2]
+
+        # loadsVector[2 * 36 - 1] += F[3]
+        # loadsVector[2 * 36] += F[4]
+
+
+
+        F = elementLoad(3, pars)
+        loadsVector[2 * 7 - 1] += F[1]
+        loadsVector[2 * 7] += F[2]
+
+        loadsVector[2 * 8 - 1] += F[3]
+        loadsVector[2 * 8] += F[4]
+
+        F = elementLoad(4, pars)
+        loadsVector[2 * 8 - 1] += F[1]
+        loadsVector[2 * 8] += F[2]
+
+        loadsVector[2 * 9 - 1] += F[3]
+        loadsVector[2 * 9] += F[4]
 
     # end
     # for elementNum in eachindex(pars.mesh.elements)
@@ -139,7 +196,8 @@ solve(globalK::Array, loadVector::Array) = globalK \ loadVector
 Start calculation with test model.
 """
 function fem2D()
-    parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D(5))
+    parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D(2))
+    printProcessPars(parameters)
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]
     elasticityMatrix = [1 nu 0; nu 1 0; 0 0 ((1 - nu) / 2)]

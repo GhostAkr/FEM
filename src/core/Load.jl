@@ -73,8 +73,9 @@ Return local load vector for given element.
 function elementLoad(elementNum::Int, pars::processPars)
     xCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][1] for i in 1:4]
     yCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][2] for i in 1:4]
-    load = [10; 0]  # TODO: Test load. Need to take it from input instead.
-    FIntegrate(s) = transpose(Quad4Pts.displInterpMatr(1, s)) * load * Quad4Pts.DetJs(1, s, xCoords, yCoords)
+    load = [0; 10]  # TODO: Test load. Need to take it from input instead.
+    # FIntegrate(s) = transpose(Quad4Pts.displInterpMatr(1, s)) * load * Quad4Pts.DetJs(1, s, xCoords, yCoords)
+    FIntegrate(r) = transpose(Quad4Pts.displInterpMatr(r, 1)) * load * Quad4Pts.DetJs(r, 1, xCoords, yCoords)
     IntegrationOrder = 2
     F = multipleIntegral.gauss1DMethodMatrix(FIntegrate, IntegrationOrder)
     return F
