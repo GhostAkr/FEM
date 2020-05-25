@@ -5,10 +5,10 @@ Module describing model with bilinear quadrilateral finite elements.
 """
 module Quad4Pts
 
-h1(r, s) = 0.25 * (1 - r) * (1 - s)
-h2(r, s) = 0.25 * (1 + r) * (1 - s)
-h3(r, s) = 0.25 * (1 + r) * (1 + s)
-h4(r, s) = 0.25 * (1 - r) * (1 + s)
+h1(r, s) = 0.25 * (1 + r) * (1 + s)
+h2(r, s) = 0.25 * (1 - r) * (1 + s)
+h3(r, s) = 0.25 * (1 - r) * (1 - s)
+h4(r, s) = 0.25 * (1 + r) * (1 - s)
 
 x(r, s, xCoords::Array{Float64}) = h1(r, s) * xCoords[1] + h2(r, s) * xCoords[2] + h3(r, s) * xCoords[3] + h4(r, s) * xCoords[4]
 y(r, s, yCoords::Array{Float64}) = h1(r, s) * yCoords[1] + h2(r, s) * yCoords[2] + h3(r, s) * yCoords[3] + h4(r, s) * yCoords[4]
@@ -17,25 +17,25 @@ u(r, s, uCoords::Array{Float64}) = h1(r, s) * uCoords[1] + h2(r, s) * uCoords[2]
 v(r, s, vCoords::Array{Float64}) = h1(r, s) * vCoords[1] + h2(r, s) * vCoords[2] + h3(r, s) * vCoords[3] + h4(r, s) * vCoords[4]
 
 # TODO: provide somehow dynamic derivatives
-dxr(r, s, xCoords::Array{Float64}) = -0.25 * (1 - s) * xCoords[1] + 0.25 * (1 - s) * xCoords[2] + 0.25 * (1 + s) * xCoords[3] - 0.25 * (1 + s) * xCoords[4]
-dxs(r, s, xCoords::Array{Float64}) = -0.25 * (1 - r) * xCoords[1] - 0.25 * (1 + r) * xCoords[2] + 0.25 * (1 + r) * xCoords[3] - 0.25 * (1 - r) * xCoords[4]
-dyr(r, s, yCoords::Array{Float64}) = -0.25 * (1 - s) * yCoords[1] + 0.25 * (1 - s) * yCoords[2] + 0.25 * (1 + s) * yCoords[3] - 0.25 * (1 + s) * yCoords[4]
-dys(r, s, yCoords::Array{Float64}) = -0.25 * (1 - r) * yCoords[1] - 0.25 * (1 + r) * yCoords[2] + 0.25 * (1 + r) * yCoords[3] + 0.25 * (1 - r) * yCoords[4]
+dxr(r, s, xCoords::Array{Float64}) = 0.25 * (1 + s) * xCoords[1] - 0.25 * (1 + s) * xCoords[2] - 0.25 * (1 - s) * xCoords[3] + 0.25 * (1 - s) * xCoords[4]
+dxs(r, s, xCoords::Array{Float64}) = 0.25 * (1 + r) * xCoords[1] + 0.25 * (1 - r) * xCoords[2] - 0.25 * (1 - r) * xCoords[3] - 0.25 * (1 + r) * xCoords[4]
+dyr(r, s, yCoords::Array{Float64}) = 0.25 * (1 + s) * yCoords[1] - 0.25 * (1 + s) * yCoords[2] - 0.25 * (1 - s) * yCoords[3] + 0.25 * (1 - s) * yCoords[4]
+dys(r, s, yCoords::Array{Float64}) = 0.25 * (1 + r) * yCoords[1] + 0.25 * (1 - r) * yCoords[2] - 0.25 * (1 - r) * yCoords[3] - 0.25 * (1 + r) * yCoords[4]
 
-dur(r, s, uCoords::Array{Float64}) = -0.25 * (1 - s) * uCoords[1] + 0.25 * (1 - s) * uCoords[2] + 0.25 * (1 + s) * uCoords[3] - 0.25 * (1 + s) * uCoords[4]
-dus(r, s, uCoords::Array{Float64}) = -0.25 * (1 - r) * uCoords[1] - 0.25 * (1 + r) * uCoords[2] + 0.25 * (1 + r) * uCoords[3] + 0.25 * (1 - r) * uCoords[4]
-dvr(r, s, vCoords::Array{Float64}) = -0.25 * (1 - s) * vCoords[1] + 0.25 * (1 - s) * vCoords[2] + 0.25 * (1 + s) * vCoords[3] - 0.25 * (1 + s) * vCoords[4]
-dvs(r, s, vCoords::Array{Float64}) = -0.25 * (1 - r) * vCoords[1] - 0.25 * (1 + r) * vCoords[2] + 0.25 * (1 + r) * vCoords[3] + 0.25 * (1 - r) * vCoords[4]
+dur(r, s, uCoords::Array{Float64}) = 0.25 * (1 + s) * uCoords[1] - 0.25 * (1 + s) * uCoords[2] - 0.25 * (1 - s) * uCoords[3] + 0.25 * (1 - s) * uCoords[4]
+dus(r, s, uCoords::Array{Float64}) = 0.25 * (1 + r) * uCoords[1] + 0.25 * (1 - r) * uCoords[2] - 0.25 * (1 - r) * uCoords[3] - 0.25 * (1 + r) * uCoords[4]
+dvr(r, s, vCoords::Array{Float64}) = 0.25 * (1 + s) * vCoords[1] - 0.25 * (1 + s) * vCoords[2] - 0.25 * (1 - s) * vCoords[3] + 0.25 * (1 - s) * vCoords[4]
+dvs(r, s, vCoords::Array{Float64}) = 0.25 * (1 + r) * vCoords[1] + 0.25 * (1 - r) * vCoords[2] - 0.25 * (1 - r) * vCoords[3] - 0.25 * (1 + r) * vCoords[4]
 
 # TODO: provide somehow dynamic derivatives
-dh1r(r, s) = (-1 + s) / 4
-dh1s(r, s) = (-1 + r) / 4
-dh2r(r, s) = (1 - s) / 4
-dh2s(r, s) = (-1 - r) / 4
-dh3r(r, s) = (1 + s) / 4
-dh3s(r, s) = (1 + r) / 4
-dh4r(r, s) = (-1 - s) / 4
-dh4s(r, s) = (1 - r) / 4
+dh1r(r, s) = (1 + s) / 4
+dh1s(r, s) = (1 + r) / 4
+dh2r(r, s) = (-1 - s) / 4
+dh2s(r, s) = (1 - r) / 4
+dh3r(r, s) = (-1 + s) / 4
+dh3s(r, s) = (-1 + r) / 4
+dh4r(r, s) = (1 - s) / 4
+dh4s(r, s) = (-1 - r) / 4
 
 """
     jacGlobToLoc(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
@@ -65,14 +65,14 @@ jacGlobToLocInv(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = inv(ja
 
 # Supporting matrices for calculating gradient matrix
 function TU(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
-    uxy = [-(1 - s)    0   1 - s    0   1 + s    0   -(1 + s)       0
-           -(1 - r)    0   -(1 + r)       0   1 + r    0   1 - r    0]
+    uxy = [1 + s    0   -(1 + s)    0   -(1 - s)    0   1 - s       0
+           1 + r    0   1 - r       0   -(1 - r)    0   -(1 + r)    0]
     return 0.25 * jacGlobToLocInv(r, s, xCoords, yCoords) * uxy
 end  # TU
 
 function TV(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
-    vxy = [0    -(1 - s)   0   1 - s    0   1 + s    0   -(1 + s)
-           0    -(1 - r)   0   -(1 + r)       0   1 + r    0   1 - r]
+    vxy = [0    1 + s   0   -(1 + s)    0   -(1 - s)    0   1 - s
+           0    1 + r   0   1 - r       0   -(1 - r)    0   -(1 + r)]
     return 0.25 * jacGlobToLocInv(r, s, xCoords, yCoords) * vxy
 end  # TU
 
@@ -175,10 +175,10 @@ Displacements interpolation ``H`` matrix.
 """
 function displInterpMatr(r, s)
     result = zeros(Real, 2, 8)
-    result[1, 3] = 0.5 * (1 - s)
-    result[1, 5] = 0.5 * (1 + s)
-    result[2, 4] = 0.5 * (1 - s)
-    result[2, 6] = 0.5 * (1 + s)
+    result[1, 1] = 0.5 * (1 + s)
+    result[1, 7] = 0.5 * (1 - s)
+    result[2, 2] = 0.5 * (1 + s)
+    result[2, 8] = 0.5 * (1 - s)
     return result
 end  # displInterpMatr
 

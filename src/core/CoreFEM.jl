@@ -51,39 +51,39 @@ function assemblyLoads(pars::processPars)
     # TODO: Make this method universal for any mesh and load.
     # for node in [5, 10, 15, 20, 25]
         F = elementLoad(5, pars)
-        loadsVector[2 * 6 - 1] += F[3]
-        loadsVector[2 * 6] += F[4]
+        loadsVector[2 * 6 - 1] += F[7]
+        loadsVector[2 * 6] += F[8]
 
-        loadsVector[2 * 12 - 1] += F[5]
-        loadsVector[2 * 12] += F[6]
+        loadsVector[2 * 12 - 1] += F[1]
+        loadsVector[2 * 12] += F[2]
 
         F = elementLoad(10, pars)
-        loadsVector[2 * 12 - 1] += F[3]
-        loadsVector[2 * 12] += F[4]
+        loadsVector[2 * 12 - 1] += F[7]
+        loadsVector[2 * 12] += F[8]
 
-        loadsVector[2 * 18 - 1] += F[5]
-        loadsVector[2 * 18] += F[6]
+        loadsVector[2 * 18 - 1] += F[1]
+        loadsVector[2 * 18] += F[2]
 
         F = elementLoad(15, pars)
-        loadsVector[2 * 18 - 1] += F[3]
-        loadsVector[2 * 18] += F[4]
+        loadsVector[2 * 18 - 1] += F[7]
+        loadsVector[2 * 18] += F[8]
 
-        loadsVector[2 * 24 - 1] += F[5]
-        loadsVector[2 * 24] += F[6]
+        loadsVector[2 * 24 - 1] += F[1]
+        loadsVector[2 * 24] += F[2]
 
         F = elementLoad(20, pars)
-        loadsVector[2 * 24 - 1] += F[3]
-        loadsVector[2 * 24] += F[4]
+        loadsVector[2 * 24 - 1] += F[7]
+        loadsVector[2 * 24] += F[8]
 
-        loadsVector[2 * 30 - 1] += F[5]
-        loadsVector[2 * 30] += F[6]
+        loadsVector[2 * 30 - 1] += F[1]
+        loadsVector[2 * 30] += F[2]
 
         F = elementLoad(25, pars)
-        loadsVector[2 * 30 - 1] += F[3]
-        loadsVector[2 * 30] += F[4]
+        loadsVector[2 * 30 - 1] += F[7]
+        loadsVector[2 * 30] += F[8]
 
-        loadsVector[2 * 36 - 1] += F[5]
-        loadsVector[2 * 36] += F[6]
+        loadsVector[2 * 36 - 1] += F[1]
+        loadsVector[2 * 36] += F[2]
 
     # end
     # for elementNum in eachindex(pars.mesh.elements)
