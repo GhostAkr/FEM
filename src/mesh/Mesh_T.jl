@@ -18,27 +18,27 @@ end  # Mesh2D_T
 """
     generateTestMesh2D()
 
-Build a simple 2D mesh on a square 100x100 with 4 elements on it.
+Build a simple 2D mesh on a square 100x100 with ``n^2`` elements on it.
 """
-function generateTestMesh2D()
+function generateTestMesh2D(n::Int)
     # Parameters
-    nOfNodes = 9
-    nOfElements = 4  # For square mesh it should be square of smth
+    nOfNodes = (n + 1)^2
+    nOfElements = n^2  # For square mesh it should be square of smth
     dimension = 2
     nodesPerElement = 4
     # Creation
     resultMesh = Mesh2D_T(Vector{Tuple{Vararg{Float64}}}(undef, nOfNodes), Vector{Tuple{Vararg{Int}}}(undef, nOfElements))
     nodeIndex = 1
-    for i in 0:50:100
-        for j in 0:50:100
+    step = 100 / n
+    for i in 0:step:100
+        for j in 0:step:100
             resultMesh.nodes[nodeIndex] = (j, i)
             nodeIndex += 1
         end
     end
     for i in eachindex(resultMesh.elements)
         blNum = i + div(i - 1, sqrt(nOfElements))  # Bottom left node of element
-        element = Tuple{blNum, blNum + 1, blNum + 4, blNum + 3}
-        resultMesh.elements[i] = (blNum, blNum + 1, blNum + 4, blNum + 3)
+        resultMesh.elements[i] = (blNum + (n + 1) + 1, blNum + (n + 1), blNum, blNum + 1)
     end
     return resultMesh
 end  # generateRandomMesh2D

@@ -10,23 +10,23 @@ using MeshFEM
 """
     testMaterialProperties()
 
-Return test material properties: Poisson's ratio ``\\nu = 0.3``, Young's modulus ``E = 200 * 10^6``.
+Return test material properties: Poisson's ratio ``\\nu = 0.3``, Young's modulus ``E = 200000``.
 """
-testMaterialProperties() = Dict(poisC => 0.3, youngMod => 200 * 10^6)
+testMaterialProperties() = Dict(poisC => 0.3, youngMod => 200000)
 
 """
     testLoad()
 
-Return test load: surface force ``f^s = 100 \\text{Н}`` on the right edge of test plate.
+Return test load: surface force ``f^s = 10 \\text{МПа}`` on the right edge of test plate.
 """
-testLoad() = Dict(3 => [100, 0], 6 => [100, 0], 9 => [100, 0])
+testLoad() = Dict(6 => [10, 0], 12 => [10, 0], 18 => [10, 0], 24 => [10, 0], 30 => [10, 0], 36 => [10, 0])
 
 """
     testBC()
 
 Return test boundary condition: fix plate on the left edge.
 """
-testBC() = Dict(1 => fixedXY, 4 => fixedXY, 7 => fixedXY)
+testBC() = Dict(1 => fixedXY, 7 => fixedXY, 13 => fixedXY, 19 => fixedXY, 25 => fixedXY, 31 => fixedXY)
 
 """
     printProcessPars(processPars::processPars)
