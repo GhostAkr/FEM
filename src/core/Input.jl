@@ -26,7 +26,7 @@ testLoad() = Dict(6 => [10, 0], 12 => [10, 0], 18 => [10, 0], 24 => [10, 0], 30 
 
 Return test boundary condition: fix plate on the left edge.
 """
-testBC() = Dict(1 => fixedXY, 7 => fixedXY, 13 => fixedXY, 19 => fixedXY, 25 => fixedXY, 31 => fixedXY)
+testBC() = Dict(1 => fixedXY, 4 => fixedXY, 7 => fixedXY,)
 
 """
     printProcessPars(processPars::processPars)

@@ -50,41 +50,19 @@ function assemblyLoads(pars::processPars)
     loadsVector = zeros(Real, 2 * size(pars.mesh.nodes)[1])
     # TODO: Make this method universal for any mesh and load.
     # for node in [5, 10, 15, 20, 25]
-        F = elementLoad(5, pars)
+        F = elementLoad(2, pars)
+        loadsVector[2 * 3 - 1] += F[7]
+        loadsVector[2 * 3] += F[8]
+
+        loadsVector[2 * 6 - 1] += F[1]
+        loadsVector[2 * 6] += F[2]
+
+        F = elementLoad(4, pars)
         loadsVector[2 * 6 - 1] += F[7]
         loadsVector[2 * 6] += F[8]
 
-        loadsVector[2 * 12 - 1] += F[1]
-        loadsVector[2 * 12] += F[2]
-
-        F = elementLoad(10, pars)
-        loadsVector[2 * 12 - 1] += F[7]
-        loadsVector[2 * 12] += F[8]
-
-        loadsVector[2 * 18 - 1] += F[1]
-        loadsVector[2 * 18] += F[2]
-
-        F = elementLoad(15, pars)
-        loadsVector[2 * 18 - 1] += F[7]
-        loadsVector[2 * 18] += F[8]
-
-        loadsVector[2 * 24 - 1] += F[1]
-        loadsVector[2 * 24] += F[2]
-
-        F = elementLoad(20, pars)
-        loadsVector[2 * 24 - 1] += F[7]
-        loadsVector[2 * 24] += F[8]
-
-        loadsVector[2 * 30 - 1] += F[1]
-        loadsVector[2 * 30] += F[2]
-
-        F = elementLoad(25, pars)
-        loadsVector[2 * 30 - 1] += F[7]
-        loadsVector[2 * 30] += F[8]
-
-        loadsVector[2 * 36 - 1] += F[1]
-        loadsVector[2 * 36] += F[2]
-
+        loadsVector[2 * 9 - 1] += F[1]
+        loadsVector[2 * 9] += F[2]
     # end
     # for elementNum in eachindex(pars.mesh.elements)
     #     element = pars.mesh.elements[elementNum]
@@ -139,7 +117,7 @@ solve(globalK::Array, loadVector::Array) = globalK \ loadVector
 Start calculation with test model.
 """
 function fem2D()
-    parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D(5))
+    parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D(2))
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]
     elasticityMatrix = [1 nu 0; nu 1 0; 0 0 ((1 - nu) / 2)]
