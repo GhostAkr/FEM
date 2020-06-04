@@ -49,7 +49,7 @@ function stiffnessMatrix(elasticityMatrix::AbstractArray, parameters::processPar
     xCoords = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][1] for i in 1:4]
     yCoords = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][2] for i in 1:4]
     FIntegrate(r, s) = F(r, s, xCoords, yCoords, elasticityMatrix)  # F representation for integrating (depends only on r and s)
-    IntegrationOrder = 2
+    IntegrationOrder = 4
     K = multipleIntegral.gaussMethodMatrix(FIntegrate, IntegrationOrder)
     return K
 end  # stiffnessMatrix

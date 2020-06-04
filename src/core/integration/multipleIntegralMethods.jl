@@ -116,13 +116,21 @@ Integrate matrix of functions depending on 2 variables with Gauss method.
 - `intOrder::Int`: integration order.
 """
 function gaussMethodMatrix(F::Function, intOrder::Int)
-    rArray = Array  # Array of integration points by r coordinate
-    sArray = Array  # Array of integration points by s coordinate
-    weights = Array  # Array of integration weights
+    r = Array{Float64}(undef, intOrder)  # Array of integration points by r coordinate
+    s = Array{Float64}(undef, intOrder)  # Array of integration points by s coordinate
+    weights = Array{Float64}(undef, intOrder)  # Array of integration weights
     if intOrder == 2
         r = [-1 / sqrt(3), 1 / sqrt(3)]
         s = [-1 / sqrt(3), 1 / sqrt(3)]
         weights = [1, 1]
+    elseif intOrder == 3
+        r = [-0.774596669241483, 0, 0.774596669241483]
+        s = [-0.774596669241483, 0, 0.774596669241483]
+        weights = [0.555555555555556, 0.888888888888889, 0.555555555555556]
+    elseif intOrder == 4
+        r = [-0.861136311594053, -0.339981043584856, 0.339981043584856, 0.861136311594053]
+        s = [-0.861136311594053, -0.339981043584856, 0.339981043584856, 0.861136311594053]
+        weights = [0.347854845137454, 0.652145154862546, 0.652145154862546, 0.347854845137454]
     else
         println("That integration order is not supported")
     end
@@ -154,13 +162,22 @@ end  # gaussMethodMatrix
 Integrate matrix of functions depending on 1 variable with Gauss method.
 
 # Arguments
-- `F::Function`: functions returning matrix of functions depending on 1 variable;
+- `F::Function`: function returning matrix of functions depending on 1 variable;
 - `intOrder::Int`: integration order.
 """
 function gauss1DMethodMatrix(F::Function, intOrder::Int)
+    x = Array{Float64}(undef, intOrder)
+    weights = Array{Float64}(undef, intOrder)
     if intOrder == 2
-        x = [-1 / sqrt(3), 1 / sqrt(3)]
-        weights = [1, 1]
+        # x = [-1 / sqrt(3), 1 / sqrt(3)]
+        x = [-0.577350269189626, 0.577350269189626]
+        weights = [1.0, 1.0]
+    elseif intOrder == 3
+        x = [-0.774596669241483, 0, 0.774596669241483]
+        weights = [0.555555555555556, 0.888888888888889, 0.555555555555556]
+    elseif intOrder == 4
+        x = [-0.861136311594053, -0.339981043584856, 0.339981043584856, 0.861136311594053]
+        weights = [0.347854845137454, 0.652145154862546, 0.652145154862546, 0.347854845137454]
     else
         println("That integration order is not supported")
     end
