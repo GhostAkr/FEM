@@ -15,6 +15,25 @@ using BaseInterface
 
 export fem2D
 
+# TODO: Make it for different problems (e.g. plane stress etc.)
+"""
+    elasticityMatrix(youngMod, poissRatio)
+
+Calculates plane strain elasticity matrix with given Young's modulus and Poisson's ratio.
+
+# Arguments
+- `youngMod::Float64`: Young's modulus;
+- `poissRatio::Float64`: Poisson's ratio.
+"""
+function elasticityMatrix(youngMod, poissRatio)
+    nu = poissRatio
+    E = youngMod
+    resMatr = [1    nu / (1 - nu)   0
+                nu / (1 - nu)   1   0
+                0   0   (1 - 2 * nu) / (2 * (1 - nu))]
+    resMatr *= (E * (1 - nu) / ((1 + nu) * (1 - 2 * nu)))
+end  # elasticityMatrix
+
 """
     assemblyFEM2D(pars::processPars, targetMatrix::Array, currentElementMatrix::Array, elementNum::Number)
 
@@ -120,11 +139,10 @@ function fem2D()
     parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D(2))
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]
-    elasticityMatrix = [1 nu 0; nu 1 0; 0 0 ((1 - nu) / 2)]
-    elasticityMatrix *= E / (1 - nu ^ 2)
+    C = elasticityMatrix(E, nu)
     ensembleMatrix = zeros(Real, 2 * size(parameters.mesh.nodes)[1], 2 * size(parameters.mesh.nodes)[1])
     for elementNum in eachindex(parameters.mesh.elements)
-        K = stiffnessMatrix(elasticityMatrix, parameters, elementNum)
+        K = stiffnessMatrix(C, parameters, elementNum)
         assemblyFEM2D(parameters, ensembleMatrix, K, elementNum)
     end
     loadVector = assemblyLoads(parameters)
