@@ -51,15 +51,15 @@ function assemblyLoads(pars::processPars)
     # TODO: Make this method universal for any mesh and load.
     # for node in [5, 10, 15, 20, 25]
         F = elementLoad(2, pars)
-        loadsVector[2 * 3 - 1] += F[7]
-        loadsVector[2 * 3] += F[8]
+        loadsVector[2 * 7 - 1] += F[3]
+        loadsVector[2 * 7] += F[4]
 
-        loadsVector[2 * 6 - 1] += F[1]
-        loadsVector[2 * 6] += F[2]
+        loadsVector[2 * 8 - 1] += F[1]
+        loadsVector[2 * 8] += F[2]
 
         F = elementLoad(4, pars)
-        loadsVector[2 * 6 - 1] += F[7]
-        loadsVector[2 * 6] += F[8]
+        loadsVector[2 * 8 - 1] += F[3]
+        loadsVector[2 * 8] += F[4]
 
         loadsVector[2 * 9 - 1] += F[1]
         loadsVector[2 * 9] += F[2]
@@ -118,6 +118,7 @@ Start calculation with test model.
 """
 function fem2D()
     parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D(2))
+    printProcessPars(parameters)
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]
     elasticityMatrix = [1 nu 0; nu 1 0; 0 0 ((1 - nu) / 2)]

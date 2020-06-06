@@ -29,9 +29,9 @@ function generateTestMesh2D(n::Int)
     # Creation
     resultMesh = Mesh2D_T(Vector{Tuple{Vararg{Float64}}}(undef, nOfNodes), Vector{Tuple{Vararg{Int}}}(undef, nOfElements))
     nodeIndex = 1
-    step = 100 / n
-    for i in 0:step:100
-        for j in 0:step:100
+    step = 4 / n
+    for i in 0:step:4
+        for j in 0:step:4
             resultMesh.nodes[nodeIndex] = (j, i)
             nodeIndex += 1
         end
