@@ -28,7 +28,7 @@ C is elasticity matrix and J is Jacobi's matrix.
 - `elasticityMatrix::AbstractArray`: elasticity matrix of current element.
 """
 function F(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}, elasticityMatrix::AbstractArray)  # F = B^T * C * B * det(J)
-    B = Quad4Pts.gradMatr(r, s, xCoords, yCoords)  # Gradient matrix
+    B = Quad4Pts.gradMatrTmp(r, s, xCoords, yCoords)  # Gradient matrix
     BTransp = transpose(B)
     J = Quad4Pts.jacGlobToLoc(r, s, xCoords, yCoords)  # Jacobi's matrix
     return BTransp * elasticityMatrix * B * det(J)
