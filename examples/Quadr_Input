@@ -1,0 +1,14 @@
+****
+Material
+PRatio = 0.3
+YoungMod = 200000
+
+****
+Constraints
+fixedX = (2, 3, 9, 10, 11, 12)
+fixedY = (1, 5, 13, 14, 15, 16)
+
+****
+DistributedLoad
+Load = (10, 0)
+Elements = ({30, 4}, {25, 4}, {20, 4}, {11, 4})

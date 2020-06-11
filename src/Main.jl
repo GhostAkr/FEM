@@ -5,4 +5,4 @@ using multipleIntegral
 using MeshFEM
 using BaseInterface
 
-Res = CoreFEM.fem2D("examples/Plate_Mesh.dat", "examples/Input")
+Res = CoreFEM.fem2D("examples/Quadr_Plate.dat", "examples/Quadr_Input")

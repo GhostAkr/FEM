@@ -29,12 +29,12 @@ function parseMaterial(materialData::String)
         if paramName == "pratio"
             # eqSign = findnext('=', materialData, paramNameEndPos)
             lineEnd = findnext('\n', materialData, paramNameEndPos)
-            value = parse(Float64, SubString(materialData, (eqSign + 1):(lineEnd - 2)))
+            value = parse(Float64, SubString(materialData, (eqSign + 1):(lineEnd - 1)))
             push!(resDict, CoreFEM.poisC => value)
         elseif paramName == "youngmod"
             # eqSign = findnext('=', materialData, paramNameEndPos)
             lineEnd = findnext('\n', materialData, paramNameEndPos)
-            value = parse(Float64, SubString(materialData, (eqSign + 1):(lineEnd - 2)))
+            value = parse(Float64, SubString(materialData, (eqSign + 1):(lineEnd - 1)))
             push!(resDict, CoreFEM.youngMod => value)
         else
             println("Given material parameter is not supported")
@@ -81,6 +81,9 @@ function parseConstraints(constraintsData::String)
                 push!(resDict, value => CoreFEM.fixedX)
                 nextComm = findnext(',', constraintsData, valueStartPos)
                 if nextComm === nothing && valueStartPos > bktLast
+                    break
+                end
+                if nextComm > bktLast
                     break
                 end
             end
@@ -218,7 +221,7 @@ function readParameters!(filePath::String, params::CoreFEM.processPars)
         readPos = last(findnext("****", fileContents, readPos))
         readPos = findnext('\n', fileContents, readPos) + 1
         lineEnd = findnext('\n', fileContents, readPos)
-        propertyName = String(SubString(fileContents, readPos:(lineEnd - 2)))
+        propertyName = String(SubString(fileContents, readPos:(lineEnd - 1)))
         readPos = lineEnd + 1
         nextProperty = findnext("****", fileContents, readPos)
         if nextProperty === nothing

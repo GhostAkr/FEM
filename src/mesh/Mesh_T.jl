@@ -65,8 +65,11 @@ end  # printMesh2D
 Print elements of given mesh.
 """
 function printElementsMesh2D(mesh::Mesh2D_T)
+    i = 1
     for element in mesh.elements
+        print(i, " ")
         print(element, "\n")
+        i += 1
     end
     print("\n")
 end  # printElementsMesh2D
@@ -81,7 +84,7 @@ Renumerate nodes in each element according to FEM model.
 """
 function renumerateNodes!(mesh::Mesh2D_T)
     for i in eachindex(mesh.elements)
-        newNodes = (mesh.elements[i][3], mesh.elements[i][2], mesh.elements[i][1], mesh.elements[i][4])
+        newNodes = (mesh.elements[i][2], mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][3])
         mesh.elements[i] = newNodes
     end
 end
