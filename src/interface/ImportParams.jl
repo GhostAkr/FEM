@@ -4,7 +4,7 @@ using CoreFEM
 # include("../core/MaterialVars.jl")
 # include("../core/LoadVars.jl")
 
-export readParameters
+export readParameters!
 
 # TODO: unify properties reading
 
@@ -187,15 +187,15 @@ Process given property.
 - `propertyName::String`: Name of given property;
 - `propertyData::String`: Parameters of given property.
 """
-function parseProperty(propertyName::String, propertyData::String)
+function parseProperty!(propertyName::String, propertyData::String, params::CoreFEM.processPars)
     propertyName = Unicode.normalize(propertyName, casefold = true)
     if propertyName == "material"
-        parseMaterial(propertyData)
+        params.materialProperties = parseMaterial(propertyData)
     elseif propertyName == "constraints"
-        parseConstraints(propertyData)
+        params.bc = parseConstraints(propertyData)
     elseif propertyName == "distributedload"
-        parseLoads(propertyData)
-    else 
+        params.load = parseLoads(propertyData)
+    else
         println("Given property is not supported")
     end
 end  # parseProperty
@@ -208,7 +208,7 @@ Read model parameters from given file.
 # Arguments
 - `filePath::String`: Path to given file.
 """
-function readParameters(filePath::String)
+function readParameters!(filePath::String, params::CoreFEM.processPars)
     fileContents = []
     open(filePath, "r") do file
         fileContents = read(file, String)
@@ -230,6 +230,6 @@ function readParameters(filePath::String)
             propertyEnd = findprev('\n', fileContents, nextProperty)
         end
         property = String(SubString(fileContents, readPos:(propertyEnd)))
-        parseProperty(propertyName, property)
+        parseProperty!(propertyName, property, params)
     end
 end  # readParameters

@@ -10,7 +10,7 @@ Basically contains 2 fields:
 1. **nodes** - matrix of nodes (contains node's coordinates);
 2. **elements** - matrix of elements (contains elements's nodes).
 """
-struct Mesh2D_T
+mutable struct Mesh2D_T
     "Matrix of nodes (contains node's coordinates)"
     nodes::Vector{Tuple{Vararg{Float64}}}
     "Matrix of elements (contains elements's nodes)"
@@ -72,6 +72,21 @@ function printElementsMesh2D(mesh::Mesh2D_T)
 end  # printElementsMesh2D
 
 """
+    renumerateNodes(mesh::Mesh2D_T)
+
+Renumerate nodes in each element according to FEM model.
+
+# Arguments
+- `mesh`: given model mesh.
+"""
+function renumerateNodes!(mesh::Mesh2D_T)
+    for i in eachindex(mesh.elements)
+        newNodes = (mesh.elements[i][3], mesh.elements[i][2], mesh.elements[i][1], mesh.elements[i][4])
+        mesh.elements[i] = newNodes
+    end
+end
+
+"""
     readMeshFromSalomeDAT(pathToFile::String)
 
 Read mesh from .dat file generated via Salome platform.
@@ -120,6 +135,7 @@ function readMeshFromSalomeDAT(pathToFile::String, type::meshType)
             elemPos = lastNode + 1
         end
         mesh = Mesh2D_T(nodes, elements)
+        renumerateNodes!(mesh)
         return mesh
     end
 end  # readMeshFromSalomeDAT

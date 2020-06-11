@@ -100,10 +100,16 @@ solve(globalK::Array, loadVector::Array) = globalK \ loadVector
 """
     fem2D()
 
-Start calculation with test model.
+Start calculation with given model.
+
+# Arguments
+- `meshPath::String`: Path to given mesh;
+- `dataPath::String`: Path to given initial data.
 """
-function fem2D()
+function fem2D(meshPath::String, dataPath::String)
     parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D(2))
+    readParameters!(dataPath, parameters)
+    parameters.mesh = readMeshFromSalomeDAT(meshPath, MeshFEM.Quad4Pts2D)
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]
     C = elasticityMatrix(E, nu)

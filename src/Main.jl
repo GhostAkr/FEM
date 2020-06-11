@@ -5,6 +5,4 @@ using multipleIntegral
 using MeshFEM
 using BaseInterface
 
-# Res = CoreFEM.fem2D()
-
-BaseInterface.readParameters("examples/Input")
+Res = CoreFEM.fem2D("examples/Plate_Mesh.dat", "examples/Input")

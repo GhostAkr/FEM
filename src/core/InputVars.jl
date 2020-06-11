@@ -16,7 +16,7 @@ Parameters of current model. Contains 4 fields:
 3. `load::Dict{Int, Vector{Real}}` - dictionary of applied loads;
 4. `mesh::Mesh2D_T` - model mesh.
 """
-struct processPars
+mutable struct processPars
     materialProperties::Dict{materialProperty, Real}
     bc::Dict{Int, bc}  # {NumberOfPoint, TypeOfBC}
     load::Dict{Array{Int, 1}, Array{Float64, 1}}  # {NumberOfPoint, ForceVector}
