@@ -10,5 +10,4 @@ fixedXY = (1, 5, 2)
 ****
 DistributedLoad
 Load = (10, 0)
-Elements = ({4, 7}, {3, 7})
-Direction = Right
+Elements = ({2, 4}, {4, 4})

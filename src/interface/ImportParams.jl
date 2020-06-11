@@ -1,7 +1,8 @@
 using Unicode
+using CoreFEM
 
-include("../core/MaterialVars.jl")
-include("../core/LoadVars.jl")
+# include("../core/MaterialVars.jl")
+# include("../core/LoadVars.jl")
 
 export readParameters
 
@@ -17,25 +18,31 @@ Process given material. Return dictionary compatible with `processPars` structur
 """
 function parseMaterial(materialData::String)
     readPos = 1
-    resDict = Dict{materialProperty, Real}()
+    resDict = Dict{CoreFEM.materialProperty, Real}()
     while findnext('=', materialData, readPos) !== nothing
-        spacePos = findnext(' ', materialData, readPos)
-        paramName = Unicode.normalize(String(SubString(materialData, readPos:(spacePos - 1))), casefold = true)
+        eqSign = findnext('=', materialData, readPos)
+        paramNameEndPos = eqSign - 1
+        while materialData[paramNameEndPos] == ' ' || materialData[paramNameEndPos] == '\t'
+            paramNameEndPos -= 1
+        end
+        paramName = Unicode.normalize(String(SubString(materialData, readPos:(paramNameEndPos))), casefold = true)
         if paramName == "pratio"
-            eqSign = findnext('=', materialData, spacePos)
-            lineEnd = findnext('\n', materialData, spacePos)
+            # eqSign = findnext('=', materialData, paramNameEndPos)
+            lineEnd = findnext('\n', materialData, paramNameEndPos)
             value = parse(Float64, SubString(materialData, (eqSign + 1):(lineEnd - 2)))
-            push!(resDict, poisC => value)
+            push!(resDict, CoreFEM.poisC => value)
         elseif paramName == "youngmod"
-            eqSign = findnext('=', materialData, spacePos)
-            lineEnd = findnext('\n', materialData, spacePos)
+            # eqSign = findnext('=', materialData, paramNameEndPos)
+            lineEnd = findnext('\n', materialData, paramNameEndPos)
             value = parse(Float64, SubString(materialData, (eqSign + 1):(lineEnd - 2)))
-            push!(resDict, youngMod => value)
+            push!(resDict, CoreFEM.youngMod => value)
         else
             println("Given material parameter is not supported")
         end
         readPos = findnext('\n', materialData, readPos) + 1
     end
+    println("Material loaded:")
+    println(resDict)
     return resDict
 end  # parseMaterial
 
@@ -50,12 +57,16 @@ Process given constraints. Return dictionary compatible with `processPars` struc
 """
 function parseConstraints(constraintsData::String)
     readPos = 1
-    resDict = Dict{Int, bc}()
+    resDict = Dict{Int, CoreFEM.bc}()
     while findnext('=', constraintsData, readPos) !== nothing
-        spacePos = findnext(' ', constraintsData, readPos)
-        paramName = Unicode.normalize(String(SubString(constraintsData, readPos:(spacePos - 1))), casefold = true)
+        eqSign = findnext('=', constraintsData, readPos)
+        paramNameEndPos = eqSign - 1
+        while constraintsData[paramNameEndPos] == ' ' || constraintsData[paramNameEndPos] == '\t'
+            paramNameEndPos -= 1
+        end
+        paramName = Unicode.normalize(String(SubString(constraintsData, readPos:(paramNameEndPos))), casefold = true)
         if paramName == "fixedx"
-            bktFirst = findnext('(', constraintsData, spacePos)
+            bktFirst = findnext('(', constraintsData, paramNameEndPos)
             bktLast = findnext(')', constraintsData, bktFirst + 1)
             valueStartPos = bktFirst + 1
             while true
@@ -67,14 +78,14 @@ function parseConstraints(constraintsData::String)
                 end
                 value = parse(Int, SubString(constraintsData, valueStartPos:(valueEndPos - 1)))
                 valueStartPos = valueEndPos + 1
-                push!(resDict, value => fixedX)
+                push!(resDict, value => CoreFEM.fixedX)
                 nextComm = findnext(',', constraintsData, valueStartPos)
                 if nextComm === nothing && valueStartPos > bktLast
                     break
                 end
             end
         elseif paramName == "fixedy"
-            bktFirst = findnext('(', constraintsData, spacePos)
+            bktFirst = findnext('(', constraintsData, paramNameEndPos)
             bktLast = findnext(')', constraintsData, bktFirst + 1)
             valueStartPos = bktFirst + 1
             while true
@@ -86,14 +97,14 @@ function parseConstraints(constraintsData::String)
                 end
                 value = parse(Int, SubString(constraintsData, valueStartPos:(valueEndPos - 1)))
                 valueStartPos = valueEndPos + 1
-                push!(resDict, value => fixedY)
+                push!(resDict, value => CoreFEM.fixedY)
                 nextComm = findnext(',', constraintsData, valueStartPos)
                 if nextComm === nothing && valueStartPos > bktLast
                     break
                 end
             end
         elseif paramName == "fixedxy"
-            bktFirst = findnext('(', constraintsData, spacePos)
+            bktFirst = findnext('(', constraintsData, paramNameEndPos)
             bktLast = findnext(')', constraintsData, bktFirst + 1)
             valueStartPos = bktFirst + 1
             while true
@@ -105,7 +116,7 @@ function parseConstraints(constraintsData::String)
                 end
                 value = parse(Int, SubString(constraintsData, valueStartPos:(valueEndPos - 1)))
                 valueStartPos = valueEndPos + 1
-                push!(resDict, value => fixedXY)
+                push!(resDict, value => CoreFEM.fixedXY)
                 nextComm = findnext(',', constraintsData, valueStartPos)
                 if nextComm === nothing && valueStartPos > bktLast
                     break
@@ -122,10 +133,47 @@ end  # parseConstraints
 
 function parseLoads(loadsData::String)
     readPos = 1
-    resDict = Dict{materialProperty, Real}()
-    while findnext('=', materialData, readPos) !== nothing
-        
-        readPos = findnext('\n', materialData, readPos) + 1
+    resDict = Dict{Array{Int, 1}, Array{Float64, 1}}()
+    elements = []
+    load = []
+    while findnext('=', loadsData, readPos) !== nothing
+        eqSign = findnext('=', loadsData, readPos)
+        paramNameEndPos = eqSign - 1
+        while loadsData[paramNameEndPos] == ' ' || loadsData[paramNameEndPos] == '\t'
+            paramNameEndPos -= 1
+        end
+        paramName = Unicode.normalize(String(SubString(loadsData, readPos:(paramNameEndPos))), casefold = true)
+        if paramName == "load"
+            bktFirst = findnext('(', loadsData, paramNameEndPos)
+            bktLast = findnext(')', loadsData, bktFirst + 1)
+            nextComm = findnext(',', loadsData, bktFirst)
+            xForce = parse(Float64, SubString(loadsData, (bktFirst + 1):(nextComm - 1)))
+            yForce = parse(Float64, SubString(loadsData, (nextComm + 1):(bktLast - 1)))
+            load = [xForce, yForce]
+        elseif paramName == "elements"
+            bktFirst = findnext('(', loadsData, paramNameEndPos)
+            bktLast = findnext(')', loadsData, bktFirst + 1)
+            currElem = bktFirst
+            while true
+                elemBegin = findnext('{', loadsData, currElem)
+                if elemBegin === nothing
+                    break
+                end
+                elemEnd = findnext('}', loadsData, elemBegin)
+                currParam = elemBegin + 1
+                nextComm = findnext(',', loadsData, currParam)
+                elemNum = parse(Int, SubString(loadsData, currParam:(nextComm - 1)))
+                direction = parse(Int, SubString(loadsData, (nextComm + 1):(elemEnd - 1)))'
+                currElem = elemEnd
+                push!(elements, [elemNum, direction])
+            end
+        else
+            println("Given material parameter is not supported")
+        end
+        readPos = findnext('\n', loadsData, readPos) + 1
+    end
+    for i in elements
+        push!(resDict, i => load)
     end
     return resDict
 end  # parseLoads
@@ -145,6 +193,8 @@ function parseProperty(propertyName::String, propertyData::String)
         parseMaterial(propertyData)
     elseif propertyName == "constraints"
         parseConstraints(propertyData)
+    elseif propertyName == "distributedload"
+        parseLoads(propertyData)
     else 
         println("Given property is not supported")
     end
@@ -174,37 +224,12 @@ function readParameters(filePath::String)
         if nextProperty === nothing
             nextProperty = length(fileContents)[1]
             propertyEnd = length(fileContents)[1]
+            propertyEnd = findprev('\n', fileContents, propertyEnd)
         else
             nextProperty = first(nextProperty)
             propertyEnd = findprev('\n', fileContents, nextProperty)
         end
-        property = String(SubString(fileContents, readPos:(propertyEnd - 1)))
+        property = String(SubString(fileContents, readPos:(propertyEnd)))
         parseProperty(propertyName, property)
     end
 end  # readParameters
-
-
-
-# function readParameters(filePath::String)
-#     fileContents = []
-#     open(filePath, "r") do file
-#         fileContents = split(read(file, String))
-#     end
-#     println(fileContents)
-#     currentParamPos = findnext(isequal("****"), fileContents, 1)
-#     while currentParamPos !== nothing
-#         if currentParamPos + 1 > size(fileContents)[1]
-#             println("Wrong parameters file")
-#         end
-#         propertyName = fileContents[currentParamPos + 1]
-#         lastPropertyIndex = findnext(isequal("****"), fileContents, currentParamPos + 1)
-#         if lastPropertyIndex === nothing
-#             lastPropertyIndex = size(fileContents)[1]
-#         else
-#         end
-#         allProperties = [fileContents[i] for i in (currentParamPos + 2):(lastPropertyIndex - 1)]
-#         println("Properties of ", propertyName)
-#         println(allProperties)
-#         currentParamPos = findnext(isequal("****"), fileContents, currentParamPos + 1)
-#     end
-# end  # readParameters
