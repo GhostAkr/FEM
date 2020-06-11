@@ -5,6 +5,8 @@ Module describing model with bilinear quadrilateral finite elements.
 """
 module Quad4Pts
 
+include("../LoadVars.jl")
+
 h1(r, s) = 0.25 * (1 + r) * (1 + s)
 h2(r, s) = 0.25 * (1 - r) * (1 + s)
 h3(r, s) = 0.25 * (1 - r) * (1 - s)
@@ -16,7 +18,6 @@ y(r, s, yCoords::Array{Float64}) = h1(r, s) * yCoords[1] + h2(r, s) * yCoords[2]
 u(r, s, uCoords::Array{Float64}) = h1(r, s) * uCoords[1] + h2(r, s) * uCoords[2] + h3(r, s) * uCoords[3] + h4(r, s) * uCoords[4]
 v(r, s, vCoords::Array{Float64}) = h1(r, s) * vCoords[1] + h2(r, s) * vCoords[2] + h3(r, s) * vCoords[3] + h4(r, s) * vCoords[4]
 
-# TODO: provide somehow dynamic derivatives
 dxr(r, s, xCoords::Array{Float64}) = 0.25 * (1 + s) * xCoords[1] - 0.25 * (1 + s) * xCoords[2] - 0.25 * (1 - s) * xCoords[3] + 0.25 * (1 - s) * xCoords[4]
 dxs(r, s, xCoords::Array{Float64}) = 0.25 * (1 + r) * xCoords[1] + 0.25 * (1 - r) * xCoords[2] - 0.25 * (1 - r) * xCoords[3] - 0.25 * (1 + r) * xCoords[4]
 dyr(r, s, yCoords::Array{Float64}) = 0.25 * (1 + s) * yCoords[1] - 0.25 * (1 + s) * yCoords[2] - 0.25 * (1 - s) * yCoords[3] + 0.25 * (1 - s) * yCoords[4]
@@ -27,7 +28,6 @@ dus(r, s, uCoords::Array{Float64}) = 0.25 * (1 + r) * uCoords[1] + 0.25 * (1 - r
 dvr(r, s, vCoords::Array{Float64}) = 0.25 * (1 + s) * vCoords[1] - 0.25 * (1 + s) * vCoords[2] - 0.25 * (1 - s) * vCoords[3] + 0.25 * (1 - s) * vCoords[4]
 dvs(r, s, vCoords::Array{Float64}) = 0.25 * (1 + r) * vCoords[1] + 0.25 * (1 - r) * vCoords[2] - 0.25 * (1 - r) * vCoords[3] - 0.25 * (1 + r) * vCoords[4]
 
-# TODO: provide somehow dynamic derivatives
 dh1r(r, s) = (1 + s) / 4
 dh1s(r, s) = (1 + r) / 4
 dh2r(r, s) = (-1 - s) / 4
@@ -181,6 +181,29 @@ function displInterpMatr(r, s)
     result[2, 8] = 0.5 * (1 - s)
     return result
 end  # displInterpMatr
+
+"""
+    nodesFromDirection(direction::Int)
+
+Return nodes of element associated with given load direction.
+
+# Arguments
+- `direction::Int`: given load direction.
+"""
+function nodesFromDirection(direction::Int)
+    if direction == 1
+        return [1, 2]
+    elseif direction == 2
+        return [2, 3]
+    elseif direction == 3
+        return [3, 4]
+    elseif direction == 4
+        return [1, 4]
+    else
+        println("Given load direction is not supported")
+        return nothing
+    end
+end  # nodesFromDirection
 
 interFunc = [h1, h2, h3, h4]  # Array of interpolation functions
 

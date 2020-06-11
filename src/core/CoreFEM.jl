@@ -58,39 +58,6 @@ function assemblyFEM2D(pars::processPars, targetMatrix::Array, currentElementMat
 end  # assemblyFEM2D
 
 """
-    assemblyLoads(pars::processPars)
-
-Assemble right part of linear system of equations. This method applies given local load vector to global ensemble.
-
-# Arguments
-- `pars::processPars`: parameters of current model.
-"""
-function assemblyLoads(pars::processPars)
-    loadsVector = zeros(Real, 2 * size(pars.mesh.nodes)[1])
-    # TODO: Make this method universal for any mesh and load.
-    # for node in [5, 10, 15, 20, 25]
-        F = elementLoad(2, pars)
-        loadsVector[2 * 3 - 1] += F[7]
-        loadsVector[2 * 3] += F[8]
-
-        loadsVector[2 * 6 - 1] += F[1]
-        loadsVector[2 * 6] += F[2]
-
-        F = elementLoad(4, pars)
-        loadsVector[2 * 6 - 1] += F[7]
-        loadsVector[2 * 6] += F[8]
-
-        loadsVector[2 * 9 - 1] += F[1]
-        loadsVector[2 * 9] += F[2]
-    # end
-    # for elementNum in eachindex(pars.mesh.elements)
-    #     element = pars.mesh.elements[elementNum]
-    #     H = elementLoad(elementNum)
-    # end
-    return loadsVector
-end  # constructLoads
-
-"""
     applyConstraints(pars::processPars, loads::Array, globalK::Array)
 
 Applies constraints from model parameters to given ensemble.

@@ -15,3 +15,21 @@ Enum containing different boundary condition cases:
     fixedY
     fixedXY
 end
+
+"""
+    loadDirection
+
+Enum containing different load local directions for isoparametric 
+finite element. Considering native system ``(r, s)`` where ``r`` is directed to the right
+and ``s`` is directed to the top.
+- `right`: ``+r`` direction;
+- `left`: ``-r`` direction;
+- `top`: ``+s`` direction;
+- `bottom`: ``-s`` direction.
+"""
+@enum loadDirection begin
+    top = 1
+    left = 2
+    bottom = 3
+    right = 4
+end

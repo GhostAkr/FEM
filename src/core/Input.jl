@@ -19,7 +19,7 @@ testMaterialProperties() = Dict(poisC => 0.3, youngMod => 200000)
 
 Return test load: surface force ``f^s = 10 \\text{МПа}`` on the right edge of test plate.
 """
-testLoad() = Dict(6 => [10, 0], 12 => [10, 0], 18 => [10, 0], 24 => [10, 0], 30 => [10, 0], 36 => [10, 0])
+testLoad() = Dict([2, 4] => [10., 0.], [4, 4] => [10., 0.])
 
 """
     testBC()

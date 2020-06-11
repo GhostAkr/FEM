@@ -19,6 +19,6 @@ Parameters of current model. Contains 4 fields:
 struct processPars
     materialProperties::Dict{materialProperty, Real}
     bc::Dict{Int, bc}  # {NumberOfPoint, TypeOfBC}
-    load::Dict{Int, Vector{Real}}  # {NumberOfPoint, ForceVector}
+    load::Dict{Array{Int, 1}, Array{Float64, 1}}  # {NumberOfPoint, ForceVector}
     mesh::Mesh2D_T
 end
