@@ -3,5 +3,8 @@
 using CoreFEM
 using multipleIntegral
 using MeshFEM
+using BaseInterface
 
-Res = CoreFEM.fem2D()
+# Res = CoreFEM.fem2D()
+
+BaseInterface.readParameters("examples/Input")
