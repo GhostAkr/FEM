@@ -98,7 +98,17 @@ dh3y(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = jacGlobToLocInv(r
 dh4x(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = jacGlobToLocInv(r, s, xCoords, yCoords)[1, 1] * dh4r(r, s) + jacGlobToLocInv(r, s, xCoords, yCoords)[1, 2] * dh4s(r, s)
 dh4y(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = jacGlobToLocInv(r, s, xCoords, yCoords)[2, 1] * dh4r(r, s) + jacGlobToLocInv(r, s, xCoords, yCoords)[2, 2] * dh4s(r, s)
 
-# TODO: For now this is not effective
+"""
+    gradMatr(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
+
+Gradient matrix ``B`` for element.
+
+# Arguments
+- `r`: r-coordinate;
+- `s`: s-coordinate;
+- `xCoords::Array{Float64}`: x coordinates of each node in current element;
+- `yCoords::Array{Float64}`: y coordinates of each node in current element.
+"""
 function gradMatr(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
     resultMatrix = Array{Float64, 2}(undef, 3, 8)
     Uxy = TU(r, s, xCoords, yCoords)
@@ -115,53 +125,6 @@ function gradMatr(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
     end
     return resultMatrix
 end
-
-# TODO: calculate this through appropriate derivatives
-# Precalculated version
-"""
-    gradMatr(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
-
-Gradient matrix ``B`` for element.
-
-# Arguments
-- `r`: r-coordinate;
-- `s`: s-coordinate;
-- `xCoords::Array{Float64}`: x coordinates of each node in current element;
-- `yCoords::Array{Float64}`: y coordinates of each node in current element.
-"""
-function gradMatrTmp(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
-    resultMatrix = Array{Float64, 2}(undef, 3, 8)
-    resultMatrix[1, 1] = 1 + s
-    resultMatrix[1, 2] = 0
-    resultMatrix[1, 3] = -(1 + s)
-    resultMatrix[1, 4] = 0
-    resultMatrix[1, 5] = -(1 - s)
-    resultMatrix[1, 6] = 0
-    resultMatrix[1, 7] = 1 - s
-    resultMatrix[1, 8] = 0
-
-    resultMatrix[2, 1] = 0
-    resultMatrix[2, 2] = 1 + r
-    resultMatrix[2, 3] = 0
-    resultMatrix[2, 4] = 1 - r
-    resultMatrix[2, 5] = 0
-    resultMatrix[2, 6] = -(1 - r)
-    resultMatrix[2, 7] = 0
-    resultMatrix[2, 8] = -(1 + r)
-
-    resultMatrix[3, 1] = 1 + r
-    resultMatrix[3, 2] = 1 + s
-    resultMatrix[3, 3] = 1 - r
-    resultMatrix[3, 4] = -(1 + s)
-    resultMatrix[3, 5] = -(1 - r)
-    resultMatrix[3, 6] = -(1 - s)
-    resultMatrix[3, 7] = -(1 + r)
-    resultMatrix[3, 8] = 1 - s
-
-    resultMatrix *= 0.25
-
-    return resultMatrix
-end  # gradMatr
 
 # Precalculated displacements interpolation H matrix
 """
@@ -205,6 +168,6 @@ function nodesFromDirection(direction::Int)
     end
 end  # nodesFromDirection
 
-interFunc = [h1, h2, h3, h4]  # Array of interpolation functions
+# interFunc = [h1, h2, h3, h4]  # Array of interpolation functions
 
 end  # Quad4Pts

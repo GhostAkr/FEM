@@ -87,7 +87,8 @@ function renumerateNodes!(mesh::Mesh2D_T)
         # TODO: make auto-renumeration
         x = [mesh.nodes[mesh.elements[i][1]][1], mesh.nodes[mesh.elements[i][2]][1], mesh.nodes[mesh.elements[i][3]][1], mesh.nodes[mesh.elements[i][4]][1]]
         y = [mesh.nodes[mesh.elements[i][1]][2], mesh.nodes[mesh.elements[i][2]][2], mesh.nodes[mesh.elements[i][3]][2], mesh.nodes[mesh.elements[i][4]][2]]
-        newNodes = (mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][3], mesh.elements[i][2])
+        # newNodes = (mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][3], mesh.elements[i][2])
+        newNodes = (mesh.elements[i][2], mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][3], mesh.elements[i][5], mesh.elements[i][8], mesh.elements[i][7], mesh.elements[i][6])
         mesh.elements[i] = newNodes
     end
 end
@@ -118,6 +119,9 @@ function readMeshFromSalomeDAT(pathToFile::String, type::meshType)
         if type == Quad4Pts2D
             salomeTypeId = "204"
             nodesPerElement = 4
+        elseif type == Quad8Pts2D
+            salomeTypeId = "208"
+            nodesPerElement = 8
         else
             println("Given mesh type is not supported")
         end
@@ -130,6 +134,8 @@ function readMeshFromSalomeDAT(pathToFile::String, type::meshType)
             index += 1
             if fileContents[index] == "102"
                 index += 2
+            elseif fileContents[index] == "103"
+                index += 3
             elseif fileContents[index] == "204"
                 nodesArray = Vector{Float64}()
                 for i in (index + 1):(index + 4)
@@ -138,6 +144,14 @@ function readMeshFromSalomeDAT(pathToFile::String, type::meshType)
                 elemNodes = Tuple(nodesArray)
                 push!(elements, elemNodes)
                 index += 4
+            elseif fileContents[index] == "208"
+                nodesArray = Vector{Float64}()
+                for i in (index + 1):(index + 8)
+                    push!(nodesArray, parse(Float64, fileContents[i]))
+                end
+                elemNodes = Tuple(nodesArray)
+                push!(elements, elemNodes)
+                index += 8
             end
             index += 1
         end
@@ -155,7 +169,7 @@ function readMeshFromSalomeDAT(pathToFile::String, type::meshType)
         # end
         # println("X = 0 points: ", x0)
         # println("Y = 0 points: ", y0)
-        renumerateNodes!(mesh)
+        # renumerateNodes!(mesh)
         return mesh
     end
 end  # readMeshFromSalomeDAT

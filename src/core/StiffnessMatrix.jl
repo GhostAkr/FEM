@@ -2,6 +2,7 @@
 
 export stiffnessMatrix
 
+using Quad8Pts
 using Quad4Pts
 using multipleIntegral
 using LinearAlgebra
@@ -28,9 +29,9 @@ C is elasticity matrix and J is Jacobi's matrix.
 - `elasticityMatrix::AbstractArray`: elasticity matrix of current element.
 """
 function F(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}, elasticityMatrix::AbstractArray)  # F = B^T * C * B * det(J)
-    B = Quad4Pts.gradMatr(r, s, xCoords, yCoords)  # Gradient matrix
+    B = Quad8Pts.gradMatr(r, s, xCoords, yCoords)  # Gradient matrix
     BTransp = transpose(B)
-    J = Quad4Pts.jacGlobToLoc(r, s, xCoords, yCoords)  # Jacobi's matrix
+    J = Quad8Pts.jacGlobToLoc(r, s, xCoords, yCoords)  # Jacobi's matrix
     return BTransp * elasticityMatrix * B * det(J)
 end  # F
 
@@ -46,8 +47,9 @@ Calculate stiffness matrix of given element: ``K = \\int \\limits_S B^T \\cdot C
 - `elementNum::Int`: number of given element.
 """
 function stiffnessMatrix(elasticityMatrix::AbstractArray, parameters::processPars, elementNum::Int)
-    xCoords = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][1] for i in 1:4]
-    yCoords = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][2] for i in 1:4]
+    nodesPerElement = length(parameters.mesh.elements[elementNum])
+    xCoords = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][1] for i in 1:nodesPerElement]
+    yCoords = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][2] for i in 1:nodesPerElement]
     FIntegrate(r, s) = F(r, s, xCoords, yCoords, elasticityMatrix)  # F representation for integrating (depends only on r and s)
     IntegrationOrder = 4
     K = multipleIntegral.gaussMethodMatrix(FIntegrate, IntegrationOrder)

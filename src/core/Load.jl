@@ -74,19 +74,21 @@ Return local load vector for given element.
 - `loadDirect::loadDirection`: direction of given load.
 """
 function elementLoad(elementNum::Int, pars::processPars, inputLoad::Array, loadDirect::loadDirection)
-    xCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][1] for i in 1:4]
-    yCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][2] for i in 1:4]
+    nodesPerElement = length(pars.mesh.elements[elementNum])
+    println("Nodes per element: ", nodesPerElement)
+    xCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][1] for i in 1:nodesPerElement]
+    yCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][2] for i in 1:nodesPerElement]
     load = inputLoad
     IntegrationOrder = 4
     FIntegrate(x) = 0
     if loadDirect == top
-        FIntegrate(r) = transpose(Quad4Pts.displInterpMatr(r, 1)) * load * Quad4Pts.DetJs(r, 1, xCoords, yCoords)
+        FIntegrate(r) = transpose(Quad8Pts.displInterpMatr(r, 1)) * load * Quad8Pts.DetJs(r, 1, xCoords, yCoords)
     elseif loadDirect == left
-        FIntegrate(s) = transpose(Quad4Pts.displInterpMatr(-1, s)) * load * Quad4Pts.DetJs(-1, s, xCoords, yCoords)
+        FIntegrate(s) = transpose(Quad8Pts.displInterpMatr(-1, s)) * load * Quad8Pts.DetJs(-1, s, xCoords, yCoords)
     elseif loadDirect == bottom
-        FIntegrate(r) = transpose(Quad4Pts.displInterpMatr(r, -1)) * load * Quad4Pts.DetJs(r, -1, xCoords, yCoords)
+        FIntegrate(r) = transpose(Quad8Pts.displInterpMatr(r, -1)) * load * Quad8Pts.DetJs(r, -1, xCoords, yCoords)
     elseif loadDirect == right
-        FIntegrate(s) = transpose(Quad4Pts.displInterpMatr(1, s)) * load * Quad4Pts.DetJs(1, s, xCoords, yCoords)
+        FIntegrate(s) = transpose(Quad8Pts.displInterpMatr(1, s)) * load * Quad8Pts.DetJs(1, s, xCoords, yCoords)
     else
         println("Given load direction is not supported")
         return nothing
@@ -109,10 +111,19 @@ function assemblyLoads(pars::processPars)
         elNum = element[1]
         direction = loadDirection(element[2])
         F = elementLoad(elNum, pars, load, direction)
-        loadNodes = Quad4Pts.nodesFromDirection(Int(direction))
-        for i in loadNodes
-            localIndex = i
-            globalIndex = pars.mesh.elements[elNum][i]
+        println("Element force: ", F)
+        loadLocalNodes = Quad8Pts.nodesFromDirection(Int(direction))
+        if (size(element)[1] - 2 != size(loadLocalNodes)[1])
+            println("Incorrect input load")
+            return nothing
+        end
+        loadGlobalNodes = [element[i] for i in 3:size(element)[1]]
+        println("Load nodes for element ", elNum, ": ", loadGlobalNodes)
+        for i in eachindex(loadLocalNodes)
+            localIndex = loadLocalNodes[i]
+            # globalIndex = pars.mesh.elements[elNum][i]
+            globalIndex = loadGlobalNodes[i]
+            println("Assigning load to ", globalIndex, " node (local: ", localIndex, ")")
             loadsVector[2 * globalIndex - 1] += F[2 * localIndex - 1]
             loadsVector[2 * globalIndex] += F[2 * localIndex]
         end

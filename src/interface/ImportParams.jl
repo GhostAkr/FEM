@@ -108,6 +108,7 @@ function parseConstraints(constraintsData::String)
             bktFirst = findnext('(', constraintsData, paramNameEndPos)
             bktLast = findnext(')', constraintsData, bktFirst + 1)
             valueStartPos = bktFirst + 1
+            valueEndPos = 0
             while true
                 valueEndPos = findnext(',', constraintsData, valueStartPos)
                 if valueEndPos === nothing
@@ -119,7 +120,7 @@ function parseConstraints(constraintsData::String)
                 valueStartPos = valueEndPos + 1
                 push!(resDict, value => CoreFEM.fixedXY)
                 nextComm = findnext(',', constraintsData, valueStartPos)
-                if nextComm === nothing || valueStartPos > bktLast
+                if valueEndPos == bktLast
                     break
                 end
             end
@@ -161,12 +162,26 @@ function parseLoads(loadsData::String)
                     break
                 end
                 elemEnd = findnext('}', loadsData, elemBegin)
-                currParam = elemBegin + 1
-                nextComm = findnext(',', loadsData, currParam)
-                elemNum = parse(Int, SubString(loadsData, currParam:(nextComm - 1)))
-                direction = parse(Int, SubString(loadsData, (nextComm + 1):(elemEnd - 1)))'
+                valueStartPos = elemBegin + 1
+                valueEndPos = 0
+                elemData = []
+                while true
+                    valueEndPos = findnext(',', loadsData, valueStartPos)
+                    if valueEndPos === nothing
+                        valueEndPos = elemEnd
+                    elseif (valueEndPos > elemEnd)
+                        valueEndPos = elemEnd
+                    end
+                    value = parse(Int, SubString(loadsData, valueStartPos:(valueEndPos - 1)))
+                    valueStartPos = valueEndPos + 1
+                    push!(elemData, value)
+                    nextComm = findnext(',', loadsData, valueStartPos)
+                    if valueEndPos == elemEnd
+                        break
+                    end
+                end
                 currElem = elemEnd
-                push!(elements, [elemNum, direction])
+                push!(elements, elemData)
             end
         else
             println("Given material parameter is not supported")

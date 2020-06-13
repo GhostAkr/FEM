@@ -115,7 +115,7 @@ Start calculation with given model.
 function fem2D(meshPath::String, dataPath::String)
     parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D(2))
     readParameters!(dataPath, parameters)
-    parameters.mesh = readMeshFromSalomeDAT(meshPath, MeshFEM.Quad4Pts2D)
+    parameters.mesh = readMeshFromSalomeDAT(meshPath, MeshFEM.Quad8Pts2D)
     printProcessPars(parameters)
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]
@@ -126,6 +126,8 @@ function fem2D(meshPath::String, dataPath::String)
         assemblyFEM2D(parameters, ensembleMatrix, K, elementNum)
     end
     loadVector = assemblyLoads(parameters)
+    println("Global load:")
+    println(loadVector)
     applyConstraints(parameters, loadVector, ensembleMatrix)
     # Writing left part to file
     open("equation/K", "w") do file
