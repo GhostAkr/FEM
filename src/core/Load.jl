@@ -104,7 +104,7 @@ Assemble right part of linear system of equations. This method applies given loc
 - `pars::processPars`: parameters of current model.
 """
 function assemblyLoads(pars::processPars)
-    loadsVector = zeros(Real, 2 * size(pars.mesh.nodes)[1])
+    loadsVector = zeros(Float64, 2 * size(pars.mesh.nodes)[1])
     for (element, load) in pars.load
         elNum = element[1]
         direction = loadDirection(element[2])

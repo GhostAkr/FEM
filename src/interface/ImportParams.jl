@@ -69,6 +69,7 @@ function parseConstraints(constraintsData::String)
             bktFirst = findnext('(', constraintsData, paramNameEndPos)
             bktLast = findnext(')', constraintsData, bktFirst + 1)
             valueStartPos = bktFirst + 1
+            valueEndPos = 0
             while true
                 valueEndPos = findnext(',', constraintsData, valueStartPos)
                 if valueEndPos === nothing
@@ -80,10 +81,7 @@ function parseConstraints(constraintsData::String)
                 valueStartPos = valueEndPos + 1
                 push!(resDict, value => CoreFEM.fixedX)
                 nextComm = findnext(',', constraintsData, valueStartPos)
-                if nextComm === nothing && valueStartPos > bktLast
-                    break
-                end
-                if nextComm > bktLast
+                if nextComm === nothing || valueStartPos > bktLast
                     break
                 end
             end
@@ -102,7 +100,7 @@ function parseConstraints(constraintsData::String)
                 valueStartPos = valueEndPos + 1
                 push!(resDict, value => CoreFEM.fixedY)
                 nextComm = findnext(',', constraintsData, valueStartPos)
-                if nextComm === nothing && valueStartPos > bktLast
+                if nextComm === nothing || valueStartPos > bktLast
                     break
                 end
             end
@@ -121,7 +119,7 @@ function parseConstraints(constraintsData::String)
                 valueStartPos = valueEndPos + 1
                 push!(resDict, value => CoreFEM.fixedXY)
                 nextComm = findnext(',', constraintsData, valueStartPos)
-                if nextComm === nothing && valueStartPos > bktLast
+                if nextComm === nothing || valueStartPos > bktLast
                     break
                 end
             end

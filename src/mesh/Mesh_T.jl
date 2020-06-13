@@ -84,7 +84,10 @@ Renumerate nodes in each element according to FEM model.
 """
 function renumerateNodes!(mesh::Mesh2D_T)
     for i in eachindex(mesh.elements)
-        newNodes = (mesh.elements[i][2], mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][3])
+        # TODO: make auto-renumeration
+        x = [mesh.nodes[mesh.elements[i][1]][1], mesh.nodes[mesh.elements[i][2]][1], mesh.nodes[mesh.elements[i][3]][1], mesh.nodes[mesh.elements[i][4]][1]]
+        y = [mesh.nodes[mesh.elements[i][1]][2], mesh.nodes[mesh.elements[i][2]][2], mesh.nodes[mesh.elements[i][3]][2], mesh.nodes[mesh.elements[i][4]][2]]
+        newNodes = (mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][3], mesh.elements[i][2])
         mesh.elements[i] = newNodes
     end
 end
@@ -118,26 +121,40 @@ function readMeshFromSalomeDAT(pathToFile::String, type::meshType)
         else
             println("Given mesh type is not supported")
         end
-        nOfElements = size(findall(isequal(salomeTypeId), fileContents))[1]
         elements = Vector{Tuple{Vararg{Float64}}}()
-        elemPos = findfirst(isequal(salomeTypeId), fileContents) - 1
-        while findnext(isequal(salomeTypeId), fileContents, elemPos) !== nothing
-            elemNodes = Tuple{Vararg{Float64}}
-            nextIdPos = findnext(isequal(salomeTypeId), fileContents, elemPos + 2)
-            if nextIdPos !== nothing
-                lastNode = nextIdPos - 2
-            else
-                lastNode = size(fileContents)[1]
+        index = 4 * nOfNodes + 3
+        while true
+            if index > size(fileContents)[1]
+                break
             end
-            nodesArray = Vector{Float64}()
-            for i in (elemPos + 2):lastNode
-                push!(nodesArray, parse(Float64, fileContents[i]))
+            index += 1
+            if fileContents[index] == "102"
+                index += 2
+            elseif fileContents[index] == "204"
+                nodesArray = Vector{Float64}()
+                for i in (index + 1):(index + 4)
+                    push!(nodesArray, parse(Float64, fileContents[i]))
+                end
+                elemNodes = Tuple(nodesArray)
+                push!(elements, elemNodes)
+                index += 4
             end
-            elemNodes = Tuple(nodesArray)
-            push!(elements, elemNodes)
-            elemPos = lastNode + 1
+            index += 1
         end
         mesh = Mesh2D_T(nodes, elements)
+        # x0 = []
+        # y0 = []
+        # epsNull = 1e-10
+        # for i in eachindex(mesh.nodes)
+        #     if abs(mesh.nodes[i][1]) < epsNull
+        #         push!(x0, i)
+        #     end
+        #     if abs(mesh.nodes[i][2]) < epsNull
+        #         push!(y0, i)
+        #     end
+        # end
+        # println("X = 0 points: ", x0)
+        # println("Y = 0 points: ", y0)
         renumerateNodes!(mesh)
         return mesh
     end

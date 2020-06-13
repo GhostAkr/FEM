@@ -12,6 +12,7 @@ include("StiffnessMatrix.jl")
 using MeshFEM
 using DelimitedFiles
 using BaseInterface
+using IterativeSolvers
 
 export fem2D
 
@@ -95,7 +96,12 @@ If it's not, there should be a way to control it.
 - `globalK::Array`: global stiffness matrix (left part of equations system);
 - `loadVector::Array`: global loads vector (right part of equations system).
 """
-solve(globalK::Array, loadVector::Array) = globalK \ loadVector
+function solve(globalK::Array, loadVector::Array)
+    initialVector = fill(0.0, size(loadVector)[1])
+    # return minres!(initialVector, globalK, loadVector, tol = 1e-10)
+    return globalK \ loadVector
+end
+# 
 
 """
     fem2D()
@@ -114,14 +120,12 @@ function fem2D(meshPath::String, dataPath::String)
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]
     C = elasticityMatrix(E, nu)
-    ensembleMatrix = zeros(Real, 2 * size(parameters.mesh.nodes)[1], 2 * size(parameters.mesh.nodes)[1])
+    ensembleMatrix = zeros(Float64, 2 * size(parameters.mesh.nodes)[1], 2 * size(parameters.mesh.nodes)[1])
     for elementNum in eachindex(parameters.mesh.elements)
         K = stiffnessMatrix(C, parameters, elementNum)
         assemblyFEM2D(parameters, ensembleMatrix, K, elementNum)
     end
     loadVector = assemblyLoads(parameters)
-    println("Loads vector")
-    println(loadVector)
     applyConstraints(parameters, loadVector, ensembleMatrix)
     # Writing left part to file
     open("equation/K", "w") do file
@@ -131,6 +135,7 @@ function fem2D(meshPath::String, dataPath::String)
     open("equation/F", "w") do file
         writedlm(file, loadVector)
     end
+    println("Solving...")
     result = solve(ensembleMatrix, loadVector)
     # Writing result to file
     open("equation/result", "w") do file

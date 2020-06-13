@@ -48,7 +48,7 @@ Jacobi matrix for conversion between different coordinate systems.
 - `xCoords::Array{Float64}`: x coordinates of each node in current element;
 - `yCoords::Array{Float64}`: y coordinates of each node in current element.
 """
-jacGlobToLoc(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = [dxr(r, s, xCoords) dxs(r, s, xCoords); dyr(r, s, yCoords) dys(r, s, yCoords)]  # Jacobi's matrix for conversion from local coordinates to global
+jacGlobToLoc(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = [dxr(r, s, xCoords) dyr(r, s, yCoords); dxs(r, s, xCoords) dys(r, s, yCoords)]  # Jacobi's matrix for conversion from local coordinates to global
 
 """
     jacGlobToLocInv(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
