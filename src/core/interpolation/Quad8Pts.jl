@@ -119,7 +119,7 @@ function TU(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
 
     uxy = [rc1 0 rc2 0 rc3 0 rc4 0 rc5 0 rc6 0 rc7 0 rc8 0
            sc1 0 sc2 0 sc3 0 sc4 0 sc5 0 sc6 0 sc7 0 sc8 0]
-    return 0.25 * jacGlobToLocInv(r, s, xCoords, yCoords) * uxy
+    return jacGlobToLocInv(r, s, xCoords, yCoords) * uxy
 end  # TU
 
 function TV(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
@@ -143,7 +143,7 @@ function TV(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
     sc8 = -(1 + r) * s
     vxy = [0 rc1 0 rc2 0 rc3 0 rc4 0 rc5 0 rc6 0 rc7 0 rc8
            0 sc1 0 sc2 0 sc3 0 sc4 0 sc5 0 sc6 0 sc7 0 sc8]
-    return 0.25 * jacGlobToLocInv(r, s, xCoords, yCoords) * vxy
+    return jacGlobToLocInv(r, s, xCoords, yCoords) * vxy
 end  # TU
 
 """

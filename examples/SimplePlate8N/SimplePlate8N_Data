@@ -9,5 +9,5 @@ fixedXY = (1, 10, 5, 11, 2)
 
 ****
 DistributedLoad
-Load = (10, 0)
+Load = (-10, 0)
 Elements = ({3, 4, 3, 14, 7}, {4, 4, 7, 15, 4})
