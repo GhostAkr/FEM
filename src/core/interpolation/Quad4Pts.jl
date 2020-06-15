@@ -168,6 +168,21 @@ function nodesFromDirection(direction::Int)
     end
 end  # nodesFromDirection
 
+function getRSFromNode(nodeIndex::Int)
+    if nodeIndex == 1
+        return (1, 1)
+    elseif nodeIndex == 2
+        return (-1, 1)
+    elseif nodeIndex == 3
+        return (-1, -1)
+    elseif nodeIndex == 4
+        return (1, -1)
+    else
+        println("Invalid node index while getting (r, s) coordinates from node")
+        return nothing
+    end
+end  # getRSFromNode
+
 # interFunc = [h1, h2, h3, h4]  # Array of interpolation functions
 
 end  # Quad4Pts

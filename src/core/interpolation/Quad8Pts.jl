@@ -217,4 +217,27 @@ function nodesFromDirection(direction::Int)
     end
 end  # nodesFromDirection
 
+function getRSFromNode(nodeIndex::Int)
+    if nodeIndex == 1
+        return (1, 1)
+    elseif nodeIndex == 2
+        return (-1, 1)
+    elseif nodeIndex == 3
+        return (-1, -1)
+    elseif nodeIndex == 4
+        return (1, -1)
+    elseif nodeIndex == 5
+        return (0, 1)
+    elseif nodeIndex == 6
+        return (-1, 0)
+    elseif nodeIndex == 7
+        return (0, -1)
+    elseif nodeIndex == 8
+        return (1, 0)
+    else
+        println("Invalid node index while getting (r, s) coordinates from node")
+        return nothing
+    end
+end  # getRSFromNode
+
 end  # Quad8Pts

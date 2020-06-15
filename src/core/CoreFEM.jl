@@ -8,6 +8,9 @@ include("MaterialVars.jl")
 include("Load.jl")
 include("Input.jl")
 include("StiffnessMatrix.jl")
+include("Deformations.jl")
+include("Constants.jl")
+include("Stresses.jl")
 
 using MeshFEM
 using DelimitedFiles
@@ -15,25 +18,6 @@ using BaseInterface
 using IterativeSolvers
 
 export fem2D
-
-# TODO: Make it for different problems (e.g. plane stress etc.)
-"""
-    elasticityMatrix(youngMod, poissRatio)
-
-Calculates plane strain elasticity matrix with given Young's modulus and Poisson's ratio.
-
-# Arguments
-- `youngMod::Float64`: Young's modulus;
-- `poissRatio::Float64`: Poisson's ratio.
-"""
-function elasticityMatrix(youngMod, poissRatio)
-    nu = poissRatio
-    E = youngMod
-    resMatr = [1    nu / (1 - nu)   0
-                nu / (1 - nu)   1   0
-                0   0   (1 - 2 * nu) / (2 * (1 - nu))]
-    resMatr *= (E * (1 - nu) / ((1 + nu) * (1 - 2 * nu)))
-end  # elasticityMatrix
 
 """
     assemblyFEM2D(pars::processPars, targetMatrix::Array, currentElementMatrix::Array, elementNum::Number)
@@ -116,7 +100,7 @@ function fem2D(meshPath::String, dataPath::String)
     parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D(2))
     readParameters!(dataPath, parameters)
     parameters.mesh = readMeshFromSalomeDAT(meshPath, MeshFEM.Quad8Pts2D)
-    printProcessPars(parameters)
+    # printProcessPars(parameters)
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]
     C = elasticityMatrix(E, nu)
@@ -126,8 +110,8 @@ function fem2D(meshPath::String, dataPath::String)
         assemblyFEM2D(parameters, ensembleMatrix, K, elementNum)
     end
     loadVector = assemblyLoads(parameters)
-    println("Global load:")
-    println(loadVector)
+    # println("Global load:")
+    # println(loadVector)
     applyConstraints(parameters, loadVector, ensembleMatrix)
     # Writing left part to file
     open("equation/K", "w") do file
@@ -139,6 +123,9 @@ function fem2D(meshPath::String, dataPath::String)
     end
     println("Solving...")
     result = solve(ensembleMatrix, loadVector)
+    deformations = calculateDeformations(result, parameters)
+    stresses = calculateStresses(deformations, C)
+    vonMises = calculateVonMises(stresses)
     # Writing result to file
     open("equation/result", "w") do file
         writedlm(file, result)
@@ -147,6 +134,8 @@ function fem2D(meshPath::String, dataPath::String)
     BaseInterface.exportToCSV(result, parameters)
     # Exporting results to DAT file
     BaseInterface.exportToDAT2D(result, parameters)
+    # Exporting results to VTK file
+    BaseInterface.exportToVTK(result, deformations, stresses, vonMises, parameters)
     return result
 end  # fem2D
 
