@@ -75,7 +75,6 @@ Return local load vector for given element.
 """
 function elementLoad(elementNum::Int, pars::processPars, inputLoad::Array, loadDirect::loadDirection)
     nodesPerElement = length(pars.mesh.elements[elementNum])
-    println("Nodes per element: ", nodesPerElement)
     xCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][1] for i in 1:nodesPerElement]
     yCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][2] for i in 1:nodesPerElement]
     load = inputLoad
@@ -111,19 +110,15 @@ function assemblyLoads(pars::processPars)
         elNum = element[1]
         direction = loadDirection(element[2])
         F = elementLoad(elNum, pars, load, direction)
-        println("Element force: ", F)
         loadLocalNodes = Quad8Pts.nodesFromDirection(Int(direction))
         if (size(element)[1] - 2 != size(loadLocalNodes)[1])
             println("Incorrect input load")
             return nothing
         end
         loadGlobalNodes = [element[i] for i in 3:size(element)[1]]
-        println("Load nodes for element ", elNum, ": ", loadGlobalNodes)
         for i in eachindex(loadLocalNodes)
             localIndex = loadLocalNodes[i]
-            # globalIndex = pars.mesh.elements[elNum][i]
             globalIndex = loadGlobalNodes[i]
-            println("Assigning load to ", globalIndex, " node (local: ", localIndex, ")")
             loadsVector[2 * globalIndex - 1] += F[2 * localIndex - 1]
             loadsVector[2 * globalIndex] += F[2 * localIndex]
         end

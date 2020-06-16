@@ -100,7 +100,6 @@ function fem2D(meshPath::String, dataPath::String)
     parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D(2))
     readParameters!(dataPath, parameters)
     parameters.mesh = readMeshFromSalomeDAT(meshPath, MeshFEM.Quad8Pts2D)
-    # printProcessPars(parameters)
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]
     C = elasticityMatrix(E, nu)
@@ -110,8 +109,6 @@ function fem2D(meshPath::String, dataPath::String)
         assemblyFEM2D(parameters, ensembleMatrix, K, elementNum)
     end
     loadVector = assemblyLoads(parameters)
-    # println("Global load:")
-    # println(loadVector)
     applyConstraints(parameters, loadVector, ensembleMatrix)
     # Writing left part to file
     open("equation/K", "w") do file
@@ -130,10 +127,6 @@ function fem2D(meshPath::String, dataPath::String)
     open("equation/result", "w") do file
         writedlm(file, result)
     end
-    # Exporting results to CSV file
-    BaseInterface.exportToCSV(result, parameters)
-    # Exporting results to DAT file
-    BaseInterface.exportToDAT2D(result, parameters)
     # Exporting results to VTK file
     BaseInterface.exportToVTK(result, deformations, stresses, vonMises, parameters)
     return result

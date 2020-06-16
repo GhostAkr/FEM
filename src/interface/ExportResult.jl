@@ -1,7 +1,5 @@
 using CoreFEM
 
-include("ExportVars.jl")
-
 # Method assumes that result is for 2D object
 """
     exportToCSV(result::Array, pars::processPars)
@@ -69,7 +67,7 @@ function exportToVTK(result::Array, deformations::Array, stresses::Array, vonMis
     vtkTableKeyword = "LOOKUP_TABLE"
     vtkTableDefault = "default"
     vtkVectorsKeyword = "VECTORS"
-    open("output/displacementX.vtk", "w") do file
+    open("output/Results.vtk", "w") do file
         # Writing headers
         vtkHeader = "FEM Results\n"
         write(file, vtkIdentifier)

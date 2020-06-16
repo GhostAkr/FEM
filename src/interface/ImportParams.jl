@@ -41,8 +41,6 @@ function parseMaterial(materialData::String)
         end
         readPos = findnext('\n', materialData, readPos) + 1
     end
-    println("Material loaded:")
-    println(resDict)
     return resDict
 end  # parseMaterial
 
@@ -129,7 +127,6 @@ function parseConstraints(constraintsData::String)
         end
         readPos = findnext('\n', constraintsData, readPos) + 1
     end
-    println(resDict)
     return resDict
 end  # parseConstraints
 
