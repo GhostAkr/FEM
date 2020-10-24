@@ -202,6 +202,7 @@ Process given property.
 """
 function parseProperty!(propertyName::String, propertyData::String, params::CoreFEM.processPars)
     propertyName = Unicode.normalize(propertyName, casefold = true)
+    println(propertyName)
     if propertyName == "material"
         params.materialProperties = parseMaterial(propertyData)
     elseif propertyName == "constraints"
@@ -231,7 +232,7 @@ function readParameters!(filePath::String, params::CoreFEM.processPars)
         readPos = last(findnext("****", fileContents, readPos))
         readPos = findnext('\n', fileContents, readPos) + 1
         lineEnd = findnext('\n', fileContents, readPos)
-        propertyName = String(SubString(fileContents, readPos:(lineEnd - 1)))
+        propertyName = String(SubString(fileContents, readPos:(lineEnd - 2)))
         readPos = lineEnd + 1
         nextProperty = findnext("****", fileContents, readPos)
         if nextProperty === nothing
