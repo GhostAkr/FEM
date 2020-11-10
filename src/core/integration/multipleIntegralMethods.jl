@@ -74,6 +74,31 @@ end
 #     return resultMatrix
 # end
 
+function getGaussPoints2D(intOrder::Int)
+    pointsCoords = Array{Tuple{Float64, Float64}}(undef, intOrder^2)
+    if intOrder == 2
+        pointsCoords[1] = (1 / sqrt(3), 1 / sqrt(3))
+        pointsCoords[2] = (-1 / sqrt(3), 1 / sqrt(3))
+        pointsCoords[3] = (-1 / sqrt(3), -1 / sqrt(3))
+        pointsCoords[4] = (1 / sqrt(3), -1 / sqrt(3))
+        return pointsCoords
+    elseif intOrder == 3
+        pointsCoords[1] = (sqrt(0.6), sqrt(0.6))
+        pointsCoords[2] = (-sqrt(0.6), sqrt(0.6))
+        pointsCoords[3] = (-sqrt(0.6), -sqrt(0.6))
+        pointsCoords[4] = (sqrt(0.6), -sqrt(0.6))
+        pointsCoords[5] = (0, sqrt(0.6))
+        pointsCoords[6] = (-sqrt(0.6), 0)
+        pointsCoords[7] = (0, -sqrt(0.6))
+        pointsCoords[8] = (sqrt(0.6), 0)
+        pointsCoords[9] = (0, 0)
+        return pointsCoords
+    else
+        println("Wrong integration order in getGaussPoints")
+        return nothing
+    end
+end
+
 """
     gaussMethod(F::Function, intOrder::Int)
 

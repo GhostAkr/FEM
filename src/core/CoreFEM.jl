@@ -81,8 +81,9 @@ If it's not, there should be a way to control it.
 - `loadVector::Array`: global loads vector (right part of equations system).
 """
 function solve(globalK::Array, loadVector::Array)
-    initialVector = fill(0.0, size(loadVector)[1])
+    initialVector = fill(1.0, size(loadVector)[1])
     # return minres!(initialVector, globalK, loadVector, tol = 1e-10)
+    # println("In solver")
     return globalK \ loadVector
 end
 # 
@@ -100,15 +101,17 @@ function fem2D(meshPath::String, dataPath::String)
     parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D(2))
     readParameters!(dataPath, parameters)
     parameters.mesh = readMeshFromSalomeDAT(meshPath, MeshFEM.Quad8Pts2D)
+    # printProcessPars(parameters)
+    intOrder = 3
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]
-    C = elasticityMatrix(E, nu)
+    C = elasticityMatrix(E, nu, 2)  # 1 - plane strain; 2 - plain stress
     ensembleMatrix = zeros(Float64, 2 * size(parameters.mesh.nodes)[1], 2 * size(parameters.mesh.nodes)[1])
     for elementNum in eachindex(parameters.mesh.elements)
-        K = stiffnessMatrix(C, parameters, elementNum)
+        K = stiffnessMatrix(C, parameters, elementNum, intOrder)
         assemblyFEM2D(parameters, ensembleMatrix, K, elementNum)
     end
-    loadVector = assemblyLoads(parameters)
+    loadVector = assemblyLoads(parameters, intOrder)
     applyConstraints(parameters, loadVector, ensembleMatrix)
     # Writing left part to file
     open("equation/K", "w") do file
@@ -120,8 +123,8 @@ function fem2D(meshPath::String, dataPath::String)
     end
     println("Solving...")
     result = solve(ensembleMatrix, loadVector)
-    deformations = calculateDeformations(result, parameters)
-    stresses = calculateStresses(deformations, C)
+    deformations = calculateDeformations(result, parameters, intOrder)
+    stresses = calculateStresses(deformations, C, parameters)
     vonMises = calculateVonMises(stresses)
     # Writing result to file
     open("equation/result", "w") do file

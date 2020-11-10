@@ -46,12 +46,12 @@ Calculate stiffness matrix of given element: ``K = \\int \\limits_S B^T \\cdot C
 - `parameters::processPars`: parameters of current model;
 - `elementNum::Int`: number of given element.
 """
-function stiffnessMatrix(elasticityMatrix::AbstractArray, parameters::processPars, elementNum::Int)
+function stiffnessMatrix(elasticityMatrix::AbstractArray, parameters::processPars, elementNum::Int, intOrder::Int)
     nodesPerElement = length(parameters.mesh.elements[elementNum])
     xCoords = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][1] for i in 1:nodesPerElement]
     yCoords = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][2] for i in 1:nodesPerElement]
     FIntegrate(r, s) = F(r, s, xCoords, yCoords, elasticityMatrix)  # F representation for integrating (depends only on r and s)
-    IntegrationOrder = 4
-    K = multipleIntegral.gaussMethodMatrix(FIntegrate, IntegrationOrder)
+    # IntegrationOrder = 4
+    K = multipleIntegral.gaussMethodMatrix(FIntegrate, intOrder)
     return K
 end  # stiffnessMatrix

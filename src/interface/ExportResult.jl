@@ -61,6 +61,7 @@ function exportToVTK(result::Array, deformations::Array, stresses::Array, vonMis
     vtkPointsType = "float"
     vtkCellsKeyword = "CELLS"
     vtkCellTypesKeyword = "CELL_TYPES"
+    # cellType = "9"  # 4-nodes elements
     cellType = "23"  # 8-nodes elements
     vtkPointDataKeyword = "POINT_DATA"
     vtkScalarKeyword = "SCALARS"
@@ -108,7 +109,7 @@ function exportToVTK(result::Array, deformations::Array, stresses::Array, vonMis
         write(file, vtkVectorsKeyword * " " * deformationsKeyword * " " * vtkPointsType * "\n")  # By defalt it uses 1 scalar per point
         for nodeIndex in 1:nOfNodes
             # write(file, string(deformations[nodeIndex][1]) * "\n")
-            write(file, string(deformations[nodeIndex][1]) * " " * string(deformations[nodeIndex][2]) * " " * string(deformations[nodeIndex][3]) * "\n")
+            write(file, string(deformations[nodeIndex, 1]) * " " * string(deformations[nodeIndex, 2]) * " " * string(deformations[nodeIndex, 3]) * "\n")
         end
         write(file, "\n")
         stressesKeyword = "Stresses"

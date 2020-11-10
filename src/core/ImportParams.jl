@@ -188,7 +188,7 @@ function parseLoads(loadsData::String)
     for i in elements
         push!(resDict, i => load)
     end
-    # println("Read load:")
+    # println("Quad4Pts:")
     # println(resDict)
     return resDict
 end  # parseLoads
