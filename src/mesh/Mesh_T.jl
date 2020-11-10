@@ -87,8 +87,10 @@ function renumerateNodes!(mesh::Mesh2D_T)
         # TODO: make auto-renumeration
         x = [mesh.nodes[mesh.elements[i][1]][1], mesh.nodes[mesh.elements[i][2]][1], mesh.nodes[mesh.elements[i][3]][1], mesh.nodes[mesh.elements[i][4]][1]]
         y = [mesh.nodes[mesh.elements[i][1]][2], mesh.nodes[mesh.elements[i][2]][2], mesh.nodes[mesh.elements[i][3]][2], mesh.nodes[mesh.elements[i][4]][2]]
-        newNodes = (mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][3], mesh.elements[i][2])
+        newNodes = (mesh.elements[i][3], mesh.elements[i][2], mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][6], mesh.elements[i][5], mesh.elements[i][8], mesh.elements[i][7])
         mesh.elements[i] = newNodes
+        # newNodes = (mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][3], mesh.elements[i][2])
+        # mesh.elements[i] = newNodes
     end
 end
 
@@ -155,20 +157,20 @@ function readMeshFromSalomeDAT(pathToFile::String, type::meshType)
             index += 1
         end
         mesh = Mesh2D_T(nodes, elements)
-        # x0 = []
-        # y0 = []
-        # epsNull = 1e-10
-        # for i in eachindex(mesh.nodes)
-        #     if abs(mesh.nodes[i][1]) < epsNull
-        #         push!(x0, i)
-        #     end
-        #     if abs(mesh.nodes[i][2]) < epsNull
-        #         push!(y0, i)
-        #     end
-        # end
-        # println("X = 0 points: ", x0)
-        # println("Y = 0 points: ", y0)
-        # renumerateNodes!(mesh)
+        x0 = []
+        y0 = []
+        epsNull = 1e-10
+        for i in eachindex(mesh.nodes)
+            if abs(mesh.nodes[i][1]) < epsNull
+                push!(x0, i)
+            end
+            if abs(mesh.nodes[i][2]) < epsNull
+                push!(y0, i)
+            end
+        end
+        println("X = 0 points: ", x0)
+        println("Y = 0 points: ", y0)
+        renumerateNodes!(mesh)
         return mesh
     end
 end  # readMeshFromSalomeDAT
