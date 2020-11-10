@@ -2,7 +2,7 @@ using Quad4Pts
 using Quad8Pts
 using multipleIntegral
 
-function calculateDeformations(displacements::Array, pars::processPars, intOrder::Int)
+function calculateDeformations(displacements::Array, pars::processPars, intOrder::Int, elemTypeInd::FiniteElement)
     nOfNodes = size(pars.mesh.nodes)[1]
     nOfDeformationsTypes = 3
     deformations = zeros(Float64, nOfNodes, nOfDeformationsTypes)
@@ -19,12 +19,12 @@ function calculateDeformations(displacements::Array, pars::processPars, intOrder
         for nodeIndex in eachindex(element)
             # rCoord = gaussPoints[nodeIndex][1]
             # sCoord = gaussPoints[nodeIndex][2]
-            rCoord = Quad8Pts.getRSFromNode(nodeIndex)[1]
-            sCoord = Quad8Pts.getRSFromNode(nodeIndex)[2]
+            rCoord = getRSFromNode(nodeIndex, elemTypeInd)[1]
+            sCoord = getRSFromNode(nodeIndex, elemTypeInd)[2]
             nodesPerElement = length(element)
             xCoords = [pars.mesh.nodes[element[i]][1] for i in 1:nodesPerElement]
             yCoords = [pars.mesh.nodes[element[i]][2] for i in 1:nodesPerElement]
-            gaussNodeDeformations = Quad8Pts.gradMatr(rCoord, sCoord, xCoords, yCoords) * elementDisplacements
+            gaussNodeDeformations = gradMatr(rCoord, sCoord, xCoords, yCoords, elemTypeInd::FiniteElement) * elementDisplacements
             for typeIndex in 1:nOfDeformationsTypes
                 deformations[element[nodeIndex], typeIndex] += gaussNodeDeformations[typeIndex]
             end

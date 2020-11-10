@@ -61,8 +61,8 @@ function exportToVTK(result::Array, deformations::Array, stresses::Array, vonMis
     vtkPointsType = "float"
     vtkCellsKeyword = "CELLS"
     vtkCellTypesKeyword = "CELL_TYPES"
-    # cellType = "9"  # 4-nodes elements
-    cellType = "23"  # 8-nodes elements
+    cellType = "9"  # 4-nodes elements
+    # cellType = "23"  # 8-nodes elements
     vtkPointDataKeyword = "POINT_DATA"
     vtkScalarKeyword = "SCALARS"
     vtkTableKeyword = "LOOKUP_TABLE"

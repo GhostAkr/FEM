@@ -5,6 +5,15 @@ Module describing model with bilinear quadrilateral finite elements.
 """
 module Quad4Pts
 
+using ElementTypes
+
+export FiniteElement, Quad4Type
+export jacGlobToLoc, DetJs, gradMatr, displInterpMatr, nodesFromDirection, getRSFromNode
+
+struct Quad4Type <: FiniteElement
+    name::String
+end
+
 include("../LoadVars.jl")
 
 h1(r, s) = 0.25 * (1 + r) * (1 + s)
@@ -48,7 +57,7 @@ Jacobi matrix for conversion between different coordinate systems.
 - `xCoords::Array{Float64}`: x coordinates of each node in current element;
 - `yCoords::Array{Float64}`: y coordinates of each node in current element.
 """
-jacGlobToLoc(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = [dxr(r, s, xCoords) dyr(r, s, yCoords); dxs(r, s, xCoords) dys(r, s, yCoords)]  # Jacobi's matrix for conversion from local coordinates to global
+ElementTypes.jacGlobToLoc(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}, elemTypeInd::Quad4Type) = [dxr(r, s, xCoords) dyr(r, s, yCoords); dxs(r, s, xCoords) dys(r, s, yCoords)]  # Jacobi's matrix for conversion from local coordinates to global
 
 """
     jacGlobToLocInv(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
@@ -61,7 +70,10 @@ Inversed Jacobi matrix for conversion between different coordinate systems.
 - `xCoords::Array{Float64}`: x coordinates of each node in current element;
 - `yCoords::Array{Float64}`: y coordinates of each node in current element.
 """
-jacGlobToLocInv(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = inv(jacGlobToLoc(r, s, xCoords, yCoords))
+function jacGlobToLocInv(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
+    elemTypeInd = Quad4Type("Quad4Type")
+    inv(jacGlobToLoc(r, s, xCoords, yCoords, elemTypeInd))
+end
 
 # Supporting matrices for calculating gradient matrix
 function TU(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
@@ -87,7 +99,7 @@ Determinant of appropriate Jacobi matrix.
 - `xCoords::Array{Float64}`: x coordinates of each node in current element;
 - `yCoords::Array{Float64}`: y coordinates of each node in current element.
 """
-DetJs(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = sqrt(dxs(r, s, xCoords)^2 + dys(r, s, yCoords)^2)
+ElementTypes.DetJs(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}, elemTypeInd::Quad4Type) = sqrt(dxs(r, s, xCoords)^2 + dys(r, s, yCoords)^2)
 
 dh1x(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = jacGlobToLocInv(r, s, xCoords, yCoords)[1, 1] * dh1r(r, s) + jacGlobToLocInv(r, s, xCoords, yCoords)[1, 2] * dh1s(r, s)
 dh1y(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = jacGlobToLocInv(r, s, xCoords, yCoords)[2, 1] * dh1r(r, s) + jacGlobToLocInv(r, s, xCoords, yCoords)[2, 2] * dh1s(r, s)
@@ -109,7 +121,7 @@ Gradient matrix ``B`` for element.
 - `xCoords::Array{Float64}`: x coordinates of each node in current element;
 - `yCoords::Array{Float64}`: y coordinates of each node in current element.
 """
-function gradMatr(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
+function ElementTypes.gradMatr(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}, elemTypeInd::Quad4Type)
     resultMatrix = Array{Float64, 2}(undef, 3, 8)
     Uxy = TU(r, s, xCoords, yCoords)
     Vxy = TV(r, s, xCoords, yCoords)
@@ -136,7 +148,7 @@ Displacements interpolation ``H`` matrix.
 - `r`: r-coordinate;
 - `s`: s-coordinate.
 """
-function displInterpMatr(r, s)
+function ElementTypes.displInterpMatr(r, s, elemTypeInd::Quad4Type)
     result = zeros(Real, 2, 8)
     result[1, 1] = 0.5 * (1 + s)
     result[1, 7] = 0.5 * (1 - s)
@@ -153,7 +165,7 @@ Return nodes of element associated with given load direction.
 # Arguments
 - `direction::Int`: given load direction.
 """
-function nodesFromDirection(direction::Int)
+function ElementTypes.nodesFromDirection(direction::Int, elemTypeInd::Quad4Type)
     if direction == 1
         return [1, 2]
     elseif direction == 2
@@ -168,7 +180,7 @@ function nodesFromDirection(direction::Int)
     end
 end  # nodesFromDirection
 
-function getRSFromNode(nodeIndex::Int)
+function ElementTypes.getRSFromNode(nodeIndex::Int, elemTypeInd::Quad4Type)
     if nodeIndex == 1
         return (1, 1)
     elseif nodeIndex == 2
