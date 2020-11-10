@@ -232,7 +232,7 @@ function readParameters!(filePath::String, params::CoreFEM.processPars)
         readPos = last(findnext("****", fileContents, readPos))
         readPos = findnext('\n', fileContents, readPos) + 1
         lineEnd = findnext('\n', fileContents, readPos)
-        propertyName = String(SubString(fileContents, readPos:(lineEnd - 1)))
+        propertyName = String(SubString(fileContents, readPos:(lineEnd - 2)))
         readPos = lineEnd + 1
         nextProperty = findnext("****", fileContents, readPos)
         if nextProperty === nothing
