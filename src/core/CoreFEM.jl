@@ -93,7 +93,7 @@ end
 
 function defineElemType(elemTypeID::FETypes)
     resElement = nothing
-    if (elemTypeID === Quad4TypeID)
+    if elemTypeID === Quad4TypeID
         resElement = Quad4Type("Quad4Type")
     elseif (elemTypeID === Quad8TypeID)
         resElement = Quad8Type("Quad8Type")
@@ -101,6 +101,18 @@ function defineElemType(elemTypeID::FETypes)
         println("Unknown finite element type")
     end
     return resElement
+end
+
+function typeMeshFromElement(elemTypeID::FETypes)
+    resMeshType = nothing
+    if elemTypeID === Quad4TypeID
+        resMeshType = Quad4Pts2D
+    elseif elemTypeID === Quad8TypeID
+        resMeshType = Quad8Pts2D
+    else
+        println("Unknown element type while converting to mesh type")
+    end
+    return resMeshType
 end
 
 """
@@ -120,9 +132,12 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
         return
     end
 
+    # Getting mesh type
+    meshType = typeMeshFromElement(elemTypeID)
+
     parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D(2))
     readParameters!(dataPath, parameters)
-    parameters.mesh = readMeshFromSalomeDAT(meshPath, MeshFEM.Quad8Pts2D)
+    parameters.mesh = readMeshFromSalomeDAT(meshPath, meshType)
     # printProcessPars(parameters)
     intOrder = 3
     nu = parameters.materialProperties[poisC]
@@ -153,7 +168,7 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
         writedlm(file, result)
     end
     # Exporting results to VTK file
-    BaseInterface.exportToVTK(result, deformations, stresses, vonMises, parameters)
+    BaseInterface.exportToVTK(result, deformations, stresses, vonMises, parameters, meshType)
     return result
 end  # fem2D
 

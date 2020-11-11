@@ -1,4 +1,5 @@
 using CoreFEM
+using MeshFEM
 
 # Method assumes that result is for 2D object
 """
@@ -50,7 +51,7 @@ function vtkCellsListSize(pars::processPars)
     return cellsListSize
 end  # vtkCellsListSize
 
-function exportToVTK(result::Array, deformations::Array, stresses::Array, vonMises::Array,  pars::processPars)
+function exportToVTK(result::Array, deformations::Array, stresses::Array, vonMises::Array,  pars::processPars, type::meshType)
     vtkIdentifier = "# vtk DataFile Version 3.0\n"
     vtkFormat = "ASCII\n"
     vtkDataSetKeyword = "DATASET"
@@ -61,8 +62,14 @@ function exportToVTK(result::Array, deformations::Array, stresses::Array, vonMis
     vtkPointsType = "float"
     vtkCellsKeyword = "CELLS"
     vtkCellTypesKeyword = "CELL_TYPES"
-    cellType = "9"  # 4-nodes elements
-    # cellType = "23"  # 8-nodes elements
+    if type === Quad4Pts2D
+        cellType = "9"  # 4-nodes elements
+    elseif type === Quad8Pts2D
+        cellType = "23"  # 8-nodes elements
+    else
+        println("Unknown mesh type while exporting to VTK")
+        return
+    end
     vtkPointDataKeyword = "POINT_DATA"
     vtkScalarKeyword = "SCALARS"
     vtkTableKeyword = "LOOKUP_TABLE"

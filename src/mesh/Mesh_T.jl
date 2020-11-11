@@ -82,15 +82,22 @@ Renumerate nodes in each element according to FEM model.
 # Arguments
 - `mesh`: given model mesh.
 """
-function renumerateNodes!(mesh::Mesh2D_T)
+function renumerateNodes!(mesh::Mesh2D_T, type::meshType)
     for i in eachindex(mesh.elements)
         # TODO: make auto-renumeration
         x = [mesh.nodes[mesh.elements[i][1]][1], mesh.nodes[mesh.elements[i][2]][1], mesh.nodes[mesh.elements[i][3]][1], mesh.nodes[mesh.elements[i][4]][1]]
         y = [mesh.nodes[mesh.elements[i][1]][2], mesh.nodes[mesh.elements[i][2]][2], mesh.nodes[mesh.elements[i][3]][2], mesh.nodes[mesh.elements[i][4]][2]]
-        # newNodes = (mesh.elements[i][3], mesh.elements[i][2], mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][6], mesh.elements[i][5], mesh.elements[i][8], mesh.elements[i][7])
-        # mesh.elements[i] = newNodes
-        newNodes = (mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][3], mesh.elements[i][2])
-        mesh.elements[i] = newNodes
+        newNodes = nothing
+        if type === Quad4Pts2D
+            newNodes = (mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][3], mesh.elements[i][2])
+        elseif type === Quad8Pts2D
+            newNodes = (mesh.elements[i][3], mesh.elements[i][2], mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][6], mesh.elements[i][5], mesh.elements[i][8], mesh.elements[i][7])
+        else
+            println("Unknown mesh type while renumerating nodes")
+        end
+        if (newNodes !== nothing)
+            mesh.elements[i] = newNodes
+        end
     end
 end
 
@@ -170,7 +177,7 @@ function readMeshFromSalomeDAT(pathToFile::String, type::meshType)
         end
         println("X = 0 points: ", x0)
         println("Y = 0 points: ", y0)
-        renumerateNodes!(mesh)
+        renumerateNodes!(mesh, type)
         return mesh
     end
 end  # readMeshFromSalomeDAT
