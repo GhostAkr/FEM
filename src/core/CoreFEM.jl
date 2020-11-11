@@ -16,6 +16,10 @@ using MeshFEM
 using DelimitedFiles
 using BaseInterface
 using IterativeSolvers
+using ElementTypes
+
+using Quad4Pts
+using Quad8Pts
 
 export fem2D
 
@@ -86,7 +90,30 @@ function solve(globalK::Array, loadVector::Array)
     # println("In solver")
     return globalK \ loadVector
 end
-# 
+
+function defineElemType(elemTypeID::FETypes)
+    resElement = nothing
+    if elemTypeID === Quad4TypeID
+        resElement = Quad4Type("Quad4Type")
+    elseif (elemTypeID === Quad8TypeID)
+        resElement = Quad8Type("Quad8Type")
+    else
+        println("Unknown finite element type")
+    end
+    return resElement
+end
+
+function typeMeshFromElement(elemTypeID::FETypes)
+    resMeshType = nothing
+    if elemTypeID === Quad4TypeID
+        resMeshType = Quad4Pts2D
+    elseif elemTypeID === Quad8TypeID
+        resMeshType = Quad8Pts2D
+    else
+        println("Unknown element type while converting to mesh type")
+    end
+    return resMeshType
+end
 
 """
     fem2D()
@@ -97,10 +124,20 @@ Start calculation with given model.
 - `meshPath::String`: Path to given mesh;
 - `dataPath::String`: Path to given initial data.
 """
-function fem2D(meshPath::String, dataPath::String)
+function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
+    # Getting element type
+    elementType = defineElemType(elemTypeID)
+    if (elementType === nothing)
+        println("Element type passed to fem2D() is unknown")
+        return
+    end
+
+    # Getting mesh type
+    meshType = typeMeshFromElement(elemTypeID)
+
     parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D(2))
     readParameters!(dataPath, parameters)
-    parameters.mesh = readMeshFromSalomeDAT(meshPath, MeshFEM.Quad8Pts2D)
+    parameters.mesh = readMeshFromSalomeDAT(meshPath, meshType)
     # printProcessPars(parameters)
     intOrder = 3
     nu = parameters.materialProperties[poisC]
@@ -108,10 +145,10 @@ function fem2D(meshPath::String, dataPath::String)
     C = elasticityMatrix(E, nu, 2)  # 1 - plane strain; 2 - plain stress
     ensembleMatrix = zeros(Float64, 2 * size(parameters.mesh.nodes)[1], 2 * size(parameters.mesh.nodes)[1])
     for elementNum in eachindex(parameters.mesh.elements)
-        K = stiffnessMatrix(C, parameters, elementNum, intOrder)
+        K = stiffnessMatrix(C, parameters, elementNum, intOrder, elementType)
         assemblyFEM2D(parameters, ensembleMatrix, K, elementNum)
     end
-    loadVector = assemblyLoads(parameters, intOrder)
+    loadVector = assemblyLoads(parameters, intOrder, elementType)
     applyConstraints(parameters, loadVector, ensembleMatrix)
     # Writing left part to file
     open("equation/K", "w") do file
@@ -123,7 +160,7 @@ function fem2D(meshPath::String, dataPath::String)
     end
     println("Solving...")
     result = solve(ensembleMatrix, loadVector)
-    deformations = calculateDeformations(result, parameters, intOrder)
+    deformations = calculateDeformations(result, parameters, intOrder, elementType)
     stresses = calculateStresses(deformations, C, parameters)
     vonMises = calculateVonMises(stresses)
     # Writing result to file
@@ -131,7 +168,7 @@ function fem2D(meshPath::String, dataPath::String)
         writedlm(file, result)
     end
     # Exporting results to VTK file
-    BaseInterface.exportToVTK(result, deformations, stresses, vonMises, parameters)
+    BaseInterface.exportToVTK(result, deformations, stresses, vonMises, parameters, meshType)
     return result
 end  # fem2D
 

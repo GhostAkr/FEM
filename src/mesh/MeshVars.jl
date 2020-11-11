@@ -1,4 +1,5 @@
-export meshType
+# TODO: Write macro to export whole enum at once
+export meshType, Quad4Pts2D, Quad8Pts2D
 
 """
     meshType

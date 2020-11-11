@@ -1,3 +1,6 @@
+using Quad4Pts
+using Quad8Pts
+
 include("LoadVars.jl")
 include("InputVars.jl")
 
@@ -73,7 +76,7 @@ Return local load vector for given element.
 - `inputLoad::Array`: given load;
 - `loadDirect::loadDirection`: direction of given load.
 """
-function elementLoad(elementNum::Int, pars::processPars, inputLoad::Array, loadDirect::loadDirection, intOrder::Int)
+function elementLoad(elementNum::Int, pars::processPars, inputLoad::Array, loadDirect::loadDirection, intOrder::Int, elemTypeInd::FiniteElement)
     nodesPerElement = length(pars.mesh.elements[elementNum])
     xCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][1] for i in 1:nodesPerElement]
     yCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][2] for i in 1:nodesPerElement]
@@ -81,13 +84,13 @@ function elementLoad(elementNum::Int, pars::processPars, inputLoad::Array, loadD
     # IntegrationOrder = 4
     FIntegrate(x) = 0
     if loadDirect == top
-        FIntegrate(r) = transpose(Quad8Pts.displInterpMatr(r, 1)) * load * Quad8Pts.DetJs(r, 1, xCoords, yCoords)
+        FIntegrate(r) = transpose(displInterpMatr(r, 1, elemTypeInd)) * load * DetJs(r, 1, xCoords, yCoords, elemTypeInd)
     elseif loadDirect == left
-        FIntegrate(s) = transpose(Quad8Pts.displInterpMatr(-1, s)) * load * Quad8Pts.DetJs(-1, s, xCoords, yCoords)
+        FIntegrate(s) = transpose(displInterpMatr(-1, s, elemTypeInd)) * load * DetJs(-1, s, xCoords, yCoords, elemTypeInd)
     elseif loadDirect == bottom
-        FIntegrate(r) = transpose(Quad8Pts.displInterpMatr(r, -1)) * load * Quad8Pts.DetJs(r, -1, xCoords, yCoords)
+        FIntegrate(r) = transpose(displInterpMatr(r, -1, elemTypeInd)) * load * DetJs(r, -1, xCoords, yCoords, elemTypeInd)
     elseif loadDirect == right
-        FIntegrate(s) = transpose(Quad8Pts.displInterpMatr(1, s)) * load * Quad8Pts.DetJs(1, s, xCoords, yCoords)
+        FIntegrate(s) = transpose(displInterpMatr(1, s, elemTypeInd)) * load * DetJs(1, s, xCoords, yCoords, elemTypeInd)
     else
         println("Given load direction is not supported")
         return nothing
@@ -104,13 +107,13 @@ Assemble right part of linear system of equations. This method applies given loc
 # Arguments
 - `pars::processPars`: parameters of current model.
 """
-function assemblyLoads(pars::processPars, intOrder::Int)
+function assemblyLoads(pars::processPars, intOrder::Int, elemTypeInd::FiniteElement)
     loadsVector = zeros(Float64, 2 * size(pars.mesh.nodes)[1])
     for (element, load) in pars.load
         elNum = element[1]
         direction = loadDirection(element[2])
-        F = elementLoad(elNum, pars, load, direction, intOrder)
-        loadLocalNodes = Quad8Pts.nodesFromDirection(Int(direction))
+        F = elementLoad(elNum, pars, load, direction, intOrder, elemTypeInd)
+        loadLocalNodes = nodesFromDirection(Int(direction), elemTypeInd)
         # println("Size: ", size(element)[1])
         if (size(element)[1] - 2 != size(loadLocalNodes)[1])
             println("Incorrect input load")

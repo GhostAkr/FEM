@@ -9,3 +9,6 @@ push!(LOAD_PATH, "src/interface")
 
 # Documentation path
 push!(LOAD_PATH, "docs/src/")
+
+# Types path
+push!(LOAD_PATH, "src/types")

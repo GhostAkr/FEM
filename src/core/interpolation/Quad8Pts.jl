@@ -1,61 +1,70 @@
 module Quad8Pts
 
-    h5(r, s) = 0.5 * (1 - r^2) * (1 + s)
-    h6(r, s) = 0.5 * (1 - s^2) * (1 - r)
-    h7(r, s) = 0.5 * (1 - r^2) * (1 - s)
-    h8(r, s) = 0.5 * (1 - s^2) * (1 + r)
-    h1(r, s) = 0.25 * (1 + r) * (1 + s) - 0.5 * h5(r, s) - 0.5 * h8(r, s)
-    h2(r, s) = 0.25 * (1 - r) * (1 + s) - 0.5 * h5(r, s) - 0.5 * h6(r, s)
-    h3(r, s) = 0.25 * (1 - r) * (1 - s) - 0.5 * h6(r, s) - 0.5 * h7(r, s)
-    h4(r, s) = 0.25 * (1 + r) * (1 - s) - 0.5 * h7(r, s) - 0.5 * h8(r, s)
+using ElementTypes
 
-    function dxr(r, s, xCoords::Array{Float64})
-        c1 = (1 + s) / 4 + 0.5 * r * (1 + s) + 0.25 * (-1 + s^2)
-        c2 = 0.25 * (-1 - s) + 0.5 * r * (1 + s) + 0.25 * (1 - s^2)
-        c3 = (0.5 * r * (1 - s) + 0.25 * (-1 + s) + 0.25 * (1 - s^2))
-        c4 = (1 - s) / 4 + 0.5 * r * (1 - s) + 0.25 * (-1 + s^2)
-        c5 = -r * (1 + s)
-        c6 = -0.5 * (1 - s^2)
-        c7 = -r * (1 - s)
-        c8 = 0.5 * (1 - s^2)
-        return c1 * xCoords[1] + c2 * xCoords[2] + c3 * xCoords[3] + c4 * xCoords[4] + c5 * xCoords[5] + c6 * xCoords[6] + c7 * xCoords[7] + c8 * xCoords[8]
-    end  # dxr
+export FiniteElement, Quad8Type
+export jacGlobToLoc, DetJs, gradMatr, displInterpMatr, nodesFromDirection, getRSFromNode
 
-    function dyr(r, s, yCoords::Array{Float64})
-        c1 = (1 + s) / 4 + 0.5 * r * (1 + s) + 0.25 * (-1 + s^2)
-        c2 = 0.25 * (-1 - s) + 0.5 * r * (1 + s) + 0.25 * (1 - s^2)
-        c3 = (0.5 * r * (1 - s) + 0.25 * (-1 + s) + 0.25 * (1 - s^2))
-        c4 = (1 - s) / 4 + 0.5 * r * (1 - s) + 0.25 * (-1 + s^2)
-        c5 = -r * (1 + s)
-        c6 = -0.5 * (1 - s^2)
-        c7 = -r * (1 - s)
-        c8 = 0.5 * (1 - s^2)
-        return c1 * yCoords[1] + c2 * yCoords[2] + c3 * yCoords[3] + c4 * yCoords[4] + c5 * yCoords[5] + c6 * yCoords[6] + c7 * yCoords[7] + c8 * yCoords[8]
-    end  # dyr
+struct Quad8Type <: FiniteElement
+    name::String
+end
 
-    function dxs(r, s, xCoords::Array{Float64})
-        c1 = (1 + r) / 4 + 0.25 * (-1 + r^2) + 0.5 * (1 + r) * s
-        c2 = (1 - r) / 4 + 0.25 * (-1 + r^2) + 0.5 * (1 - r) * s
-        c3 = 0.25 * (-1 + r) + 0.25 * (1 - r^2) + 0.5 * (1 - r) * s
-        c4 = 0.25 * (-1 - r) + 0.25 * (1 - r^2) + 0.5 * (1 + r) * s
-        c5 = 0.5 * (1 - r^2)
-        c6 = -(1 - r) * s
-        c7 = -0.5 * (1 - r^2)
-        c8 = -(1 + r) * s
-        return c1 * xCoords[1] + c2 * xCoords[2] + c3 * xCoords[3] + c4 * xCoords[4] + c5 * xCoords[5] + c6 * xCoords[6] + c7 * xCoords[7] + c8 * xCoords[8]
-    end  # dxs
+h1(r, s) = 0.25 * (1 + r) * (1 + s) - 0.5 * h5(r, s) - 0.5 * h8(r, s)
+h2(r, s) = 0.25 * (1 - r) * (1 + s) - 0.5 * h5(r, s) - 0.5 * h6(r, s)
+h3(r, s) = 0.25 * (1 - r) * (1 - s) - 0.5 * h6(r, s) - 0.5 * h7(r, s)
+h4(r, s) = 0.25 * (1 + r) * (1 - s) - 0.5 * h7(r, s) - 0.5 * h8(r, s)
+h5(r, s) = 0.5 * (1 - r^2) * (1 + s)
+h6(r, s) = 0.5 * (1 - s^2) * (1 - r)
+h7(r, s) = 0.5 * (1 - r^2) * (1 - s)
+h8(r, s) = 0.5 * (1 - s^2) * (1 + r)
 
-    function dys(r, s, yCoords::Array{Float64})
-        c1 = (1 + r) / 4 + 0.25 * (-1 + r^2) + 0.5 * (1 + r) * s
-        c2 = (1 - r) / 4 + 0.25 * (-1 + r^2) + 0.5 * (1 - r) * s
-        c3 = 0.25 * (-1 + r) + 0.25 * (1 - r^2) + 0.5 * (1 - r) * s
-        c4 = 0.25 * (-1 - r) + 0.25 * (1 - r^2) + 0.5 * (1 + r) * s
-        c5 = 0.5 * (1 - r^2)
-        c6 = -(1 - r) * s
-        c7 = -0.5 * (1 - r^2)
-        c8 = -(1 + r) * s
-        return c1 * yCoords[1] + c2 * yCoords[2] + c3 * yCoords[3] + c4 * yCoords[4] + c5 * yCoords[5] + c6 * yCoords[6] + c7 * yCoords[7] + c8 * yCoords[8]
-    end  # dys
+function dxr(r, s, xCoords::Array{Float64})
+    c1 = (1 + s) / 4 + 0.5 * r * (1 + s) + 0.25 * (-1 + s^2)
+    c2 = 0.25 * (-1 - s) + 0.5 * r * (1 + s) + 0.25 * (1 - s^2)
+    c3 = (0.5 * r * (1 - s) + 0.25 * (-1 + s) + 0.25 * (1 - s^2))
+    c4 = (1 - s) / 4 + 0.5 * r * (1 - s) + 0.25 * (-1 + s^2)
+    c5 = -r * (1 + s)
+    c6 = -0.5 * (1 - s^2)
+    c7 = -r * (1 - s)
+    c8 = 0.5 * (1 - s^2)
+    return c1 * xCoords[1] + c2 * xCoords[2] + c3 * xCoords[3] + c4 * xCoords[4] + c5 * xCoords[5] + c6 * xCoords[6] + c7 * xCoords[7] + c8 * xCoords[8]
+end  # dxr
+
+function dyr(r, s, yCoords::Array{Float64})
+    c1 = (1 + s) / 4 + 0.5 * r * (1 + s) + 0.25 * (-1 + s^2)
+    c2 = 0.25 * (-1 - s) + 0.5 * r * (1 + s) + 0.25 * (1 - s^2)
+    c3 = (0.5 * r * (1 - s) + 0.25 * (-1 + s) + 0.25 * (1 - s^2))
+    c4 = (1 - s) / 4 + 0.5 * r * (1 - s) + 0.25 * (-1 + s^2)
+    c5 = -r * (1 + s)
+    c6 = -0.5 * (1 - s^2)
+    c7 = -r * (1 - s)
+    c8 = 0.5 * (1 - s^2)
+    return c1 * yCoords[1] + c2 * yCoords[2] + c3 * yCoords[3] + c4 * yCoords[4] + c5 * yCoords[5] + c6 * yCoords[6] + c7 * yCoords[7] + c8 * yCoords[8]
+end  # dyr
+
+function dxs(r, s, xCoords::Array{Float64})
+    c1 = (1 + r) / 4 + 0.25 * (-1 + r^2) + 0.5 * (1 + r) * s
+    c2 = (1 - r) / 4 + 0.25 * (-1 + r^2) + 0.5 * (1 - r) * s
+    c3 = 0.25 * (-1 + r) + 0.25 * (1 - r^2) + 0.5 * (1 - r) * s
+    c4 = 0.25 * (-1 - r) + 0.25 * (1 - r^2) + 0.5 * (1 + r) * s
+    c5 = 0.5 * (1 - r^2)
+    c6 = -(1 - r) * s
+    c7 = -0.5 * (1 - r^2)
+    c8 = -(1 + r) * s
+    return c1 * xCoords[1] + c2 * xCoords[2] + c3 * xCoords[3] + c4 * xCoords[4] + c5 * xCoords[5] + c6 * xCoords[6] + c7 * xCoords[7] + c8 * xCoords[8]
+end  # dxs
+
+function dys(r, s, yCoords::Array{Float64})
+    c1 = (1 + r) / 4 + 0.25 * (-1 + r^2) + 0.5 * (1 + r) * s
+    c2 = (1 - r) / 4 + 0.25 * (-1 + r^2) + 0.5 * (1 - r) * s
+    c3 = 0.25 * (-1 + r) + 0.25 * (1 - r^2) + 0.5 * (1 - r) * s
+    c4 = 0.25 * (-1 - r) + 0.25 * (1 - r^2) + 0.5 * (1 + r) * s
+    c5 = 0.5 * (1 - r^2)
+    c6 = -(1 - r) * s
+    c7 = -0.5 * (1 - r^2)
+    c8 = -(1 + r) * s
+    return c1 * yCoords[1] + c2 * yCoords[2] + c3 * yCoords[3] + c4 * yCoords[4] + c5 * yCoords[5] + c6 * yCoords[6] + c7 * yCoords[7] + c8 * yCoords[8]
+end  # dys
 
     """
     jacGlobToLoc(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
@@ -68,7 +77,7 @@ Jacobi matrix for conversion between different coordinate systems.
 - `xCoords::Array{Float64}`: x coordinates of each node in current element;
 - `yCoords::Array{Float64}`: y coordinates of each node in current element.
 """
-jacGlobToLoc(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = [dxr(r, s, xCoords) dyr(r, s, yCoords); dxs(r, s, xCoords) dys(r, s, yCoords)]  # Jacobi's matrix for conversion from local coordinates to global
+ElementTypes.jacGlobToLoc(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}, elemTypeInd::Quad8Type) = [dxr(r, s, xCoords) dyr(r, s, yCoords); dxs(r, s, xCoords) dys(r, s, yCoords)]  # Jacobi's matrix for conversion from local coordinates to global
 
 """
     jacGlobToLocInv(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
@@ -81,7 +90,10 @@ Inversed Jacobi matrix for conversion between different coordinate systems.
 - `xCoords::Array{Float64}`: x coordinates of each node in current element;
 - `yCoords::Array{Float64}`: y coordinates of each node in current element.
 """
-jacGlobToLocInv(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = inv(jacGlobToLoc(r, s, xCoords, yCoords))
+function jacGlobToLocInv(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
+    elemTypeInd = Quad8Type("Quad8Type")
+    inv(jacGlobToLoc(r, s, xCoords, yCoords, elemTypeInd))
+end
 
 """
     DetJs(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
@@ -94,7 +106,7 @@ Determinant of appropriate Jacobi matrix.
 - `xCoords::Array{Float64}`: x coordinates of each node in current element;
 - `yCoords::Array{Float64}`: y coordinates of each node in current element.
 """
-DetJs(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = sqrt(dxs(r, s, xCoords)^2 + dys(r, s, yCoords)^2)
+ElementTypes.DetJs(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}, elemTypeInd::Quad8Type) = sqrt(dxs(r, s, xCoords)^2 + dys(r, s, yCoords)^2)
 
 # Supporting matrices for calculating gradient matrix
 function TU(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
@@ -157,7 +169,7 @@ Gradient matrix ``B`` for element.
 - `xCoords::Array{Float64}`: x coordinates of each node in current element;
 - `yCoords::Array{Float64}`: y coordinates of each node in current element.
 """
-function gradMatr(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
+function ElementTypes.gradMatr(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}, elemTypeInd::Quad8Type)
     if size(xCoords)[1] != size(yCoords)[1]
         println("Incorrect nodes while calculating gradient matrix")
         return nothing
@@ -188,7 +200,7 @@ Displacements interpolation ``H`` matrix.
 - `r`: r-coordinate;
 - `s`: s-coordinate.
 """
-function displInterpMatr(r, s)
+function ElementTypes.displInterpMatr(r, s, elemTypeInd::Quad8Type)
     result = [h1(r, s) 0 h2(r, s) 0 h3(r, s) 0 h4(r, s) 0 h5(r, s) 0 h6(r, s) 0 h7(r, s) 0 h8(r, s) 0
               0 h1(r, s) 0 h2(r, s) 0 h3(r, s) 0 h4(r, s) 0 h5(r, s) 0 h6(r, s) 0 h7(r, s) 0 h8(r, s)]
     return result
@@ -202,7 +214,7 @@ Return nodes of element associated with given load direction.
 # Arguments
 - `direction::Int`: given load direction.
 """
-function nodesFromDirection(direction::Int)
+function ElementTypes.nodesFromDirection(direction::Int, elemTypeInd::Quad8Type)
     if direction == 1  # Top
         return [1, 5, 2]
     elseif direction == 2  # Left
@@ -217,7 +229,7 @@ function nodesFromDirection(direction::Int)
     end
 end  # nodesFromDirection
 
-function getRSFromNode(nodeIndex::Int)
+function ElementTypes.getRSFromNode(nodeIndex::Int, elemTypeInd::Quad8Type)
     if nodeIndex == 1
         return (1, 1)
     elseif nodeIndex == 2
