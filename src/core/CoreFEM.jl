@@ -112,7 +112,7 @@ function typeMeshFromElement(elemTypeID::FETypes)
     elseif elemTypeID === Quad8TypeID
         resMeshType = Quad8Pts2D
     elseif elemTypeID === Iso8Pts3DTypeID
-        # TODO: Insert new mesh type here
+        resMeshType = Iso8Pts3DMeshType
     else
         println("Unknown element type while converting to mesh type")
     end

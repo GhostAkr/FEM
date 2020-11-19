@@ -92,6 +92,8 @@ function renumerateNodes!(mesh::Mesh2D_T, type::meshType)
             newNodes = (mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][3], mesh.elements[i][2])
         elseif type === Quad8Pts2D
             newNodes = (mesh.elements[i][3], mesh.elements[i][2], mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][6], mesh.elements[i][5], mesh.elements[i][8], mesh.elements[i][7])
+        elseif type === Iso8Pts3DMeshType
+            # TODO: Renumerate nodes in this case
         else
             println("Unknown mesh type while renumerating nodes")
         end
@@ -130,6 +132,8 @@ function readMeshFromSalomeDAT(pathToFile::String, type::meshType)
         elseif type == Quad8Pts2D
             salomeTypeId = "208"
             nodesPerElement = 8
+        elseif type == Iso8Pts3DMeshType
+            # TODO: Handle this case
         else
             println("Given mesh type is not supported")
         end
