@@ -146,7 +146,7 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     intOrder = 3
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]
-    C = elasticityMatrix(E, nu, 2)  # 1 - plane strain; 2 - plain stress
+    C = elasticityMatrix(E, nu, plainStress)
     ensembleMatrix = zeros(Float64, 2 * size(parameters.mesh.nodes)[1], 2 * size(parameters.mesh.nodes)[1])
     for elementNum in eachindex(parameters.mesh.elements)
         K = stiffnessMatrix(C, parameters, elementNum, intOrder, elementType)
