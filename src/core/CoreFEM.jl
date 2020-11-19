@@ -95,8 +95,10 @@ function defineElemType(elemTypeID::FETypes)
     resElement = nothing
     if elemTypeID === Quad4TypeID
         resElement = Quad4Type("Quad4Type")
-    elseif (elemTypeID === Quad8TypeID)
+    elseif elemTypeID === Quad8TypeID
         resElement = Quad8Type("Quad8Type")
+    elseif elemTypeID === Iso8Pts3DTypeID
+        resElement = Iso8Pts3DType("Iso8Pts3DType")
     else
         println("Unknown finite element type")
     end
@@ -109,6 +111,8 @@ function typeMeshFromElement(elemTypeID::FETypes)
         resMeshType = Quad4Pts2D
     elseif elemTypeID === Quad8TypeID
         resMeshType = Quad8Pts2D
+    elseif elemTypeID === Iso8Pts3DTypeID
+        # TODO: Insert new mesh type here
     else
         println("Unknown element type while converting to mesh type")
     end
