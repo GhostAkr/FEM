@@ -226,7 +226,7 @@ function gauss1DMethodMatrix(F::Function, intOrder::Int)
     return resultMatrix
 end  # gauss1DMethodMatrix
 
-function gaussMethod3DMethodMatrix(F::Function, intOrder::Int)
+function gauss3DMethodMatrix(F::Function, intOrder::Int)
     r = Array{Float64}(undef, intOrder)  # Array of integration points by r coordinate
     s = Array{Float64}(undef, intOrder)  # Array of integration points by s coordinate
     t = Array{Float64}(undef, intOrder)  # Array of integration points by t coordinate
