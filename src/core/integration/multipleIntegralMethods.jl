@@ -225,3 +225,56 @@ function gauss1DMethodMatrix(F::Function, intOrder::Int)
     end
     return resultMatrix
 end  # gauss1DMethodMatrix
+
+function gaussMethod3DMethodMatrix(F::Function, intOrder::Int)
+    r = Array{Float64}(undef, intOrder)  # Array of integration points by r coordinate
+    s = Array{Float64}(undef, intOrder)  # Array of integration points by s coordinate
+    t = Array{Float64}(undef, intOrder)  # Array of integration points by t coordinate
+    weights = Array{Float64}(undef, intOrder)  # Array of integration weights
+
+    # Defining integration points and weights
+    if intOrder == 2
+        r = [-1 / sqrt(3), 1 / sqrt(3)]
+        s = [-1 / sqrt(3), 1 / sqrt(3)]
+        t = [-1 / sqrt(3), 1 / sqrt(3)]
+        weights = [1, 1]
+    elseif intOrder == 3
+        r = [-0.774596669241483, 0, 0.774596669241483]
+        s = [-0.774596669241483, 0, 0.774596669241483]
+        t = [-0.774596669241483, 0, 0.774596669241483]
+        weights = [0.555555555555556, 0.888888888888889, 0.555555555555556]
+    elseif intOrder == 4
+        r = [-0.861136311594053, -0.339981043584856, 0.339981043584856, 0.861136311594053]
+        s = [-0.861136311594053, -0.339981043584856, 0.339981043584856, 0.861136311594053]
+        t = [-0.861136311594053, -0.339981043584856, 0.339981043584856, 0.861136311594053]
+        weights = [0.347854845137454, 0.652145154862546, 0.652145154862546, 0.347854845137454]
+    else
+        println("That integration order is not supported")
+    end
+
+    # Creating result matrix
+    nOfRows = size(F(1, 1, 1))[1]
+    if length(size(F(1, 1, 1))) == 1
+        nOfCols = 1
+    else
+        nOfCols = size(F(1, 1, 1))[2]
+    end
+    resultMatrix = Matrix{Float64}(undef, nOfRows, nOfCols)
+
+    # Integrating
+    for k in 1:nOfRows
+        for l in 1:nOfCols
+            # Integrating [k, l] element of source matrix
+            resultSum = 0
+            for i in 1:intOrder
+                for j in 1:intOrder
+                    for v in 1:intOrder
+                        resultSum += (weights[i] * weights[j] * weights[v] * F(r[i], s[j], t[v])[k, l])
+                    end
+                end
+            end
+            resultMatrix[k, l] = resultSum
+        end
+    end
+    return resultMatrix
+end
