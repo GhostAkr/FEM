@@ -87,6 +87,33 @@ function applyConstraints(pars::processPars, loads::Array, globalK::Array)
     end
 end  # applyConstraints
 
+function applyConstraints3D(pars::processPars, loads::Array, globalK::Array)
+    for (node, bc) in pars.bc
+        if bc == fixedX
+            applyFixedX3D(node, loads, globalK)
+        elseif bc == fixedY
+            applyFixedY3D(node, loads, globalK)
+        elseif bc == fixedXY
+            applyFixedX3D(node, loads, globalK)
+            applyFixedY3D(node, loads, globalK)
+        elseif bc == fixedZ
+            applyFixedZ3D(node, loads, globalK)
+        elseif bc == fixedXZ
+            applyFixedX3D(node, loads, globalK)
+            applyFixedZ3D(node, loads, globalK)
+        elseif bc == fixedYZ
+            applyFixedY3D(node, loads, globalK)
+            applyFixedZ3D(node, loads, globalK)
+        elseif bc == fixedXYZ
+            applyFixedX3D(node, loads, globalK)
+            applyFixedY3D(node, loads, globalK)
+            applyFixedZ3D(node, loads, globalK)
+        else
+            println("Unhandled boundary condition")
+        end
+    end
+end  # applyConstraints
+
 """
     solve(globalK::Array, loadVector::Array)
 
@@ -192,5 +219,52 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     BaseInterface.exportToVTK(result, deformations, stresses, vonMises, parameters, meshType)
     return result
 end  # fem2D
+
+function fem3D(meshPath::String, dataPath::String, elemTypeID::FETypes)
+    # Getting element type
+    elementType = defineElemType(elemTypeID)
+    if (elementType === nothing)
+        println("Element type passed to fem2D() is unknown")
+        return
+    end
+
+    # Getting mesh type
+    meshType = typeMeshFromElement(elemTypeID)
+
+    parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D(2))
+    readParameters!(dataPath, parameters)
+    parameters.mesh = readMeshFromSalomeDAT(meshPath, meshType)
+
+    intOrder = 4
+
+    nu = parameters.materialProperties[poisC]
+    E = parameters.materialProperties[youngMod]
+
+    C = elasticityMatrix(E, nu, problem3D)
+
+    ensembleMatrix = zeros(Float64, 3 * size(parameters.mesh.nodes)[1], 3 * size(parameters.mesh.nodes)[1])
+    for elementNum in eachindex(parameters.mesh.elements)
+        K = stiffnessMatrix3D(C, parameters, elementNum, intOrder, elementType)
+        assemblyFEM3D(parameters, ensembleMatrix, K, elementNum)
+    end
+
+    loadVector = assemblyLoads3D(parameters, intOrder, elementType)
+
+    applyConstraints3D(parameters, loadVector, ensembleMatrix)
+
+    # Writing left part to file
+    open("equation/K", "w") do file
+        writedlm(file, ensembleMatrix)
+    end
+    # Writing right part to file
+    open("equation/F", "w") do file
+        writedlm(file, loadVector)
+    end
+
+    println("Solving...")
+    result = solve(ensembleMatrix, loadVector)
+
+    return result
+end  # fem3D
 
 end  # Core

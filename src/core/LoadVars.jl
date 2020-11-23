@@ -14,6 +14,11 @@ Enum containing different boundary condition cases:
     fixedX
     fixedY
     fixedXY
+    # TODO: Somehow make this more simple
+    fixedZ
+    fixedXZ
+    fixedYZ
+    fixedXYZ
 end
 
 """
