@@ -32,4 +32,6 @@ and ``s`` is directed to the top.
     left = 2
     bottom = 3
     right = 4
+    backwards = 5  # To us
+    towards = 6  # From us
 end

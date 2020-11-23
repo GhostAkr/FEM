@@ -99,6 +99,35 @@ function elementLoad(elementNum::Int, pars::processPars, inputLoad::Array, loadD
     return F
 end  # elementLoad
 
+function elementLoad3D(elementNum::Int, pars::processPars, inputLoad::Array, loadDirect::loadDirection, intOrder::Int, elemTypeInd::FiniteElement)
+    nodesPerElement = length(pars.mesh.elements[elementNum])
+    xCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][1] for i in 1:nodesPerElement]
+    yCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][2] for i in 1:nodesPerElement]
+    yCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][3] for i in 1:nodesPerElement]
+    load = inputLoad
+    # IntegrationOrder = 4
+    FIntegrate(x) = 0
+    if loadDirect == top
+        FIntegrate(r, s) = transpose(displInterpMatr(r, s, 1 elemTypeInd)) * load * DetJs(r, s, 1, xCoords, yCoords, zCoords, elemTypeInd)
+    elseif loadDirect == left
+        FIntegrate(r, t) = transpose(displInterpMatr(r, -1, t, elemTypeInd)) * load * DetJs(r, -1, t, xCoords, yCoords, zCoords, elemTypeInd)
+    elseif loadDirect == bottom
+        FIntegrate(r, s) = transpose(displInterpMatr(r, s, 1, elemTypeInd)) * load * DetJs(r, s, -1, xCoords, yCoords, zCoords, elemTypeInd)
+    elseif loadDirect == right
+        FIntegrate(r, t) = transpose(displInterpMatr(r, 1, t, elemTypeInd)) * load * DetJs(r, 1, t, xCoords, yCoords, zCoords, elemTypeInd)
+    elseif loadDirect == backwards  # To us
+        FIntegrate(s, t) = transpose(displInterpMatr(1, s, t, elemTypeInd)) * load * DetJs(1, s, t, xCoords, yCoords, zCoords, elemTypeInd)
+    elseif loadDirect == towards  # From us
+        FIntegrate(s, t) = transpose(displInterpMatr(-1, s, t, elemTypeInd)) * load * DetJs(-1, s, t, xCoords, yCoords, zCoords, elemTypeInd)
+    else
+        println("Given load direction is not supported")
+        return nothing
+    end
+    F = multipleIntegral.gaussMethodMatrix(FIntegrate, intOrder)
+
+    return F
+end  # elementLoad
+
 """
     assemblyLoads(pars::processPars)
 
@@ -130,4 +159,32 @@ function assemblyLoads(pars::processPars, intOrder::Int, elemTypeInd::FiniteElem
     end
     # println(loadsVector)
     return loadsVector
-end  # constructLoads
+end  # assemblyLoads
+
+function assemblyLoads3D(pars::processPars, intOrder::Int, elemTypeInd::FiniteElement)
+    loadsVector = zeros(Float64, 3 * size(pars.mesh.nodes)[1])
+
+    for (element, load) in pars.load
+        elNum = element[1]
+        direction = loadDirection(element[2])
+        F = elementLoad3D(elNum, pars, load, direction, intOrder, elemTypeInd)
+        loadLocalNodes = nodesFromDirection(Int(direction), elemTypeInd)
+
+        if (size(element)[1] - 2 != size(loadLocalNodes)[1])
+            println("Incorrect input load")
+            return nothing
+        end
+
+        loadGlobalNodes = [element[i] for i in 3:size(element)[1]]
+
+        for i in eachindex(loadLocalNodes)
+            localIndex = loadLocalNodes[i]
+            globalIndex = loadGlobalNodes[i]
+            loadsVector[3 * globalIndex - 2] += F[2 * localIndex - 2]
+            loadsVector[3 * globalIndex - 1] += F[3 * localIndex - 1]
+            loadsVector[3 * globalIndex] += F[3 * localIndex]
+        end
+    end
+
+    return loadsVector
+end  # assemblyLoads
