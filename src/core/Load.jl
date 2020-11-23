@@ -27,6 +27,18 @@ function applyFixedX(node::Int, loads::Array, globalK::Array)
     globalK[2 * node - 1, 2 * node - 1] = 1
 end  # applyFixedX
 
+# TODO: Unify with `applyFixedX`
+function applyFixedX3D(node::Int, loads::Array, globalK::Array)
+    loads[3 * node - 2] = 0
+    for col in 1:size(globalK)[2]
+        globalK[3 * node - 2, col] = 0
+    end
+    for row in 1:size(globalK)[1]
+        globalK[row, 3 * node - 2] = 0
+    end
+    globalK[3 * node - 2, 3 * node - 2] = 1
+end  # applyFixedX
+
 """
     applyFixedY(node::Int, loads::Array, globalK::Array)
 
@@ -48,6 +60,29 @@ function applyFixedY(node::Int, loads::Array, globalK::Array)
     globalK[2 * node, 2 * node] = 1
 end  # applyFixedY
 
+# TODO: Unify with `applyFixedY`
+function applyFixedY3D(node::Int, loads::Array, globalK::Array)
+    loads[3 * node - 1] = 0
+    for col in 1:size(globalK)[2]
+        globalK[3 * node - 1, col] = 0
+    end
+    for row in 1:size(globalK)[1]
+        globalK[row, 3 * node - 1] = 0
+    end
+    globalK[3 * node - 1, 3 * node - 1] = 1
+end  # applyFixedY
+
+# TODO: Make an unparsed case for 2D model
+function applyFixedZ3D(node::Int, loads::Array, globalK::Array)
+    loads[3 * node] = 0
+    for col in 1:size(globalK)[2]
+        globalK[3 * node, col] = 0
+    end
+    for row in 1:size(globalK)[1]
+        globalK[row, 3 * node] = 0
+    end
+    globalK[3 * node, 3 * node] = 1
+end  # applyFixedY
 
 """
     applyFixedXY(node::Int, loads::Array, globalK::Array)
