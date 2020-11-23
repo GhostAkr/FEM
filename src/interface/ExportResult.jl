@@ -51,7 +51,7 @@ function vtkCellsListSize(pars::processPars)
     return cellsListSize
 end  # vtkCellsListSize
 
-function exportToVTK(result::Array, deformations::Array, stresses::Array, vonMises::Array,  pars::processPars, type::meshType)
+function exportToVTK(result::Array, deformations::Array, stresses::Array, vonMises::Array, pars::processPars, type::meshType)
     vtkIdentifier = "# vtk DataFile Version 3.0\n"
     vtkFormat = "ASCII\n"
     vtkDataSetKeyword = "DATASET"
@@ -66,6 +66,8 @@ function exportToVTK(result::Array, deformations::Array, stresses::Array, vonMis
         cellType = "9"  # 4-nodes elements
     elseif type === Quad8Pts2D
         cellType = "23"  # 8-nodes elements
+    elseif type === Iso8Pts3DMeshType
+        cellType = "12"  # 8-nodes 3D elements
     else
         println("Unknown mesh type while exporting to VTK")
         return
@@ -108,29 +110,42 @@ function exportToVTK(result::Array, deformations::Array, stresses::Array, vonMis
         write(file, vtkPointDataKeyword * " " * string(nOfNodes) * "\n")
         displacementsKeyword = "Displacements"
         write(file, vtkVectorsKeyword * " " * displacementsKeyword * " " * vtkPointsType * "\n")  # By defalt it uses 1 vector per point
-        for nodeIndex in 1:nOfNodes
-            write(file, string(result[2 * nodeIndex - 1]) * " " * string(result[2 * nodeIndex]) * " 0.0\n")
+        if type === Iso8Pts3DMeshType  # TODO: Make this check more scalable
+            for nodeIndex in 1:nOfNodes
+                write(file, string(result[3 * nodeIndex - 2]) * " " * string(result[3 * nodeIndex - 1]) * string(result[3 * nodeIndex]) * "\n")
+            end
+        else
+            for nodeIndex in 1:nOfNodes
+                write(file, string(result[2 * nodeIndex - 1]) * " " * string(result[2 * nodeIndex]) * " 0.0\n")
+            end
         end
         write(file, "\n")
-        deformationsKeyword = "Deformations"
-        write(file, vtkVectorsKeyword * " " * deformationsKeyword * " " * vtkPointsType * "\n")  # By defalt it uses 1 scalar per point
-        for nodeIndex in 1:nOfNodes
-            # write(file, string(deformations[nodeIndex][1]) * "\n")
-            write(file, string(deformations[nodeIndex, 1]) * " " * string(deformations[nodeIndex, 2]) * " " * string(deformations[nodeIndex, 3]) * "\n")
+
+        if deformations !== nothing
+            deformationsKeyword = "Deformations"
+            write(file, vtkVectorsKeyword * " " * deformationsKeyword * " " * vtkPointsType * "\n")  # By defalt it uses 1 scalar per point
+            for nodeIndex in 1:nOfNodes
+                write(file, string(deformations[nodeIndex, 1]) * " " * string(deformations[nodeIndex, 2]) * " " * string(deformations[nodeIndex, 3]) * "\n")
+            end
+            write(file, "\n")
         end
-        write(file, "\n")
-        stressesKeyword = "Stresses"
-        write(file, vtkVectorsKeyword * " " * stressesKeyword * " " * vtkPointsType * "\n")  # By defalt it uses 1 scalar per point
-        for nodeIndex in 1:nOfNodes
-            # write(file, string(stresses[nodeIndex][1]) * "\n")
-            write(file, string(stresses[nodeIndex][1]) * " " * string(stresses[nodeIndex][2]) * " " * string(stresses[nodeIndex][3]) * "\n")
+
+        if stresses !== nothing
+            stressesKeyword = "Stresses"
+            write(file, vtkVectorsKeyword * " " * stressesKeyword * " " * vtkPointsType * "\n")  # By defalt it uses 1 scalar per point
+            for nodeIndex in 1:nOfNodes
+                write(file, string(stresses[nodeIndex][1]) * " " * string(stresses[nodeIndex][2]) * " " * string(stresses[nodeIndex][3]) * "\n")
+            end
+            write(file, "\n")
         end
-        write(file, "\n")
-        vonMisesKeyword = "VonMises"
-        write(file, vtkScalarKeyword * " " * vonMisesKeyword * " " * vtkPointsType * "\n")  # By defalt it uses 1 scalar per point
-        write(file, vtkTableKeyword * " " * vtkTableDefault * "\n")
-        for nodeIndex in 1:nOfNodes
-            write(file, string(vonMises[nodeIndex]) * "\n")
+
+        if vonMises !== nothing
+            vonMisesKeyword = "VonMises"
+            write(file, vtkScalarKeyword * " " * vonMisesKeyword * " " * vtkPointsType * "\n")  # By defalt it uses 1 scalar per point
+            write(file, vtkTableKeyword * " " * vtkTableDefault * "\n")
+            for nodeIndex in 1:nOfNodes
+                write(file, string(vonMises[nodeIndex]) * "\n")
+            end
         end
     end
 end  # exportToVTK

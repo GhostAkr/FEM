@@ -143,7 +143,7 @@ function elementLoad3D(elementNum::Int, pars::processPars, inputLoad::Array, loa
     # IntegrationOrder = 4
     FIntegrate(x) = 0
     if loadDirect == top
-        FIntegrate(r, s) = transpose(displInterpMatr(r, s, 1 elemTypeInd)) * load * DetJs(r, s, 1, xCoords, yCoords, zCoords, elemTypeInd)
+        FIntegrate(r, s) = transpose(displInterpMatr(r, s, 1, elemTypeInd)) * load * DetJs(r, s, 1, xCoords, yCoords, zCoords, elemTypeInd)
     elseif loadDirect == left
         FIntegrate(r, t) = transpose(displInterpMatr(r, -1, t, elemTypeInd)) * load * DetJs(r, -1, t, xCoords, yCoords, zCoords, elemTypeInd)
     elseif loadDirect == bottom
