@@ -8,6 +8,7 @@ module Iso8Pts3D
 using ElementTypes
 
 export FiniteElement, Iso8Pts3DType
+export jacGlobToLoc, DetJs, gradMatr, displInterpMatr, nodesFromDirection, getRSFromNode
 
 
 struct Iso8Pts3DType <: FiniteElement
@@ -155,11 +156,11 @@ function ElementTypes.jacGlobToLoc(r, s, t, xCoords::Array{Float64}, yCoords::Ar
 end
 
 function jacGlobToLocInv(r, s, t, xCoords::Array{Float64}, yCoords::Array{Float64}, zCoords::Array{Float64})
-    elemTypeInd = Quad8Type("Iso8Pts3DType")
+    elemTypeInd = Iso8Pts3DType("Iso8Pts3DType")
     inv(jacGlobToLoc(r, s, t, xCoords, yCoords, zCoords, elemTypeInd))
 end
 
-function ElementTypes.DetJs(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}, elemTypeInd::Iso8Pts3DType)
+function ElementTypes.DetJs(r, s, t, xCoords::Array{Float64}, yCoords::Array{Float64}, zCoords::Array{Float64}, elemTypeInd::Iso8Pts3DType)
     return sqrt(dxs(r, s, t, xCoords)^2 + dys(r, s, t, yCoords)^2 + dzs(r, s, t, zCoords))
 end
 
@@ -296,10 +297,10 @@ function ElementTypes.gradMatr(r, s, t, xCoords::Array{Float64}, yCoords::Array{
     return resultMatrix
 end
 
-function ElementTypes.displInterpMatr(r, s, elemTypeInd::Iso8Pts3DType)
+function ElementTypes.displInterpMatr(r, s, t, elemTypeInd::Iso8Pts3DType)
     result = [h1(r, s, t) 0 0 h2(r, s, t) 0 0 h3(r, s, t) 0 0 h4(r, s, t) 0 0 h5(r, s, t) 0 0 h6(r, s, t) 0 0 h7(r, s, t) 0 0 h8(r, s, t) 0 0
               0 h1(r, s, t) 0 0 h2(r, s, t) 0 0 h3(r, s, t) 0 0 h4(r, s, t) 0 0 h5(r, s, t) 0 0 h6(r, s, t) 0 0 h7(r, s, t) 0 0 h8(r, s, t) 0
-              0 0 h1(r, s, t) 0 0 r2(r, s, t) 0 0 r3(r, s, t) 0 0 r4(r, s, t) 0 0 r5(r, s, t) 0 0 r6(r, s, t) 0 0 r7(r, s, t) 0 0 h8(r, s, t)]
+              0 0 h1(r, s, t) 0 0 h2(r, s, t) 0 0 h3(r, s, t) 0 0 h4(r, s, t) 0 0 h5(r, s, t) 0 0 h6(r, s, t) 0 0 h7(r, s, t) 0 0 h8(r, s, t)]
     return result
 end  # displInterpMatr
 

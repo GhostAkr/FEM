@@ -138,7 +138,7 @@ function elementLoad3D(elementNum::Int, pars::processPars, inputLoad::Array, loa
     nodesPerElement = length(pars.mesh.elements[elementNum])
     xCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][1] for i in 1:nodesPerElement]
     yCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][2] for i in 1:nodesPerElement]
-    yCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][3] for i in 1:nodesPerElement]
+    zCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][3] for i in 1:nodesPerElement]
     load = inputLoad
     # IntegrationOrder = 4
     FIntegrate(x) = 0
@@ -215,7 +215,7 @@ function assemblyLoads3D(pars::processPars, intOrder::Int, elemTypeInd::FiniteEl
         for i in eachindex(loadLocalNodes)
             localIndex = loadLocalNodes[i]
             globalIndex = loadGlobalNodes[i]
-            loadsVector[3 * globalIndex - 2] += F[2 * localIndex - 2]
+            loadsVector[3 * globalIndex - 2] += F[3 * localIndex - 2]
             loadsVector[3 * globalIndex - 1] += F[3 * localIndex - 1]
             loadsVector[3 * globalIndex] += F[3 * localIndex]
         end

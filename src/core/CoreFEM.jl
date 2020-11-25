@@ -20,6 +20,7 @@ using ElementTypes
 
 using Quad4Pts
 using Quad8Pts
+using Iso8Pts3D
 
 export fem2D
 
@@ -50,15 +51,16 @@ function assemblyFEM3D(pars::processPars, targetMatrix::Array, currentElementMat
     elementNodes = pars.mesh.elements[elementNum]
     for i in eachindex(elementNodes)
         for j in eachindex(elementNodes)
+            # TODO: Fix current matrix indices
             targetMatrix[3 * elementNodes[i] - 2, 3 * elementNodes[j] - 2] += currentElementMatrix[3 * i - 2, 3 * j - 2]
             targetMatrix[3 * elementNodes[i] - 2, 3 * elementNodes[j] - 1] += currentElementMatrix[3 * i - 2, 3 * j - 1]
             targetMatrix[3 * elementNodes[i] - 2, 3 * elementNodes[j]] += currentElementMatrix[3 * i - 2, 3 * j]
-            targetMatrix[3 * elementNodes[i] - 1, 3 * elementNodes[j] - 2] += currentElementMatrix[3 * i - 2, 3 * j - 2]
-            targetMatrix[3 * elementNodes[i] - 1, 3 * elementNodes[j] - 1] += currentElementMatrix[3 * i - 2, 3 * j - 1]
-            targetMatrix[3 * elementNodes[i] - 1, 3 * elementNodes[j]] += currentElementMatrix[3 * i - 2, 3 * j]
-            targetMatrix[3 * elementNodes[i], 3 * elementNodes[j] - 2] += currentElementMatrix[3 * i - 2, 3 * j - 2]
-            targetMatrix[3 * elementNodes[i], 3 * elementNodes[j] - 1] += currentElementMatrix[3 * i - 2, 3 * j - 1]
-            targetMatrix[3 * elementNodes[i], 3 * elementNodes[j]] += currentElementMatrix[3 * i - 2, 3 * j]
+            targetMatrix[3 * elementNodes[i] - 1, 3 * elementNodes[j] - 2] += currentElementMatrix[3 * i - 1, 3 * j - 2]
+            targetMatrix[3 * elementNodes[i] - 1, 3 * elementNodes[j] - 1] += currentElementMatrix[3 * i - 1, 3 * j - 1]
+            targetMatrix[3 * elementNodes[i] - 1, 3 * elementNodes[j]] += currentElementMatrix[3 * i - 1, 3 * j]
+            targetMatrix[3 * elementNodes[i], 3 * elementNodes[j] - 2] += currentElementMatrix[3 * i, 3 * j - 2]
+            targetMatrix[3 * elementNodes[i], 3 * elementNodes[j] - 1] += currentElementMatrix[3 * i, 3 * j - 1]
+            targetMatrix[3 * elementNodes[i], 3 * elementNodes[j]] += currentElementMatrix[3 * i, 3 * j]
         end
     end
 end  # assemblyFEM3D
@@ -231,9 +233,10 @@ function fem3D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     # Getting mesh type
     meshType = typeMeshFromElement(elemTypeID)
 
-    parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D(2))
-    readParameters!(dataPath, parameters)
-    parameters.mesh = readMeshFromSalomeDAT(meshPath, meshType)
+    # parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D(2))
+    parameters = processPars(testMaterialProperties(), testBC3D(), testLoad3D(), generateTestMesh3D())
+    # readParameters!(dataPath, parameters)
+    # parameters.mesh = readMeshFromSalomeDAT(meshPath, meshType)
 
     intOrder = 4
 
@@ -250,7 +253,9 @@ function fem3D(meshPath::String, dataPath::String, elemTypeID::FETypes)
 
     loadVector = assemblyLoads3D(parameters, intOrder, elementType)
 
+    println("Load vector before constraints: ", loadVector)
     applyConstraints3D(parameters, loadVector, ensembleMatrix)
+    println("Load vector after constraints: ", loadVector)
 
     # Writing left part to file
     open("equation/K", "w") do file
@@ -262,6 +267,8 @@ function fem3D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     end
 
     println("Solving...")
+    println("Ensemble matrix sizes: ", size(ensembleMatrix))
+    println("Load vector sizes: ", size(loadVector))
     result = solve(ensembleMatrix, loadVector)
 
     return result

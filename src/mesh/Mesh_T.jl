@@ -1,6 +1,9 @@
 include("MeshVars.jl")
 
 export Mesh2D_T, generateTestMesh2D, printNodesMesh2D, printElementsMesh2D, readMeshFromSalomeDAT
+export generateTestMesh3D
+
+# TODO: Rename mesh type and print functions as well as it can be used for 3D models too.
 
 """
     Mesh2D_T
@@ -44,6 +47,29 @@ function generateTestMesh2D(n::Int)
     end
     return resultMesh
 end  # generateRandomMesh2D
+
+function generateTestMesh3D()
+    nOfNodes = 12
+    nOfElements = 2 
+    resultMesh = Mesh2D_T(Vector{Tuple{Vararg{Float64}}}(undef, nOfNodes), Vector{Tuple{Vararg{Int}}}(undef, nOfElements))
+    # Nodes
+    resultMesh.nodes[1] = (0, 0, 0)
+    resultMesh.nodes[2] = (50, 0, 0)
+    resultMesh.nodes[3] = (100, 0, 0)
+    resultMesh.nodes[4] = (0, 0, 100)
+    resultMesh.nodes[5] = (50, 0, 100)
+    resultMesh.nodes[6] = (100, 0, 100)
+    resultMesh.nodes[7] = (0, 100, 0)
+    resultMesh.nodes[8] = (50, 100, 0)
+    resultMesh.nodes[9] = (100, 100, 0)
+    resultMesh.nodes[10] = (0, 100, 100)
+    resultMesh.nodes[11] = (50, 100, 100)
+    resultMesh.nodes[12] = (100, 100, 100)
+    # Elements
+    resultMesh.elements[1] = (5, 11, 10, 4, 2, 8, 7, 1)
+    resultMesh.elements[2] = (6, 12, 11, 5, 3, 9, 8, 2)
+    return resultMesh
+end  # generateTestMesh3D
 
 
 """
