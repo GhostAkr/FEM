@@ -21,7 +21,7 @@ Return test load: surface force ``f^s = 10 \\text{МПа}`` on the right edge of
 """
 testLoad() = Dict([2, 4, 3, 6] => [10., 0.], [4, 4, 6, 9] => [10., 0.])
 
-testLoad3D() = Dict([2, 3, 6, 12, 3, 9] => [10., 0., 0.])
+testLoad3D() = Dict([2, 4, 6, 12, 3, 9] => [10., 0., 0.])
 
 """
     testBC()

@@ -312,7 +312,8 @@ function ElementTypes.nodesFromDirection(direction::Int, elemTypeInd::Iso8Pts3DT
     elseif direction == 3  # Bottom
         return [5, 6, 7, 8]
     elseif direction == 4  # Right
-        return [1, 2, 6, 5]
+        # TODO: Was [1, 2, 6, 5] before, need to deal with nodes order
+        return [1, 2, 5, 6]
     elseif direction == 5  # To us
         return [1, 4, 8, 5]
     elseif direction == 6  # From us

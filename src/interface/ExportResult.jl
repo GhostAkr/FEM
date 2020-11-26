@@ -51,7 +51,7 @@ function vtkCellsListSize(pars::processPars)
     return cellsListSize
 end  # vtkCellsListSize
 
-function exportToVTK(result::Array, deformations::Array, stresses::Array, vonMises::Array, pars::processPars, type::meshType)
+function exportToVTK(result::Array, deformations, stresses, vonMises, pars::processPars, type::meshType)
     vtkIdentifier = "# vtk DataFile Version 3.0\n"
     vtkFormat = "ASCII\n"
     vtkDataSetKeyword = "DATASET"
@@ -121,7 +121,7 @@ function exportToVTK(result::Array, deformations::Array, stresses::Array, vonMis
         end
         write(file, "\n")
 
-        if deformations !== nothing
+        if isnothing(deformations)
             deformationsKeyword = "Deformations"
             write(file, vtkVectorsKeyword * " " * deformationsKeyword * " " * vtkPointsType * "\n")  # By defalt it uses 1 scalar per point
             for nodeIndex in 1:nOfNodes
@@ -130,7 +130,7 @@ function exportToVTK(result::Array, deformations::Array, stresses::Array, vonMis
             write(file, "\n")
         end
 
-        if stresses !== nothing
+        if isnothing(stresses)
             stressesKeyword = "Stresses"
             write(file, vtkVectorsKeyword * " " * stressesKeyword * " " * vtkPointsType * "\n")  # By defalt it uses 1 scalar per point
             for nodeIndex in 1:nOfNodes
@@ -139,7 +139,7 @@ function exportToVTK(result::Array, deformations::Array, stresses::Array, vonMis
             write(file, "\n")
         end
 
-        if vonMises !== nothing
+        if isnothing(vonMises)
             vonMisesKeyword = "VonMises"
             write(file, vtkScalarKeyword * " " * vonMisesKeyword * " " * vtkPointsType * "\n")  # By defalt it uses 1 scalar per point
             write(file, vtkTableKeyword * " " * vtkTableDefault * "\n")

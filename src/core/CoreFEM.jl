@@ -271,6 +271,13 @@ function fem3D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     println("Load vector sizes: ", size(loadVector))
     result = solve(ensembleMatrix, loadVector)
 
+    # Writing result to file
+    open("equation/result", "w") do file
+        writedlm(file, result)
+    end
+
+    BaseInterface.exportToVTK(result, undef, undef, undef, parameters, meshType)
+
     return result
 end  # fem3D
 

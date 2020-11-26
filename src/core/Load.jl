@@ -131,6 +131,9 @@ function elementLoad(elementNum::Int, pars::processPars, inputLoad::Array, loadD
         return nothing
     end
     F = multipleIntegral.gauss1DMethodMatrix(FIntegrate, intOrder)
+    if elementNum == 3
+        println("Load on 3rd element: ", F)
+    end
     return F
 end  # elementLoad
 
@@ -141,7 +144,7 @@ function elementLoad3D(elementNum::Int, pars::processPars, inputLoad::Array, loa
     zCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][3] for i in 1:nodesPerElement]
     load = inputLoad
     # IntegrationOrder = 4
-    FIntegrate(x) = 0
+    FIntegrate(x, y) = 0
     if loadDirect == top
         FIntegrate(r, s) = transpose(displInterpMatr(r, s, 1, elemTypeInd)) * load * DetJs(r, s, 1, xCoords, yCoords, zCoords, elemTypeInd)
     elseif loadDirect == left
@@ -149,7 +152,12 @@ function elementLoad3D(elementNum::Int, pars::processPars, inputLoad::Array, loa
     elseif loadDirect == bottom
         FIntegrate(r, s) = transpose(displInterpMatr(r, s, 1, elemTypeInd)) * load * DetJs(r, s, -1, xCoords, yCoords, zCoords, elemTypeInd)
     elseif loadDirect == right
-        FIntegrate(r, t) = transpose(displInterpMatr(r, 1, t, elemTypeInd)) * load * DetJs(r, 1, t, xCoords, yCoords, zCoords, elemTypeInd)
+        println("Right case")
+        println("Interpolation matrix: ", transpose(displInterpMatr(5, 1, 5, elemTypeInd)))
+        println("Expected F: ", transpose(displInterpMatr(5, 1, 5, elemTypeInd)) * load)
+        println("Load: ", load)
+        FIntegrate(r, t) = (transpose(displInterpMatr(r, 1, t, elemTypeInd)) * load) #* DetJs(r, 1, t, xCoords, yCoords, zCoords, elemTypeInd)
+        println("Calculated F: ", FIntegrate(5, 5))
     elseif loadDirect == backwards  # To us
         FIntegrate(s, t) = transpose(displInterpMatr(1, s, t, elemTypeInd)) * load * DetJs(1, s, t, xCoords, yCoords, zCoords, elemTypeInd)
     elseif loadDirect == towards  # From us
@@ -159,6 +167,10 @@ function elementLoad3D(elementNum::Int, pars::processPars, inputLoad::Array, loa
         return nothing
     end
     F = multipleIntegral.gaussMethodMatrix(FIntegrate, intOrder)
+
+    if elementNum == 2
+        println("Load on 2nd element: ", F)
+    end
 
     return F
 end  # elementLoad
@@ -201,6 +213,7 @@ function assemblyLoads3D(pars::processPars, intOrder::Int, elemTypeInd::FiniteEl
 
     for (element, load) in pars.load
         elNum = element[1]
+        println("Direction is ", element[2])
         direction = loadDirection(element[2])
         F = elementLoad3D(elNum, pars, load, direction, intOrder, elemTypeInd)
         loadLocalNodes = nodesFromDirection(Int(direction), elemTypeInd)
@@ -215,6 +228,7 @@ function assemblyLoads3D(pars::processPars, intOrder::Int, elemTypeInd::FiniteEl
         for i in eachindex(loadLocalNodes)
             localIndex = loadLocalNodes[i]
             globalIndex = loadGlobalNodes[i]
+            println("Writing ", localIndex, " to ", globalIndex)
             loadsVector[3 * globalIndex - 2] += F[3 * localIndex - 2]
             loadsVector[3 * globalIndex - 1] += F[3 * localIndex - 1]
             loadsVector[3 * globalIndex] += F[3 * localIndex]
