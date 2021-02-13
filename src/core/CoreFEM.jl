@@ -17,6 +17,7 @@ using DelimitedFiles
 using BaseInterface
 using IterativeSolvers
 using ElementTypes
+using TestFEM
 
 using Quad4Pts
 using Quad8Pts
@@ -160,6 +161,13 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     end
     println("Solving...")
     result = solve(ensembleMatrix, loadVector)
+
+    if TestFEM.verify_example(meshPath, dataPath, result)
+        @info "Result is correct"
+    else
+        @info "Result is INcorrect"
+    end
+
     deformations = calculateDeformations(result, parameters, intOrder, elementType)
     stresses = calculateStresses(deformations, C, parameters)
     vonMises = calculateVonMises(stresses)
