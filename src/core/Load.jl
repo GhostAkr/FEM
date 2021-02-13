@@ -100,34 +100,36 @@ function elementLoad(elementNum::Int, pars::processPars, inputLoad::Array, loadD
 end  # elementLoad
 
 """
-    assemblyLoads(pars::processPars)
+    assembly_loads!(pars::processPars, intOrder::Int, elemTypeInd::FiniteElement, freedom_deg::Int)
 
 Assemble right part of linear system of equations. This method applies given local load vector to global ensemble.
 
 # Arguments
-- `pars::processPars`: parameters of current model.
+- `pars::processPars`: parameters of current model;
+- `intOrder::Int`: order of integration;
+- `elemTypeInd::FiniteElement`: type of finite element;
+- `freedom_deg::Int`: degree of freedom.
 """
-function assemblyLoads(pars::processPars, intOrder::Int, elemTypeInd::FiniteElement)
+function assembly_loads!(pars::processPars, intOrder::Int, elemTypeInd::FiniteElement, freedom_deg::Int)
     loadsVector = zeros(Float64, 2 * size(pars.mesh.nodes)[1])
     for (element, load) in pars.load
         elNum = element[1]
         direction = loadDirection(element[2])
         F = elementLoad(elNum, pars, load, direction, intOrder, elemTypeInd)
         loadLocalNodes = nodesFromDirection(Int(direction), elemTypeInd)
-        # println("Size: ", size(element)[1])
         if (size(element)[1] - 2 != size(loadLocalNodes)[1])
-            println("Incorrect input load")
+            @error "Incorrect input load"
             return nothing
         end
         loadGlobalNodes = [element[i] for i in 3:size(element)[1]]
         for i in eachindex(loadLocalNodes)
             localIndex = loadLocalNodes[i]
             globalIndex = loadGlobalNodes[i]
-            loadsVector[2 * globalIndex - 1] += F[2 * localIndex - 1]
-            loadsVector[2 * globalIndex] += F[2 * localIndex]
-            # println("Loaded node: ", globalIndex)
+            for offset in 1:freedom_deg
+                loadsVector[freedom_deg * globalIndex - (offset - 1)] += 
+                        F[freedom_deg * localIndex - (offset - 1)]
+            end
         end
     end
-    # println(loadsVector)
     return loadsVector
 end  # constructLoads

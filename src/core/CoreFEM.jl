@@ -25,7 +25,7 @@ using Quad8Pts
 export fem2D
 
 """
-    assemblyFEM2D(pars::processPars, targetMatrix::Array, currentElementMatrix::Array, elementNum::Number)
+    assembly_left_part!(pars::processPars, targetMatrix::Array, currentElementMatrix::Array, elementNum::Number, freedom_deg::Int)
 
 Assemble left part of linear system of equations. This method applies given local stiffness matrix to global ensemble.
 
@@ -153,7 +153,7 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
         K = stiffnessMatrix(C, parameters, elementNum, intOrder, elementType)
         assembly_left_part!(parameters, ensembleMatrix, K, elementNum, freedom_deg)
     end
-    loadVector = assemblyLoads(parameters, intOrder, elementType)
+    loadVector = assembly_loads!(parameters, intOrder, elementType, freedom_deg)
     applyConstraints(parameters, loadVector, ensembleMatrix)
     # Writing left part to file
     open("equation/K", "w") do file
