@@ -8,7 +8,7 @@ module Quad4Pts
 using ElementTypes
 
 export FiniteElement, Quad4Type
-export jacGlobToLoc, DetJs, gradMatr, displInterpMatr, nodesFromDirection, getRSFromNode
+export jacGlobToLoc, DetJs, gradMatr, displInterpMatr, nodesFromDirection, directionFromNodes, getRSFromNode
 
 struct Quad4Type <: FiniteElement
     name::String
@@ -179,6 +179,32 @@ function ElementTypes.nodesFromDirection(direction::Int, elemTypeInd::Quad4Type)
         return nothing
     end
 end  # nodesFromDirection
+
+"""
+    directionFromNodes(nodes::Array, elType:: FiniteElement)
+
+Return direction from given nodes.
+
+# Arguments
+- `nodes::Array`: nodes according to which direction should be defined.
+- `elType:: FiniteElement`: element type indicator.
+"""
+function ElementTypes.directionFromNodes(nodes::Array, elType:: FiniteElement)
+    if issubset([1, 2], nodes)
+        @info("[1, 2] found")
+        return 4  # Top
+    elseif issubset([3, 2], nodes)  # TODO: provide order-insensetive way to define direction
+        # return 2  # Left            # Now it only works for [3, 2] case.
+        return 4
+    elseif issubset([3, 4], nodes)
+        return 3  # Bottom
+    elseif issubset([5, 6], nodes)
+        return 4  # Right
+    else
+        @error("Can't define direction from given nodes")
+        return nothing
+    end
+end  # directionFromNodes
 
 function ElementTypes.getRSFromNode(nodeIndex::Int, elemTypeInd::Quad4Type)
     if nodeIndex == 1
