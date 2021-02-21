@@ -12,6 +12,9 @@ function verify_example(meshPath::String, dataPath::String, result::Array)
     elseif meshPath == "examples/QuarterPlate8N/QuadrPlate8N_MeshNew.dat" &&
         dataPath == "examples/QuarterPlate8N/QuadrPlate8N_DataNew"
         answer = quarter8N_example()
+    elseif meshPath == "examples/SmallPlate/SmallPlate.dat" &&
+        dataPath == "examples/SmallPlate/SmallPlate_Data"
+        answer = small_example()
     else
         @warn "Example answer wasn't found"
         return false
@@ -26,15 +29,21 @@ end
 
 # Tests from examples
 
+function small_example()
+    answer_path = "examples/SmallPlate/SmallPlate_Answer"
+    answer = readdlm(answer_path, '\t', Float64, '\n')
+    return answer
+end
+
 function quarter_example()
-    quarter_example_path = "examples/QuarterPlate/Quarter_Answer"
-    answer = readdlm(quarter_example_path, '\t', Float64, '\n')
+    answer_example_path = "examples/QuarterPlate/Quarter_Answer"
+    answer = readdlm(answer_path, '\t', Float64, '\n')
     return answer
 end
 
 function quarter8N_example()
-    quarter_example_path = "examples/QuarterPlate8N/QuarterPlate8N_Answer"
-    answer = readdlm(quarter_example_path, '\t', Float64, '\n')
+    answer_example_path = "examples/QuarterPlate8N/QuarterPlate8N_Answer"
+    answer = readdlm(answer_path, '\t', Float64, '\n')
     return answer
 end
 
