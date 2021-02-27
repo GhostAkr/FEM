@@ -15,6 +15,8 @@ mutable struct Mesh2D_T
     nodes::Vector{Tuple{Vararg{Float64}}}
     "Matrix of elements (contains elements's nodes)"
     elements::Vector{Tuple{Vararg{Int}}}
+    "Groups of nodes"
+    groups::Dict{String, Vector{Vector{Int}}}
 end  # Mesh2D_T
 
 """
@@ -29,7 +31,7 @@ function generateTestMesh2D(n::Int)
     dimension = 2
     nodesPerElement = 4
     # Creation
-    resultMesh = Mesh2D_T(Vector{Tuple{Vararg{Float64}}}(undef, nOfNodes), Vector{Tuple{Vararg{Int}}}(undef, nOfElements))
+    resultMesh = Mesh2D_T(Vector{Tuple{Vararg{Float64}}}(undef, nOfNodes), Vector{Tuple{Vararg{Int}}}(undef, nOfElements), Dict{String, Vector{Vector{Int}}}())
     nodeIndex = 1
     step = 100 / n
     for i in 0:step:100
@@ -181,3 +183,78 @@ function readMeshFromSalomeDAT(pathToFile::String, type::meshType)
         return mesh
     end
 end  # readMeshFromSalomeDAT
+
+"""
+    nodes_group_by_name(mesh::Mesh2D_T, name::String)
+
+Get nodes group by name from given mesh.
+
+# Arguments
+- `mesh::Mesh2D_T`: Mesh which contains target groups;
+- `name::String`: Name of target group.
+"""
+function nodes_group_by_name(mesh::Mesh2D_T, name::String)
+    if !(haskey(mesh.groups, name))
+        @warn("Nodes group with such key not found")
+        return nothing
+    end
+    targetGroup = mesh.groups[name]
+    return targetGroup
+end  # nodes_group_by_name
+
+"""
+    add_nodes_group!(mesh::Mesh2D_T, name::String, nodes::Array{Tuple{Vararg{Int}}})
+
+Add nodes group to given mesh.
+
+# Arguments
+- `mesh::Mesh2D_T`: Mesh to which group should be added;
+- `name::String`: Name of target group;
+- `nodes::Array{Tuple{Vararg{Int}}}`: Array of nodes in target group.
+"""
+function add_nodes_group!(mesh::Mesh2D_T, name::String, nodes::Vector{Vector{Int}})
+    if haskey(mesh.groups, name)
+        @warn("Group with given name already exists, replacing to the new one")
+    end
+    mesh.groups[name] = nodes
+end  # add_nodes_group!
+
+"""
+    add_nodes_multiple_groups!(mesh::Mesh2D_T, groups::Dict{String, Vector{Tuple{Vararg{Int}}}})
+
+Add multiple nodes groups to given mesh.
+
+# Arguments
+- `mesh::Mesh2D_T`: Mesh to which group should be added;
+- `groups::Dict{String, Vector{Tuple{Vararg{Int}}}}`: Dictionary of groups which should be added to given mesh.
+"""
+function add_nodes_multiple_groups!(mesh::Mesh2D_T, groups::Dict{String, Vector{Vector{Int}}})
+    for key in keys(groups)
+        mesh.groups[key] = groups[key]
+    end
+end  # add_nodes_multiple_groups!
+
+"""
+    delete_nodes_group_by_name!(mesh::Mesh2D_T, name::String)
+
+Delete nodes group from given mesh by name.
+
+# Arguments
+- `mesh::Mesh2D_T`: Mesh to which group should be added;
+- `name::String`: Name of target group.
+"""
+function delete_nodes_group_by_name!(mesh::Mesh2D_T, name::String)
+    delete!(mesh.groups, name)
+end  # delete_nodes_group_by_name!
+
+"""
+    print_nodes_groups(mesh::Mesh2D_T)
+
+Print all nodes groups of given mesh to the REPL.
+
+# Arguments
+- `mesh::Mesh2D_T`: Mesh to which group should be added.
+"""
+function print_nodes_groups(mesh::Mesh2D_T)
+    println(mesh.groups)
+end  # print_nodes_groups
