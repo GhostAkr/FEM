@@ -1,5 +1,7 @@
 include("MeshVars.jl")
 
+using AsterReader
+
 export Mesh2D_T, generateTestMesh2D, printNodesMesh2D, printElementsMesh2D, readMeshFromSalomeDAT
 
 """
@@ -258,3 +260,34 @@ Print all nodes groups of given mesh to the REPL.
 function print_nodes_groups(mesh::Mesh2D_T)
     println(mesh.groups)
 end  # print_nodes_groups
+
+"""
+    read_nodes_groups_from_salome(salome_mesh::String)
+
+Read groups of nodes from Salome MED file. This method uses
+AsterReader module to get access to MED file.
+
+# Arguments
+- `salome_mesh::String`: Path to source MED file.
+"""
+function read_nodes_groups_from_salome(salome_mesh::String)
+    mesh = AsterReader.aster_read_mesh(salome_mesh)
+
+    # Getting elements from mesh
+    elements = mesh["elements"]
+    # Getting groups from mesh
+    element_sets = mesh["element_sets"]
+
+    res_dict = Dict{String, Vector{Vector{Int}}}()
+    for name in keys(element_sets)
+        set_nodes = Vector{Vector{Int}}()
+        elem_set = element_sets[name]
+        for elem_num in elem_set
+            nodes = elements[elem_num]
+            push!(set_nodes, nodes)
+        end
+        res_dict[name] = set_nodes
+    end
+
+    return res_dict
+end  # read_nodes_groups_from_salome
