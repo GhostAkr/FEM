@@ -115,7 +115,7 @@ Read mesh from .dat file generated via Salome platform.
 - `type::meshType`: Type of given mesh.
 """
 function readMeshFromSalomeDAT(pathToFile::String, type::meshType)
-    mesh = Mesh2D_T(Vector{Tuple{Vararg{Float64}}}(undef, 0), Vector{Tuple{Vararg{Int}}}(undef, 0))
+    mesh = Mesh2D_T(Vector{Tuple{Vararg{Float64}}}(undef, 0), Vector{Tuple{Vararg{Int}}}(undef, 0), Dict{String, Vector{Vector{Int}}}())
     open(pathToFile, "r") do file
         fileContents = split(read(file, String))  # Read once to provide more efficiency on big meshes
         nOfNodes = parse(Int, fileContents[1])
@@ -167,7 +167,8 @@ function readMeshFromSalomeDAT(pathToFile::String, type::meshType)
             end
             index += 1
         end
-        mesh = Mesh2D_T(nodes, elements)
+        groups = Dict{String, Vector{Vector{Int}}}()
+        mesh = Mesh2D_T(nodes, elements, groups)
         x0 = []
         y0 = []
         epsNull = 1e-10
