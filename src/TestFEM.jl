@@ -36,13 +36,13 @@ function small_example()
 end
 
 function quarter_example()
-    answer_example_path = "examples/QuarterPlate/Quarter_Answer"
+    answer_path = "examples/QuarterPlate/Quarter_Answer"
     answer = readdlm(answer_path, '\t', Float64, '\n')
     return answer
 end
 
 function quarter8N_example()
-    answer_example_path = "examples/QuarterPlate8N/QuarterPlate8N_Answer"
+    answer_path = "examples/QuarterPlate8N/QuarterPlate8N_Answer"
     answer = readdlm(answer_path, '\t', Float64, '\n')
     return answer
 end
