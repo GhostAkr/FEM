@@ -99,7 +99,14 @@ Determinant of appropriate Jacobi matrix.
 - `xCoords::Array{Float64}`: x coordinates of each node in current element;
 - `yCoords::Array{Float64}`: y coordinates of each node in current element.
 """
-ElementTypes.DetJs(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}, elemTypeInd::Quad4Type) = sqrt(dxs(r, s, xCoords)^2 + dys(r, s, yCoords)^2)
+function ElementTypes.DetJs(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}, elemTypeInd::Quad4Type)
+
+    # TODO: Unify method for every possible set of nodes
+
+    return sqrt(dxs(r, s, xCoords)^2 + dys(r, s, yCoords)^2)
+    # return sqrt(dxr(r, s, xCoords)^2 + dyr(r, s, yCoords)^2)
+end
+
 
 dh1x(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = jacGlobToLocInv(r, s, xCoords, yCoords)[1, 1] * dh1r(r, s) + jacGlobToLocInv(r, s, xCoords, yCoords)[1, 2] * dh1s(r, s)
 dh1y(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}) = jacGlobToLocInv(r, s, xCoords, yCoords)[2, 1] * dh1r(r, s) + jacGlobToLocInv(r, s, xCoords, yCoords)[2, 2] * dh1s(r, s)
@@ -150,10 +157,17 @@ Displacements interpolation ``H`` matrix.
 """
 function ElementTypes.displInterpMatr(r, s, elemTypeInd::Quad4Type)
     result = zeros(Real, 2, 8)
+
+    # TODO: Unify method for every possible set of nodes
+
     result[1, 1] = 0.5 * (1 + s)
     result[1, 7] = 0.5 * (1 - s)
     result[2, 2] = 0.5 * (1 + s)
     result[2, 8] = 0.5 * (1 - s)
+    # result[1, 1] = 0.5 * (1 + r)
+    # result[1, 3] = 0.5 * (1 - r)
+    # result[2, 2] = 0.5 * (1 + r)
+    # result[2, 4] = 0.5 * (1 - r)
     return result
 end  # displInterpMatr
 
@@ -189,16 +203,14 @@ Return direction from given nodes.
 - `nodes::Array`: nodes according to which direction should be defined.
 - `elType:: FiniteElement`: element type indicator.
 """
-function ElementTypes.directionFromNodes(nodes::Array, elType:: FiniteElement)
+function ElementTypes.directionFromNodes(nodes::Array, elemTypeInd::Quad4Type)
     if issubset([1, 2], nodes)
-        @info("[1, 2] found")
-        return 4  # Top
+        return 1  # Top
     elseif issubset([3, 2], nodes)  # TODO: provide order-insensetive way to define direction
-        # return 2  # Left            # Now it only works for [3, 2] case.
-        return 4
+        return 2  # Left            # Now it only works for [3, 2] case.
     elseif issubset([3, 4], nodes)
         return 3  # Bottom
-    elseif issubset([5, 6], nodes)
+    elseif issubset([1, 4], nodes)
         return 4  # Right
     else
         @error("Can't define direction from given nodes")

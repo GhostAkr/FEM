@@ -81,21 +81,25 @@ function elementLoad(elementNum::Int, pars::processPars, inputLoad::Array, loadD
     xCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][1] for i in 1:nodesPerElement]
     yCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][2] for i in 1:nodesPerElement]
     load = inputLoad
-    # IntegrationOrder = 4
-    FIntegrate(x) = 0
+
+    f_integrate_top(r) = transpose(displInterpMatr(r, 1, elemTypeInd)) * load * DetJs(r, 1, xCoords, yCoords, elemTypeInd)
+    f_integrate_left(s) = transpose(displInterpMatr(-1, s, elemTypeInd)) * load * DetJs(-1, s, xCoords, yCoords, elemTypeInd)
+    f_integrate_bottom(r) = transpose(displInterpMatr(r, -1, elemTypeInd)) * load * DetJs(r, -1, xCoords, yCoords, elemTypeInd)
+    f_integrate_right(s) = transpose(displInterpMatr(1, s, elemTypeInd)) * load * DetJs(1, s, xCoords, yCoords, elemTypeInd)
+
+    F = nothing
     if loadDirect == top
-        FIntegrate(r) = transpose(displInterpMatr(r, 1, elemTypeInd)) * load * DetJs(r, 1, xCoords, yCoords, elemTypeInd)
+        F = multipleIntegral.gauss1DMethodMatrix(f_integrate_top, intOrder)
     elseif loadDirect == left
-        FIntegrate(s) = transpose(displInterpMatr(-1, s, elemTypeInd)) * load * DetJs(-1, s, xCoords, yCoords, elemTypeInd)
+        F = multipleIntegral.gauss1DMethodMatrix(f_integrate_left, intOrder)
     elseif loadDirect == bottom
-        FIntegrate(r) = transpose(displInterpMatr(r, -1, elemTypeInd)) * load * DetJs(r, -1, xCoords, yCoords, elemTypeInd)
+        F = multipleIntegral.gauss1DMethodMatrix(f_integrate_bottom, intOrder)
     elseif loadDirect == right
-        FIntegrate(s) = transpose(displInterpMatr(1, s, elemTypeInd)) * load * DetJs(1, s, xCoords, yCoords, elemTypeInd)
+        F = multipleIntegral.gauss1DMethodMatrix(f_integrate_right, intOrder)
     else
-        println("Given load direction is not supported")
-        return nothing
+        @error("Given load direction is not supported")
     end
-    F = multipleIntegral.gauss1DMethodMatrix(FIntegrate, intOrder)
+
     return F
 end  # elementLoad
 
