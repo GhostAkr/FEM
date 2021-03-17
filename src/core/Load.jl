@@ -118,33 +118,25 @@ function assembly_loads!(pars::processPars, intOrder::Int, elemTypeInd::FiniteEl
     loadsVector = zeros(Float64, 2 * size(pars.mesh.nodes)[1])
     for (element, load) in pars.load
         elNum = element[1]
-        # @info("Element number:")
-        # println(elNum)
-
         # Global nodes to which load should be applied
         loadGlobalNodes = [element[i] for i in 3:size(element)[1]]
-        @info("Load global nodes:")
-        println(loadGlobalNodes)
 
         # Getting local numeration from given global one
         elNodes = pars.mesh.elements[elNum]
-        # @info("Element nodes:")
-        # println(elNodes)
         loadLocalNodes = zeros(Int, size(loadGlobalNodes)[1])
         for i in 1:size(loadGlobalNodes)[1]
             loadLocalNodes[i] = findall(x -> x == loadGlobalNodes[i], elNodes)[1]
         end
 
-        # direction = loadDirection(element[2])
         direction = loadDirection(directionFromNodes(loadLocalNodes, elemTypeInd))
         F = elementLoad(elNum, pars, load, direction, intOrder, elemTypeInd)
         loadLocalNodes = nodesFromDirection(Int(direction), elemTypeInd)
-        @info("Load local nodes:")
-        println(loadLocalNodes)
+
         if (size(element)[1] - 2 != size(loadLocalNodes)[1])
             @error "Incorrect input load"
             return nothing
         end
+        
         for i in eachindex(loadLocalNodes)
             localIndex = loadLocalNodes[i]
             globalIndex = loadGlobalNodes[i]
