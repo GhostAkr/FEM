@@ -145,7 +145,6 @@ function ElementTypes.gradMatr(r, s, xCoords::Array{Float64}, yCoords::Array{Flo
     return resultMatrix
 end
 
-# Precalculated displacements interpolation H matrix
 """
     displInterpMatr(r, s)
 
@@ -153,21 +152,13 @@ Displacements interpolation ``H`` matrix.
 
 # Arguments
 - `r`: r-coordinate;
-- `s`: s-coordinate.
+- `s`: s-coordinate;
+- `elemTypeInd::Quad4Type`: type of finite element indicator.
 """
 function ElementTypes.displInterpMatr(r, s, elemTypeInd::Quad4Type)
-    result = zeros(Real, 2, 8)
+    result = [  h1(r, s)   0   h2(r, s)    0   h3(r, s)    0    h4(r, s)    0
+                0       h1(r, s)    0   h2(r, s)    0   h3(r, s)    0       h4(r, s)]
 
-    # TODO: Unify method for every possible set of nodes
-
-    result[1, 1] = 0.5 * (1 + s)
-    result[1, 7] = 0.5 * (1 - s)
-    result[2, 2] = 0.5 * (1 + s)
-    result[2, 8] = 0.5 * (1 - s)
-    # result[1, 1] = 0.5 * (1 + r)
-    # result[1, 3] = 0.5 * (1 - r)
-    # result[2, 2] = 0.5 * (1 + r)
-    # result[2, 4] = 0.5 * (1 - r)
     return result
 end  # displInterpMatr
 
