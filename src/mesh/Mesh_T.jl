@@ -89,9 +89,9 @@ function renumerateNodes!(mesh::Mesh2D_T, type::meshType)
         y = [mesh.nodes[mesh.elements[i][1]][2], mesh.nodes[mesh.elements[i][2]][2], mesh.nodes[mesh.elements[i][3]][2], mesh.nodes[mesh.elements[i][4]][2]]
         newNodes = nothing
         if type === Quad4Pts2D
-            # newNodes = (mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][3], mesh.elements[i][2])
+            newNodes = (mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][3], mesh.elements[i][2])
             # newNodes = (mesh.elements[i][4], mesh.elements[i][3], mesh.elements[i][2], mesh.elements[i][1])
-            newNodes = (mesh.elements[i][3], mesh.elements[i][2], mesh.elements[i][1], mesh.elements[i][4])
+            # newNodes = (mesh.elements[i][3], mesh.elements[i][2], mesh.elements[i][1], mesh.elements[i][4])
         elseif type === Quad8Pts2D
             newNodes = (mesh.elements[i][3], mesh.elements[i][2], mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][6], mesh.elements[i][5], mesh.elements[i][8], mesh.elements[i][7])
         else
