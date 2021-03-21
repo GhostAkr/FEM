@@ -142,6 +142,8 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
 
     parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D(2))
     read_params_JSON!(dataPath, parameters)
+    # readParameters!(dataPath, parameters)
+    printProcessPars(parameters)
     parameters.mesh = readMeshFromSalomeDAT(meshPath, meshType)
     intOrder = 3
     nu = parameters.materialProperties[poisC]

@@ -7,7 +7,7 @@ export verify_example
 function verify_example(meshPath::String, dataPath::String, result::Array)
     answer = nothing
     if meshPath == "examples/QuarterPlate/Quarter_Mesh.dat" &&
-        dataPath == "examples/QuarterPlate/Quarter_Data" 
+        dataPath == "examples/QuarterPlate/Quarter_Data.json" 
         answer = quarter_example()
     elseif meshPath == "examples/QuarterPlate8N/QuadrPlate8N_MeshNew.dat" &&
         dataPath == "examples/QuarterPlate8N/QuadrPlate8N_DataNew"
