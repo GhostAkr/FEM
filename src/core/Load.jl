@@ -81,21 +81,25 @@ function elementLoad(elementNum::Int, pars::processPars, inputLoad::Array, loadD
     xCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][1] for i in 1:nodesPerElement]
     yCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][2] for i in 1:nodesPerElement]
     load = inputLoad
-    # IntegrationOrder = 4
-    FIntegrate(x) = 0
+
+    f_integrate_top(r) = transpose(displInterpMatr(r, 1, elemTypeInd)) * load * DetJs(r, 1, xCoords, yCoords, Int(loadDirect), elemTypeInd)
+    f_integrate_left(s) = transpose(displInterpMatr(-1, s, elemTypeInd)) * load * DetJs(-1, s, xCoords, yCoords, Int(loadDirect), elemTypeInd)
+    f_integrate_bottom(r) = transpose(displInterpMatr(r, -1, elemTypeInd)) * load * DetJs(r, -1, xCoords, yCoords, Int(loadDirect), elemTypeInd)
+    f_integrate_right(s) = transpose(displInterpMatr(1, s, elemTypeInd)) * load * DetJs(1, s, xCoords, yCoords, Int(loadDirect), elemTypeInd)
+
+    F = nothing
     if loadDirect == top
-        FIntegrate(r) = transpose(displInterpMatr(r, 1, elemTypeInd)) * load * DetJs(r, 1, xCoords, yCoords, elemTypeInd)
+        F = multipleIntegral.gauss1DMethodMatrix(f_integrate_top, intOrder)
     elseif loadDirect == left
-        FIntegrate(s) = transpose(displInterpMatr(-1, s, elemTypeInd)) * load * DetJs(-1, s, xCoords, yCoords, elemTypeInd)
+        F = multipleIntegral.gauss1DMethodMatrix(f_integrate_left, intOrder)
     elseif loadDirect == bottom
-        FIntegrate(r) = transpose(displInterpMatr(r, -1, elemTypeInd)) * load * DetJs(r, -1, xCoords, yCoords, elemTypeInd)
+        F = multipleIntegral.gauss1DMethodMatrix(f_integrate_bottom, intOrder)
     elseif loadDirect == right
-        FIntegrate(s) = transpose(displInterpMatr(1, s, elemTypeInd)) * load * DetJs(1, s, xCoords, yCoords, elemTypeInd)
+        F = multipleIntegral.gauss1DMethodMatrix(f_integrate_right, intOrder)
     else
-        println("Given load direction is not supported")
-        return nothing
+        @error("Given load direction is not supported")
     end
-    F = multipleIntegral.gauss1DMethodMatrix(FIntegrate, intOrder)
+
     return F
 end  # elementLoad
 
@@ -114,14 +118,25 @@ function assembly_loads!(pars::processPars, intOrder::Int, elemTypeInd::FiniteEl
     loadsVector = zeros(Float64, 2 * size(pars.mesh.nodes)[1])
     for (element, load) in pars.load
         elNum = element[1]
-        direction = loadDirection(element[2])
+        # Global nodes to which load should be applied
+        loadGlobalNodes = [element[i] for i in 3:size(element)[1]]
+
+        # Getting local numeration from given global one
+        elNodes = pars.mesh.elements[elNum]
+        loadLocalNodes = zeros(Int, size(loadGlobalNodes)[1])
+        for i in 1:size(loadGlobalNodes)[1]
+            loadLocalNodes[i] = findall(x -> x == loadGlobalNodes[i], elNodes)[1]
+        end
+
+        direction = loadDirection(directionFromNodes(loadLocalNodes, elemTypeInd))
         F = elementLoad(elNum, pars, load, direction, intOrder, elemTypeInd)
         loadLocalNodes = nodesFromDirection(Int(direction), elemTypeInd)
+
         if (size(element)[1] - 2 != size(loadLocalNodes)[1])
             @error "Incorrect input load"
             return nothing
         end
-        loadGlobalNodes = [element[i] for i in 3:size(element)[1]]
+        
         for i in eachindex(loadLocalNodes)
             localIndex = loadLocalNodes[i]
             globalIndex = loadGlobalNodes[i]
