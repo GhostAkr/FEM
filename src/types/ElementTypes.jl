@@ -17,7 +17,7 @@ abstract type FiniteElement end
 
 jacGlobToLoc(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}, elType::FiniteElement) = nothing
 
-DetJs(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}, elType::FiniteElement) = nothing
+DetJs(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}, load_direction::Int, elType::FiniteElement) = nothing
 
 gradMatr(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}, elType::FiniteElement) = nothing
 

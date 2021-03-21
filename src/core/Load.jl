@@ -82,10 +82,10 @@ function elementLoad(elementNum::Int, pars::processPars, inputLoad::Array, loadD
     yCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][2] for i in 1:nodesPerElement]
     load = inputLoad
 
-    f_integrate_top(r) = transpose(displInterpMatr(r, 1, elemTypeInd)) * load * DetJs(r, 1, xCoords, yCoords, elemTypeInd)
-    f_integrate_left(s) = transpose(displInterpMatr(-1, s, elemTypeInd)) * load * DetJs(-1, s, xCoords, yCoords, elemTypeInd)
-    f_integrate_bottom(r) = transpose(displInterpMatr(r, -1, elemTypeInd)) * load * DetJs(r, -1, xCoords, yCoords, elemTypeInd)
-    f_integrate_right(s) = transpose(displInterpMatr(1, s, elemTypeInd)) * load * DetJs(1, s, xCoords, yCoords, elemTypeInd)
+    f_integrate_top(r) = transpose(displInterpMatr(r, 1, elemTypeInd)) * load * DetJs(r, 1, xCoords, yCoords, Int(loadDirect), elemTypeInd)
+    f_integrate_left(s) = transpose(displInterpMatr(-1, s, elemTypeInd)) * load * DetJs(-1, s, xCoords, yCoords, Int(loadDirect), elemTypeInd)
+    f_integrate_bottom(r) = transpose(displInterpMatr(r, -1, elemTypeInd)) * load * DetJs(r, -1, xCoords, yCoords, Int(loadDirect), elemTypeInd)
+    f_integrate_right(s) = transpose(displInterpMatr(1, s, elemTypeInd)) * load * DetJs(1, s, xCoords, yCoords, Int(loadDirect), elemTypeInd)
 
     F = nothing
     if loadDirect == top

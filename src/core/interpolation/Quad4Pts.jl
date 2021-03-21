@@ -97,14 +97,19 @@ Determinant of appropriate Jacobi matrix.
 - `r`: r-coordinate;
 - `s`: s-coordinate;
 - `xCoords::Array{Float64}`: x coordinates of each node in current element;
-- `yCoords::Array{Float64}`: y coordinates of each node in current element.
+- `yCoords::Array{Float64}`: y coordinates of each node in current element;
+- `load_direction::Int`: direction of load;
+- `elemTypeInd::Quad4Type`: type of finite element indicator.
 """
-function ElementTypes.DetJs(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}, elemTypeInd::Quad4Type)
-
-    # TODO: Unify method for every possible set of nodes
-
-    return sqrt(dxs(r, s, xCoords)^2 + dys(r, s, yCoords)^2)
-    # return sqrt(dxr(r, s, xCoords)^2 + dyr(r, s, yCoords)^2)
+function ElementTypes.DetJs(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}, load_direction::Int, elemTypeInd::Quad4Type)
+    if load_direction == 1 || load_direction == 3
+        return sqrt(dxr(r, s, xCoords)^2 + dyr(r, s, yCoords)^2)
+    elseif load_direction == 2 || load_direction == 4
+        return sqrt(dxs(r, s, xCoords)^2 + dys(r, s, yCoords)^2)
+    else
+        @error("Incorrect direction while calculating \"surface\" Jacobian")
+        return nothing
+    end
 end
 
 
