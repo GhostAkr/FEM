@@ -346,9 +346,7 @@ function read_mesh_from_med(mesh_path::String, type::meshType)
     if type == Quad4Pts2D
         type_name = :QU4
     elseif type == Quad8Pts2D
-        # TODO: Find name of such type from generated mesh
-        @error("Such type of mesh is not supported by MED file reader")
-        return nothing
+        type_name = :QU9
     else
         @error("Such type of mesh is not supported by MED file reader")
         return nothing
