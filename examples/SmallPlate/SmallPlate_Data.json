@@ -8,6 +8,6 @@
     },
     "DistributedLoad": {
         "Load": [-10, 0],
-        "Elements": [[4, 3, 7], [2, 7, 4]]
+        "Elements": [[4, 3, 7], [3, 7, 4]]
     }
 }

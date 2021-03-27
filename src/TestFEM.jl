@@ -12,7 +12,7 @@ function verify_example(meshPath::String, dataPath::String, result::Array)
     elseif meshPath == "examples/QuarterPlate8N/QuadrPlate8N_MeshNew.dat" &&
         dataPath == "examples/QuarterPlate8N/QuadrPlate8N_DataNew"
         answer = quarter8N_example()
-    elseif meshPath == "examples/SmallPlate/SmallPlate.dat" &&
+    elseif meshPath == "examples/SmallPlate/PlateMeshSmall.med" &&
         dataPath == "examples/SmallPlate/SmallPlate_Data.json"
         answer = small_example()
     else
