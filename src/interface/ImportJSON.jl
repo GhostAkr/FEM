@@ -1,5 +1,6 @@
 using Unicode
 using CoreFEM
+using Base.Iterators
 import JSON
 
 export read_params_JSON!
@@ -40,9 +41,9 @@ function parse_property_JSON!(property_name::String, property_data::Dict, params
     if property_name == "material"
         params.materialProperties = parse_material_JSON(property_data)
     elseif property_name == "constraints"
-        params.bc = parse_constraints_JSON(property_data)
+        params.bc = parse_constraints_JSON(property_data, params.mesh)
     elseif property_name == "distributedload"
-        params.load = parse_loads_JSON(property_data)
+        params.load = parse_loads_JSON(property_data, params.mesh)
     else
         @error("Given property is not supported")
     end
@@ -83,7 +84,7 @@ Process given constraints. Return dictionary compatible with `processPars` struc
 # Arguments
 - `constraints_data::Dict`: parameters of given constraints.
 """
-function parse_constraints_JSON(constraints_data::Dict)
+function parse_constraints_JSON(constraints_data::Dict, mesh::Mesh2D_T)
     resDict = Dict{Int, CoreFEM.bc}()
 
     for parameter in keys(constraints_data)
@@ -107,9 +108,15 @@ function parse_constraints_JSON(constraints_data::Dict)
         # Array -- group of nodes (explicit input).
         nodes = []
         if value isa String
-            # TODO: Implement this case (assign apropriate nodes array by the name of group)
-            @warn("Input nodes by group is not fully supported yet")
-            return nothing
+            # Getting nodes from given mesh by group name
+            if !haskey(mesh.groups, value)
+                @error("Group of nodes not found (constraints)")
+                return nothing
+            end
+
+            nodes = mesh.groups[value]
+            # Flatting nodes array
+            nodes = unique(collect(flatten(nodes)))
         elseif value isa Array
             nodes = value
         else
@@ -133,7 +140,7 @@ Process given loads. Return dictionary compatible with `processPars` structure.
 # Arguments
 - `loads_data::Dict`: parameters of given loads.
 """
-function parse_loads_JSON(loads_data::Dict)
+function parse_loads_JSON(loads_data::Dict, mesh::Mesh2D_T)
     resDict = Dict{Array{Int, 1}, Array{Float64, 1}}()
     load = []
 
@@ -150,9 +157,21 @@ function parse_loads_JSON(loads_data::Dict)
             # String -- name of group of nodes;
             # Array -- group of nodes (explicit input).
             if value isa String
-                # TODO: Implement this case (assign apropriate nodes array by the name of group)
-                @warn("Input nodes by group is not fully supported yet")
-                return nothing
+                # Getting nodes from given mesh by group name
+                if !haskey(mesh.groups, value)
+                    @error("Group of nodes not found (loads)")
+                    return nothing
+                end
+
+                elements = mesh.groups[value]
+                # Pushing element index to the beggining of element nodes set
+                for element in elements
+                    for elementidx in eachindex(mesh.elements)
+                        if issubset(element, mesh.elements[elementidx])
+                            pushfirst!(element, elementidx)
+                        end
+                    end
+                end
             elseif value isa Array
                 elements = value
             else

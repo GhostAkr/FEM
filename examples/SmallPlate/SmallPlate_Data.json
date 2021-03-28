@@ -4,10 +4,10 @@
         "YoungMod": 210000
     },
     "Constraints": {
-        "fixedXY": [1, 5, 2]
+        "fixedXY": "AB_Group"
     },
     "DistributedLoad": {
         "Load": [-10, 0],
-        "Elements": [[4, 3, 7], [3, 7, 4]]
+        "Elements": "CD_Group"
     }
 }

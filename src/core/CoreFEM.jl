@@ -141,8 +141,6 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     meshType = typeMeshFromElement(elemTypeID)
 
     parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D(2))
-    read_params_JSON!(dataPath, parameters)
-    # readParameters!(dataPath, parameters)
 
     # Reading mesh
     split_path = splitext(meshPath)
@@ -154,6 +152,10 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
         @error("Given mesh has unknown format")
         return nothing
     end
+
+    # Reading parameters
+    read_params_JSON!(dataPath, parameters)
+    # readParameters!(dataPath, parameters)
 
     intOrder = 3
     nu = parameters.materialProperties[poisC]
