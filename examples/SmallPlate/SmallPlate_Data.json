@@ -1,0 +1,13 @@
+{
+    "Material": {
+        "PRatio": 0.3,
+        "YoungMod": 210000
+    },
+    "Constraints": {
+        "fixedXY": "AB_Group"
+    },
+    "DistributedLoad": {
+        "Load": [-10, 0],
+        "Elements": "CD_Group"
+    }
+}

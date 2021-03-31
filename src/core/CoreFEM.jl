@@ -141,8 +141,22 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     meshType = typeMeshFromElement(elemTypeID)
 
     parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D(2))
-    readParameters!(dataPath, parameters)
-    parameters.mesh = readMeshFromSalomeDAT(meshPath, meshType)
+
+    # Reading mesh
+    split_path = splitext(meshPath)
+    if (split_path[2] == ".dat")
+        parameters.mesh = readMeshFromSalomeDAT(meshPath, meshType)
+    elseif (split_path[2] == ".med")
+        parameters.mesh = read_mesh_from_med(meshPath, meshType)
+    else
+        @error("Given mesh has unknown format")
+        return nothing
+    end
+
+    # Reading parameters
+    read_params_JSON!(dataPath, parameters)
+    # readParameters!(dataPath, parameters)
+
     intOrder = 3
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]

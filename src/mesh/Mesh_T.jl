@@ -2,7 +2,7 @@ include("MeshVars.jl")
 
 using AsterReader
 
-export Mesh2D_T, generateTestMesh2D, printNodesMesh2D, printElementsMesh2D, readMeshFromSalomeDAT
+export Mesh2D_T, generateTestMesh2D, printNodesMesh2D, printElementsMesh2D, readMeshFromSalomeDAT, read_mesh_from_med
 
 """
     Mesh2D_T
@@ -302,3 +302,74 @@ function read_nodes_groups_from_salome(salome_mesh::String)
 
     return res_dict
 end  # read_nodes_groups_from_salome
+
+"""
+    read_mesh_from_med(mesh_path::String)
+
+Read mesh from given MED file. Such file for example can be generated in Salome.
+Type of mesh controls which elements should be extracted from given mesh.
+This can be useful since MED file can contain additional elements on body surface
+which user may want to ignore.
+
+# Arguments
+- `mesh_path::String`: path to source MED file;
+- `type::meshType`: type of mesh.
+"""
+function read_mesh_from_med(mesh_path::String, type::meshType)
+    mesh = AsterReader.aster_read_mesh(mesh_path)
+
+    # 1. Reading nodes
+    nodes = mesh["nodes"]
+    nodes_converted = Vector{Tuple{Vararg{Float64}}}(undef, length(keys(nodes))[1])
+    for node in keys(nodes)
+        x_coord = nodes[node][1]
+
+        y_coord = 0
+        if size(nodes[node])[1] == 2
+            y_coord = nodes[node][2]
+        end
+
+        z_coord = 0
+        if size(nodes[node])[1] == 3
+            y_coord = nodes[node][3]
+        end
+
+        node_coords = Tuple([x_coord, y_coord, z_coord])
+        nodes_converted[node] = node_coords
+    end
+
+    # 2. Reading and parsing elements
+    elements = mesh["elements"]
+    element_types = mesh["element_types"]
+
+    type_name = ""
+    if type == Quad4Pts2D
+        type_name = :QU4
+    elseif type == Quad8Pts2D
+        type_name = :QU9
+    else
+        @error("Such type of mesh is not supported by MED file reader")
+        return nothing
+    end
+
+    for element in keys(elements)
+        if element_types[element] != type_name
+            delete!(elements, element)
+        end
+    end
+
+    elements_converted = Vector{Tuple{Vararg{Int}}}()
+    for element in keys(elements)
+        push!(elements_converted, Tuple(elements[element]))
+    end
+
+    # 3. Reading node groups
+    groups = read_nodes_groups_from_salome(mesh_path)
+
+    # 4. Creating mesh instance
+    mesh_converted = Mesh2D_T(nodes_converted, elements_converted, groups)
+    renumerateNodes!(mesh_converted, type)
+
+    return mesh_converted
+
+end  # read_mesh_from_med
