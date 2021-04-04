@@ -1,5 +1,7 @@
 include("MeshVars.jl")
 
+using AsterReader
+
 export Mesh2D_T, generateTestMesh2D, printNodesMesh2D, printElementsMesh2D, readMeshFromSalomeDAT
 export generateTestMesh3D
 
@@ -18,6 +20,8 @@ mutable struct Mesh2D_T
     nodes::Vector{Tuple{Vararg{Float64}}}
     "Matrix of elements (contains elements's nodes)"
     elements::Vector{Tuple{Vararg{Int}}}
+    "Groups of nodes"
+    groups::Dict{String, Vector{Vector{Int}}}
 end  # Mesh2D_T
 
 """
@@ -32,7 +36,7 @@ function generateTestMesh2D(n::Int)
     dimension = 2
     nodesPerElement = 4
     # Creation
-    resultMesh = Mesh2D_T(Vector{Tuple{Vararg{Float64}}}(undef, nOfNodes), Vector{Tuple{Vararg{Int}}}(undef, nOfElements))
+    resultMesh = Mesh2D_T(Vector{Tuple{Vararg{Float64}}}(undef, nOfNodes), Vector{Tuple{Vararg{Int}}}(undef, nOfElements), Dict{String, Vector{Vector{Int}}}())
     nodeIndex = 1
     step = 100 / n
     for i in 0:step:100
@@ -110,14 +114,24 @@ Renumerate nodes in each element according to FEM model.
 """
 function renumerateNodes!(mesh::Mesh2D_T, type::meshType)
     for i in eachindex(mesh.elements)
-        # TODO: make auto-renumeration
         x = [mesh.nodes[mesh.elements[i][1]][1], mesh.nodes[mesh.elements[i][2]][1], mesh.nodes[mesh.elements[i][3]][1], mesh.nodes[mesh.elements[i][4]][1]]
         y = [mesh.nodes[mesh.elements[i][1]][2], mesh.nodes[mesh.elements[i][2]][2], mesh.nodes[mesh.elements[i][3]][2], mesh.nodes[mesh.elements[i][4]][2]]
         newNodes = nothing
         if type === Quad4Pts2D
+            # All possible renumerations
             newNodes = (mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][3], mesh.elements[i][2])
+            # newNodes = (mesh.elements[i][4], mesh.elements[i][3], mesh.elements[i][2], mesh.elements[i][1])
+            # newNodes = (mesh.elements[i][3], mesh.elements[i][2], mesh.elements[i][1], mesh.elements[i][4])
+            # newNodes = (mesh.elements[i][2], mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][3])
         elseif type === Quad8Pts2D
+            # TODO: This works not for every mesh generated in Salome.
+            # Need to check how Salome actually numerates nodes for such finite element.
+
+            # All possible renumerations
             newNodes = (mesh.elements[i][3], mesh.elements[i][2], mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][6], mesh.elements[i][5], mesh.elements[i][8], mesh.elements[i][7])
+            # newNodes = (mesh.elements[i][2], mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][3], mesh.elements[i][5], mesh.elements[i][8], mesh.elements[i][7], mesh.elements[i][6])
+            # newNodes = (mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][3], mesh.elements[i][2], mesh.elements[i][8], mesh.elements[i][7], mesh.elements[i][6], mesh.elements[i][5])
+            # newNodes = (mesh.elements[i][4], mesh.elements[i][3], mesh.elements[i][2], mesh.elements[i][1], mesh.elements[i][7], mesh.elements[i][6], mesh.elements[i][5], mesh.elements[i][8])
         elseif type === Iso8Pts3DMeshType
             # TODO: Renumerate nodes in this case
         else
@@ -139,7 +153,7 @@ Read mesh from .dat file generated via Salome platform.
 - `type::meshType`: Type of given mesh.
 """
 function readMeshFromSalomeDAT(pathToFile::String, type::meshType)
-    mesh = Mesh2D_T(Vector{Tuple{Vararg{Float64}}}(undef, 0), Vector{Tuple{Vararg{Int}}}(undef, 0))
+    mesh = Mesh2D_T(Vector{Tuple{Vararg{Float64}}}(undef, 0), Vector{Tuple{Vararg{Int}}}(undef, 0), Dict{String, Vector{Vector{Int}}}())
     open(pathToFile, "r") do file
         fileContents = split(read(file, String))  # Read once to provide more efficiency on big meshes
         nOfNodes = parse(Int, fileContents[1])
@@ -193,7 +207,8 @@ function readMeshFromSalomeDAT(pathToFile::String, type::meshType)
             end
             index += 1
         end
-        mesh = Mesh2D_T(nodes, elements)
+        groups = Dict{String, Vector{Vector{Int}}}()
+        mesh = Mesh2D_T(nodes, elements, groups)
         x0 = []
         y0 = []
         epsNull = 1e-10
@@ -211,3 +226,109 @@ function readMeshFromSalomeDAT(pathToFile::String, type::meshType)
         return mesh
     end
 end  # readMeshFromSalomeDAT
+
+"""
+    nodes_group_by_name(mesh::Mesh2D_T, name::String)
+
+Get nodes group by name from given mesh.
+
+# Arguments
+- `mesh::Mesh2D_T`: Mesh which contains target groups;
+- `name::String`: Name of target group.
+"""
+function nodes_group_by_name(mesh::Mesh2D_T, name::String)
+    if !(haskey(mesh.groups, name))
+        @warn("Nodes group with such key not found")
+        return nothing
+    end
+    targetGroup = mesh.groups[name]
+    return targetGroup
+end  # nodes_group_by_name
+
+"""
+    add_nodes_group!(mesh::Mesh2D_T, name::String, nodes::Array{Tuple{Vararg{Int}}})
+
+Add nodes group to given mesh.
+
+# Arguments
+- `mesh::Mesh2D_T`: Mesh to which group should be added;
+- `name::String`: Name of target group;
+- `nodes::Array{Tuple{Vararg{Int}}}`: Array of nodes in target group.
+"""
+function add_nodes_group!(mesh::Mesh2D_T, name::String, nodes::Vector{Vector{Int}})
+    if haskey(mesh.groups, name)
+        @warn("Group with given name already exists, replacing to the new one")
+    end
+    mesh.groups[name] = nodes
+end  # add_nodes_group!
+
+"""
+    add_nodes_multiple_groups!(mesh::Mesh2D_T, groups::Dict{String, Vector{Tuple{Vararg{Int}}}})
+
+Add multiple nodes groups to given mesh.
+
+# Arguments
+- `mesh::Mesh2D_T`: Mesh to which group should be added;
+- `groups::Dict{String, Vector{Tuple{Vararg{Int}}}}`: Dictionary of groups which should be added to given mesh.
+"""
+function add_nodes_multiple_groups!(mesh::Mesh2D_T, groups::Dict{String, Vector{Vector{Int}}})
+    for key in keys(groups)
+        mesh.groups[key] = groups[key]
+    end
+end  # add_nodes_multiple_groups!
+
+"""
+    delete_nodes_group_by_name!(mesh::Mesh2D_T, name::String)
+
+Delete nodes group from given mesh by name.
+
+# Arguments
+- `mesh::Mesh2D_T`: Mesh to which group should be added;
+- `name::String`: Name of target group.
+"""
+function delete_nodes_group_by_name!(mesh::Mesh2D_T, name::String)
+    delete!(mesh.groups, name)
+end  # delete_nodes_group_by_name!
+
+"""
+    print_nodes_groups(mesh::Mesh2D_T)
+
+Print all nodes groups of given mesh to the REPL.
+
+# Arguments
+- `mesh::Mesh2D_T`: Mesh to which group should be added.
+"""
+function print_nodes_groups(mesh::Mesh2D_T)
+    println(mesh.groups)
+end  # print_nodes_groups
+
+"""
+    read_nodes_groups_from_salome(salome_mesh::String)
+
+Read groups of nodes from Salome MED file. This method uses
+AsterReader module to get access to MED file.
+
+# Arguments
+- `salome_mesh::String`: Path to source MED file.
+"""
+function read_nodes_groups_from_salome(salome_mesh::String)
+    mesh = AsterReader.aster_read_mesh(salome_mesh)
+
+    # Getting elements from mesh
+    elements = mesh["elements"]
+    # Getting groups from mesh
+    element_sets = mesh["element_sets"]
+
+    res_dict = Dict{String, Vector{Vector{Int}}}()
+    for name in keys(element_sets)
+        set_nodes = Vector{Vector{Int}}()
+        elem_set = element_sets[name]
+        for elem_num in elem_set
+            nodes = elements[elem_num]
+            push!(set_nodes, nodes)
+        end
+        res_dict[name] = set_nodes
+    end
+
+    return res_dict
+end  # read_nodes_groups_from_salome

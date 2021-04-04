@@ -104,9 +104,20 @@ Determinant of appropriate Jacobi matrix.
 - `r`: r-coordinate;
 - `s`: s-coordinate;
 - `xCoords::Array{Float64}`: x coordinates of each node in current element;
-- `yCoords::Array{Float64}`: y coordinates of each node in current element.
+- `yCoords::Array{Float64}`: y coordinates of each node in current element;
+- `load_direction::Int`: direction of load;
+- `elemTypeInd::Quad4Type`: type of finite element indicator.
 """
-ElementTypes.DetJs(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}, elemTypeInd::Quad8Type) = sqrt(dxs(r, s, xCoords)^2 + dys(r, s, yCoords)^2)
+function ElementTypes.DetJs(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}, load_direction::Int, elemTypeInd::Quad8Type)
+    if load_direction == 1 || load_direction == 3
+        return sqrt(dxr(r, s, xCoords)^2 + dyr(r, s, yCoords)^2)
+    elseif load_direction == 2 || load_direction == 4
+        return sqrt(dxs(r, s, xCoords)^2 + dys(r, s, yCoords)^2)
+    else
+        @error("Incorrect direction while calculating \"surface\" Jacobian")
+        return nothing
+    end
+end  # DetJs
 
 # Supporting matrices for calculating gradient matrix
 function TU(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
@@ -228,6 +239,30 @@ function ElementTypes.nodesFromDirection(direction::Int, elemTypeInd::Quad8Type)
         return nothing
     end
 end  # nodesFromDirection
+
+"""
+    directionFromNodes(nodes::Array, elemTypeInd::Quad8Type)
+
+Return direction from given nodes.
+
+# Arguments
+- `nodes::Array`: nodes according to which direction should be defined.
+- `elemTypeInd::Quad8Type`: element type indicator.
+"""
+function ElementTypes.directionFromNodes(nodes::Array, elemTypeInd::Quad8Type)
+    if issubset([1, 5, 2], nodes)
+        return 1  # Top
+    elseif issubset([2, 6, 3], nodes)
+        return 2  # Left
+    elseif issubset([3, 7, 4], nodes)
+        return 3  # Bottom
+    elseif issubset([1, 8, 4], nodes)
+        return 4  # Right
+    else
+        @error("Can't define direction from given nodes")
+        return nothing
+    end
+end  # directionFromNodes
 
 function ElementTypes.getRSFromNode(nodeIndex::Int, elemTypeInd::Quad8Type)
     if nodeIndex == 1

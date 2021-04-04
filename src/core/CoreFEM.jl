@@ -17,6 +17,7 @@ using DelimitedFiles
 using BaseInterface
 using IterativeSolvers
 using ElementTypes
+using TestFEM
 
 using Quad4Pts
 using Quad8Pts
@@ -25,7 +26,7 @@ using Iso8Pts3D
 export fem2D
 
 """
-    assemblyFEM2D(pars::processPars, targetMatrix::Array, currentElementMatrix::Array, elementNum::Number)
+    assembly_left_part!(pars::processPars, targetMatrix::Array, currentElementMatrix::Array, elementNum::Number, freedom_deg::Int)
 
 Assemble left part of linear system of equations. This method applies given local stiffness matrix to global ensemble.
 
@@ -33,16 +34,19 @@ Assemble left part of linear system of equations. This method applies given loca
 - `pars::processPars`: parameters of current model;
 - `targetMatrix::Array`: global stiffness matrix that should be updated;
 - `currentElementMatrix::Array`: local stiffness matrix of given element that should be applid to global ensemble;
-- `elementNum::Number`: number of given element in current mesh.
+- `elementNum::Number`: number of given element in current mesh;
+- `freedom_deg::Int`: degree of freedom.
 """
-function assemblyFEM2D(pars::processPars, targetMatrix::Array, currentElementMatrix::Array, elementNum::Number)
+function assembly_left_part!(pars::processPars, targetMatrix::Array, currentElementMatrix::Array, elementNum::Number, freedom_deg::Int)
     elementNodes = pars.mesh.elements[elementNum]
     for i in eachindex(elementNodes)
         for j in eachindex(elementNodes)
-            targetMatrix[2 * elementNodes[i] - 1, 2 * elementNodes[j] - 1] += currentElementMatrix[2 * i - 1, 2 * j - 1]
-            targetMatrix[2 * elementNodes[i] - 1, 2 * elementNodes[j]] += currentElementMatrix[2 * i - 1, 2 * j]
-            targetMatrix[2 * elementNodes[i], 2 * elementNodes[j] - 1] += currentElementMatrix[2 * i, 2 * j - 1]
-            targetMatrix[2 * elementNodes[i], 2 * elementNodes[j]] += currentElementMatrix[2 * i, 2 * j]
+            for first_offset in 1:freedom_deg
+                for second_offset in 1:freedom_deg
+                    targetMatrix[freedom_deg * elementNodes[i] - (first_offset - 1), freedom_deg * elementNodes[j] - (second_offset - 1)] += 
+                                currentElementMatrix[freedom_deg * i - (first_offset - 1), freedom_deg * j - (second_offset - 1)]
+                end
+            end
         end
     end
 end  # assemblyFEM2D
@@ -175,6 +179,7 @@ Start calculation with given model.
 - `dataPath::String`: Path to given initial data.
 """
 function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
+    freedom_deg = 2
     # Getting element type
     elementType = defineElemType(elemTypeID)
     if (elementType === nothing)
@@ -188,7 +193,6 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D(2))
     readParameters!(dataPath, parameters)
     parameters.mesh = readMeshFromSalomeDAT(meshPath, meshType)
-    # printProcessPars(parameters)
     intOrder = 3
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]
@@ -196,9 +200,9 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     ensembleMatrix = zeros(Float64, 2 * size(parameters.mesh.nodes)[1], 2 * size(parameters.mesh.nodes)[1])
     for elementNum in eachindex(parameters.mesh.elements)
         K = stiffnessMatrix(C, parameters, elementNum, intOrder, elementType)
-        assemblyFEM2D(parameters, ensembleMatrix, K, elementNum)
+        assembly_left_part!(parameters, ensembleMatrix, K, elementNum, freedom_deg)
     end
-    loadVector = assemblyLoads(parameters, intOrder, elementType)
+    loadVector = assembly_loads!(parameters, intOrder, elementType, freedom_deg)
     applyConstraints(parameters, loadVector, ensembleMatrix)
     # Writing left part to file
     open("equation/K", "w") do file
@@ -210,6 +214,13 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     end
     println("Solving...")
     result = solve(ensembleMatrix, loadVector)
+
+    if TestFEM.verify_example(meshPath, dataPath, result)
+        @info "Result is correct"
+    else
+        @info "Result is INcorrect"
+    end
+
     deformations = calculateDeformations(result, parameters, intOrder, elementType)
     stresses = calculateStresses(deformations, C, parameters)
     vonMises = calculateVonMises(stresses)

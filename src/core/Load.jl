@@ -116,23 +116,23 @@ function elementLoad(elementNum::Int, pars::processPars, inputLoad::Array, loadD
     xCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][1] for i in 1:nodesPerElement]
     yCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][2] for i in 1:nodesPerElement]
     load = inputLoad
-    # IntegrationOrder = 4
-    FIntegrate(x) = 0
+
+    f_integrate_top(r) = transpose(displInterpMatr(r, 1, elemTypeInd)) * load * DetJs(r, 1, xCoords, yCoords, Int(loadDirect), elemTypeInd)
+    f_integrate_left(s) = transpose(displInterpMatr(-1, s, elemTypeInd)) * load * DetJs(-1, s, xCoords, yCoords, Int(loadDirect), elemTypeInd)
+    f_integrate_bottom(r) = transpose(displInterpMatr(r, -1, elemTypeInd)) * load * DetJs(r, -1, xCoords, yCoords, Int(loadDirect), elemTypeInd)
+    f_integrate_right(s) = transpose(displInterpMatr(1, s, elemTypeInd)) * load * DetJs(1, s, xCoords, yCoords, Int(loadDirect), elemTypeInd)
+
+    F = nothing
     if loadDirect == top
-        FIntegrate(r) = transpose(displInterpMatr(r, 1, elemTypeInd)) * load * DetJs(r, 1, xCoords, yCoords, elemTypeInd)
+        F = multipleIntegral.gauss1DMethodMatrix(f_integrate_top, intOrder)
     elseif loadDirect == left
-        FIntegrate(s) = transpose(displInterpMatr(-1, s, elemTypeInd)) * load * DetJs(-1, s, xCoords, yCoords, elemTypeInd)
+        F = multipleIntegral.gauss1DMethodMatrix(f_integrate_left, intOrder)
     elseif loadDirect == bottom
-        FIntegrate(r) = transpose(displInterpMatr(r, -1, elemTypeInd)) * load * DetJs(r, -1, xCoords, yCoords, elemTypeInd)
+        F = multipleIntegral.gauss1DMethodMatrix(f_integrate_bottom, intOrder)
     elseif loadDirect == right
-        FIntegrate(s) = transpose(displInterpMatr(1, s, elemTypeInd)) * load * DetJs(1, s, xCoords, yCoords, elemTypeInd)
+        F = multipleIntegral.gauss1DMethodMatrix(f_integrate_right, intOrder)
     else
-        println("Given load direction is not supported")
-        return nothing
-    end
-    F = multipleIntegral.gauss1DMethodMatrix(FIntegrate, intOrder)
-    if elementNum == 3
-        println("Load on 3rd element: ", F)
+        @error("Given load direction is not supported")
     end
     return F
 end  # elementLoad
@@ -176,35 +176,48 @@ function elementLoad3D(elementNum::Int, pars::processPars, inputLoad::Array, loa
 end  # elementLoad
 
 """
-    assemblyLoads(pars::processPars)
+    assembly_loads!(pars::processPars, intOrder::Int, elemTypeInd::FiniteElement, freedom_deg::Int)
 
 Assemble right part of linear system of equations. This method applies given local load vector to global ensemble.
 
 # Arguments
-- `pars::processPars`: parameters of current model.
+- `pars::processPars`: parameters of current model;
+- `intOrder::Int`: order of integration;
+- `elemTypeInd::FiniteElement`: type of finite element;
+- `freedom_deg::Int`: degree of freedom.
 """
-function assemblyLoads(pars::processPars, intOrder::Int, elemTypeInd::FiniteElement)
+function assembly_loads!(pars::processPars, intOrder::Int, elemTypeInd::FiniteElement, freedom_deg::Int)
     loadsVector = zeros(Float64, 2 * size(pars.mesh.nodes)[1])
     for (element, load) in pars.load
         elNum = element[1]
-        direction = loadDirection(element[2])
+        # Global nodes to which load should be applied
+        loadGlobalNodes = [element[i] for i in 2:size(element)[1]]
+
+        # Getting local numeration from given global one
+        elNodes = pars.mesh.elements[elNum]
+        loadLocalNodes = zeros(Int, size(loadGlobalNodes)[1])
+        for i in 1:size(loadGlobalNodes)[1]
+            loadLocalNodes[i] = findall(x -> x == loadGlobalNodes[i], elNodes)[1]
+        end
+
+        direction = loadDirection(directionFromNodes(loadLocalNodes, elemTypeInd))
         F = elementLoad(elNum, pars, load, direction, intOrder, elemTypeInd)
-        loadLocalNodes = nodesFromDirection(Int(direction), elemTypeInd)
-        # println("Size: ", size(element)[1])
-        if (size(element)[1] - 2 != size(loadLocalNodes)[1])
-            println("Incorrect input load")
+        # loadLocalNodes = nodesFromDirection(Int(direction), elemTypeInd)
+
+        if (size(element)[1] - 1 != size(loadLocalNodes)[1])
+            @error "Incorrect input load"
             return nothing
         end
-        loadGlobalNodes = [element[i] for i in 3:size(element)[1]]
+        
         for i in eachindex(loadLocalNodes)
             localIndex = loadLocalNodes[i]
             globalIndex = loadGlobalNodes[i]
-            loadsVector[2 * globalIndex - 1] += F[2 * localIndex - 1]
-            loadsVector[2 * globalIndex] += F[2 * localIndex]
-            # println("Loaded node: ", globalIndex)
+            for offset in 1:freedom_deg
+                loadsVector[freedom_deg * globalIndex - (offset - 1)] += 
+                        F[freedom_deg * localIndex - (offset - 1)]
+            end
         end
     end
-    # println(loadsVector)
     return loadsVector
 end  # assemblyLoads
 

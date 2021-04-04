@@ -8,3 +8,4 @@ CoreFEM.fem2D("examples/QuarterPlate8N/QuadrPlate8N_MeshNew.dat", "examples/Quar
 CoreFEM.fem2D("examples/QuarterPlate/Quarter_Mesh.dat", "examples/QuarterPlate/Quarter_Data", Quad4TypeID)
 
 CoreFEM.fem3D("unparsed", "unparsed", Iso8Pts3DTypeID)
+CoreFEM.fem2D("examples/SmallPlate/SmallPlate.dat", "examples/SmallPlate/SmallPlate_Data", Quad4TypeID)
