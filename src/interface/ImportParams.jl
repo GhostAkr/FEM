@@ -1,12 +1,7 @@
 using Unicode
 using CoreFEM
 
-# include("../core/MaterialVars.jl")
-# include("../core/LoadVars.jl")
-
 export readParameters!
-
-# TODO: unify properties reading
 
 """
     parseMaterial(materialData::String)
