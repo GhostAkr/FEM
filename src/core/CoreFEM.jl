@@ -258,10 +258,11 @@ function fem3D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     # Getting mesh type
     meshType = typeMeshFromElement(elemTypeID)
 
-    # parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D(2))
     parameters = processPars(testMaterialProperties(), testBC3D(), testLoad3D(), generateTestMesh3D())
-    # readParameters!(dataPath, parameters)
-    # parameters.mesh = readMeshFromSalomeDAT(meshPath, meshType)
+    parameters.mesh = read_mesh_from_med(meshPath, meshType)
+    read_params_JSON!(dataPath, parameters)
+
+    printProcessPars(parameters)
 
     intOrder = 4
 
@@ -272,8 +273,11 @@ function fem3D(meshPath::String, dataPath::String, elemTypeID::FETypes)
 
     ensembleMatrix = zeros(Float64, 3 * size(parameters.mesh.nodes)[1], 3 * size(parameters.mesh.nodes)[1])
     for elementNum in eachindex(parameters.mesh.elements)
+        @info("Parsing element", elementNum)
         K = stiffnessMatrix3D(C, parameters, elementNum, intOrder, elementType)
+        @info("Stiffness matrix calculated")
         assemblyFEM3D(parameters, ensembleMatrix, K, elementNum)
+        @info("Added to assemble")
     end
 
     loadVector = assemblyLoads3D(parameters, intOrder, elementType)

@@ -68,6 +68,7 @@ function stiffnessMatrix3D(elasticityMatrix::AbstractArray, parameters::processP
     yCoords = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][2] for i in 1:nodesPerElement]
     zCoords = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][3] for i in 1:nodesPerElement]
     FIntegrate(r, s, t) = F3D(r, s, t, xCoords, yCoords, zCoords, elasticityMatrix, elemTypeInd)
+    @info("Local integration matrix compiled")
     K = multipleIntegral.gauss3DMethodMatrix(FIntegrate, intOrder)
     return K
 end

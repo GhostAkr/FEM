@@ -55,7 +55,7 @@ end  # generateRandomMesh2D
 function generateTestMesh3D()
     nOfNodes = 12
     nOfElements = 2 
-    resultMesh = Mesh2D_T(Vector{Tuple{Vararg{Float64}}}(undef, nOfNodes), Vector{Tuple{Vararg{Int}}}(undef, nOfElements))
+    resultMesh = Mesh2D_T(Vector{Tuple{Vararg{Float64}}}(undef, nOfNodes), Vector{Tuple{Vararg{Int}}}(undef, nOfElements), Dict{String, Vector{Vector{Int}}}())
     # Nodes
     resultMesh.nodes[1] = (0, 0, 0)
     resultMesh.nodes[2] = (50, 0, 0)
@@ -355,16 +355,17 @@ function read_mesh_from_med(mesh_path::String, type::meshType)
         x_coord = nodes[node][1]
 
         y_coord = 0
-        if size(nodes[node])[1] == 2
+        if size(nodes[node])[1] >= 2
             y_coord = nodes[node][2]
         end
 
         z_coord = 0
-        if size(nodes[node])[1] == 3
-            y_coord = nodes[node][3]
+        if size(nodes[node])[1] >= 3
+            z_coord = nodes[node][3]
         end
 
         node_coords = Tuple([x_coord, y_coord, z_coord])
+
         nodes_converted[node] = node_coords
     end
 
@@ -377,6 +378,8 @@ function read_mesh_from_med(mesh_path::String, type::meshType)
         type_name = :QU4
     elseif type == Quad8Pts2D
         type_name = :QU9
+    elseif type == Iso8Pts3DMeshType
+        type_name = :HE8
     else
         @error("Such type of mesh is not supported by MED file reader")
         return nothing
