@@ -143,33 +143,31 @@ function elementLoad3D(elementNum::Int, pars::processPars, inputLoad::Array, loa
     yCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][2] for i in 1:nodesPerElement]
     zCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][3] for i in 1:nodesPerElement]
     load = inputLoad
-    # IntegrationOrder = 4
+
+    f_integrate_top(r, s) = transpose(displInterpMatr(r, s, 1, elemTypeInd)) * load * DetJs(r, s, 1, xCoords, yCoords, zCoords, elemTypeInd)
+    f_integrate_left(r, t) = transpose(displInterpMatr(r, -1, t, elemTypeInd)) * load * DetJs(r, -1, t, xCoords, yCoords, zCoords, elemTypeInd)
+    f_integrate_bottom(r, s) = transpose(displInterpMatr(r, s, -1, elemTypeInd)) * load * DetJs(r, s, -1, xCoords, yCoords, zCoords, elemTypeInd)
+    f_integrate_right(r, t) = transpose(displInterpMatr(r, 1, t, elemTypeInd)) * load * DetJs(r, 1, t, xCoords, yCoords, zCoords, elemTypeInd)
+    f_integrate_backwards(s, t) = transpose(displInterpMatr(1, s, t, elemTypeInd)) * load * DetJs(1, s, t, xCoords, yCoords, zCoords, elemTypeInd)
+    f_integrate_towards(s, t) = transpose(displInterpMatr(-1, s, t, elemTypeInd)) * load * DetJs(-1, s, t, xCoords, yCoords, zCoords, elemTypeInd)
+
+    F = nothing
     FIntegrate(x, y) = 0
     if loadDirect == top
-        FIntegrate(r, s) = transpose(displInterpMatr(r, s, 1, elemTypeInd)) * load * DetJs(r, s, 1, xCoords, yCoords, zCoords, elemTypeInd)
+        F = multipleIntegral.gaussMethodMatrix(f_integrate_top, intOrder)
     elseif loadDirect == left
-        FIntegrate(r, t) = transpose(displInterpMatr(r, -1, t, elemTypeInd)) * load * DetJs(r, -1, t, xCoords, yCoords, zCoords, elemTypeInd)
+        F = multipleIntegral.gaussMethodMatrix(f_integrate_left, intOrder)
     elseif loadDirect == bottom
-        FIntegrate(r, s) = transpose(displInterpMatr(r, s, 1, elemTypeInd)) * load * DetJs(r, s, -1, xCoords, yCoords, zCoords, elemTypeInd)
+        F = multipleIntegral.gaussMethodMatrix(f_integrate_bottom, intOrder)
     elseif loadDirect == right
-        println("Right case")
-        println("Interpolation matrix: ", transpose(displInterpMatr(5, 1, 5, elemTypeInd)))
-        println("Expected F: ", transpose(displInterpMatr(5, 1, 5, elemTypeInd)) * load)
-        println("Load: ", load)
-        FIntegrate(r, t) = (transpose(displInterpMatr(r, 1, t, elemTypeInd)) * load) #* DetJs(r, 1, t, xCoords, yCoords, zCoords, elemTypeInd)
-        println("Calculated F: ", FIntegrate(5, 5))
+        F = multipleIntegral.gaussMethodMatrix(f_integrate_right, intOrder)
     elseif loadDirect == backwards  # To us
-        FIntegrate(s, t) = transpose(displInterpMatr(1, s, t, elemTypeInd)) * load * DetJs(1, s, t, xCoords, yCoords, zCoords, elemTypeInd)
+        F = multipleIntegral.gaussMethodMatrix(f_integrate_backwards, intOrder)
     elseif loadDirect == towards  # From us
-        FIntegrate(s, t) = transpose(displInterpMatr(-1, s, t, elemTypeInd)) * load * DetJs(-1, s, t, xCoords, yCoords, zCoords, elemTypeInd)
+        F = multipleIntegral.gaussMethodMatrix(f_integrate_towards, intOrder)
     else
-        println("Given load direction is not supported")
+        @error("Given load direction is not supported")
         return nothing
-    end
-    F = multipleIntegral.gaussMethodMatrix(FIntegrate, intOrder)
-
-    if elementNum == 2
-        println("Load on 2nd element: ", F)
     end
 
     return F
@@ -187,7 +185,7 @@ Assemble right part of linear system of equations. This method applies given loc
 - `freedom_deg::Int`: degree of freedom.
 """
 function assembly_loads!(pars::processPars, intOrder::Int, elemTypeInd::FiniteElement, freedom_deg::Int)
-    loadsVector = zeros(Float64, 2 * size(pars.mesh.nodes)[1])
+    loadsVector = zeros(Float64, freedom_deg * size(pars.mesh.nodes)[1])
     for (element, load) in pars.load
         elNum = element[1]
         # Global nodes to which load should be applied
@@ -201,8 +199,13 @@ function assembly_loads!(pars::processPars, intOrder::Int, elemTypeInd::FiniteEl
         end
 
         direction = loadDirection(directionFromNodes(loadLocalNodes, elemTypeInd))
-        F = elementLoad(elNum, pars, load, direction, intOrder, elemTypeInd)
-        # loadLocalNodes = nodesFromDirection(Int(direction), elemTypeInd)
+
+        F = nothing
+        if freedom_deg == 2
+            F = elementLoad(elNum, pars, load, direction, intOrder, elemTypeInd)
+        elseif freedom_deg == 3
+            F = elementLoad3D(elNum, pars, load, direction, intOrder, elemTypeInd)
+        end
 
         if (size(element)[1] - 1 != size(loadLocalNodes)[1])
             @error "Incorrect input load"

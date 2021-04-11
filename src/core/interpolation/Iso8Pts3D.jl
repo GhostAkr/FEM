@@ -324,6 +324,25 @@ function ElementTypes.nodesFromDirection(direction::Int, elemTypeInd::Iso8Pts3DT
     end
 end  # nodesFromDirection
 
+function ElementTypes.directionFromNodes(nodes::Array, elemTypeInd::Iso8Pts3DType)
+    if issubset([1, 2, 3, 4], nodes)
+        return 1  # Top
+    elseif issubset([4, 3, 7, 8], nodes)
+        return 2  # Left
+    elseif issubset([5, 8, 7, 6], nodes)
+        return 3  # Bottom
+    elseif issubset([1, 5, 6, 2], nodes)
+        return 4  # Right
+    elseif issubset([1, 4, 8, 5], nodes)
+        return 5  # To us
+    elseif issubset([2, 6, 7, 3], nodes)
+        return 6  # From us
+    else
+        @error("Can't define direction from given nodes")
+        return nothing
+    end
+end  # directionFromNodes
+
 function ElementTypes.getRSFromNode(nodeIndex::Int, elemTypeInd::Iso8Pts3DType)
     if nodeIndex == 1
         return (1, 1, 1)

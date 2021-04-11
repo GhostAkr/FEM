@@ -280,7 +280,8 @@ function fem3D(meshPath::String, dataPath::String, elemTypeID::FETypes)
         @info("Added to assemble")
     end
 
-    loadVector = assemblyLoads3D(parameters, intOrder, elementType)
+    freedom_deg = 3
+    loadVector = assembly_loads!(parameters, intOrder, elementType, freedom_deg)
 
     println("Load vector before constraints: ", loadVector)
     applyConstraints3D(parameters, loadVector, ensembleMatrix)
