@@ -157,10 +157,6 @@ end
 
 function jacGlobToLocInv(r, s, t, xCoords::Array{Float64}, yCoords::Array{Float64}, zCoords::Array{Float64})
     elemTypeInd = Iso8Pts3DType("Iso8Pts3DType")
-    # @show(r, s, t)
-    # @show(jacGlobToLoc(r, s, t, xCoords, yCoords, zCoords, elemTypeInd))
-    # @show(xCoords, yCoords, zCoords)
-
     inv(jacGlobToLoc(r, s, t, xCoords, yCoords, zCoords, elemTypeInd))
 end
 

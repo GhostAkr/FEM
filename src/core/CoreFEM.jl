@@ -264,7 +264,7 @@ function fem3D(meshPath::String, dataPath::String, elemTypeID::FETypes)
 
     printProcessPars(parameters)
 
-    intOrder = 4
+    intOrder = 2
 
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]
