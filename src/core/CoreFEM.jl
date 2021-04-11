@@ -248,6 +248,8 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
 end  # fem2D
 
 function fem3D(meshPath::String, dataPath::String, elemTypeID::FETypes)
+    freedom_deg = 3
+
     # Getting element type
     elementType = defineElemType(elemTypeID)
     if (elementType === nothing)
@@ -273,14 +275,11 @@ function fem3D(meshPath::String, dataPath::String, elemTypeID::FETypes)
 
     ensembleMatrix = zeros(Float64, 3 * size(parameters.mesh.nodes)[1], 3 * size(parameters.mesh.nodes)[1])
     for elementNum in eachindex(parameters.mesh.elements)
-        @info("Parsing element", elementNum)
         K = stiffnessMatrix3D(C, parameters, elementNum, intOrder, elementType)
-        @info("Stiffness matrix calculated")
-        assemblyFEM3D(parameters, ensembleMatrix, K, elementNum)
-        @info("Added to assemble")
+        # assemblyFEM3D(parameters, ensembleMatrix, K, elementNum)
+        assembly_left_part!(parameters, ensembleMatrix, K, elementNum, freedom_deg)
     end
 
-    freedom_deg = 3
     loadVector = assembly_loads!(parameters, intOrder, elementType, freedom_deg)
 
     println("Load vector before constraints: ", loadVector)

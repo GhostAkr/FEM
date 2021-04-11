@@ -112,7 +112,7 @@ function exportToVTK(result::Array, deformations, stresses, vonMises, pars::proc
         write(file, vtkVectorsKeyword * " " * displacementsKeyword * " " * vtkPointsType * "\n")  # By defalt it uses 1 vector per point
         if type === Iso8Pts3DMeshType  # TODO: Make this check more scalable
             for nodeIndex in 1:nOfNodes
-                write(file, string(result[3 * nodeIndex - 2]) * " " * string(result[3 * nodeIndex - 1]) * string(result[3 * nodeIndex]) * "\n")
+                write(file, string(result[3 * nodeIndex - 2]) * " " * string(result[3 * nodeIndex - 1]) * " " * string(result[3 * nodeIndex]) * "\n")
             end
         else
             for nodeIndex in 1:nOfNodes
