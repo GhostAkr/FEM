@@ -128,12 +128,25 @@ function renumerateNodes!(mesh::Mesh2D_T, type::meshType)
             # Need to check how Salome actually numerates nodes for such finite element.
 
             # All possible renumerations
-            newNodes = (mesh.elements[i][3], mesh.elements[i][2], mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][6], mesh.elements[i][5], mesh.elements[i][8], mesh.elements[i][7])
+            # (1, 5, 6, 2, 3, 7, 8, 4)
+
+            # newNodes = (mesh.elements[i][3], mesh.elements[i][2], mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][6], mesh.elements[i][5], mesh.elements[i][8], mesh.elements[i][7])
             # newNodes = (mesh.elements[i][2], mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][3], mesh.elements[i][5], mesh.elements[i][8], mesh.elements[i][7], mesh.elements[i][6])
             # newNodes = (mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][3], mesh.elements[i][2], mesh.elements[i][8], mesh.elements[i][7], mesh.elements[i][6], mesh.elements[i][5])
             # newNodes = (mesh.elements[i][4], mesh.elements[i][3], mesh.elements[i][2], mesh.elements[i][1], mesh.elements[i][7], mesh.elements[i][6], mesh.elements[i][5], mesh.elements[i][8])
         elseif type === Iso8Pts3DMeshType
             # TODO: Renumerate nodes in this case
+            # @info("Nodes before renumeration")
+            # @show(mesh.elements[i])
+            @info("New renumeration was applied (1)")
+            # newNodes = (mesh.elements[i][1], mesh.elements[i][5], mesh.elements[i][6], mesh.elements[i][2], 
+            #             mesh.elements[i][3], mesh.elements[i][7], mesh.elements[i][8], mesh.elements[i][4])
+            # (1, 5, 8, 4, 2, 6, 7, 3)
+            # newNodes = (mesh.elements[i][1], mesh.elements[i][5], mesh.elements[i][8], mesh.elements[i][4], 
+            #             mesh.elements[i][2], mesh.elements[i][6], mesh.elements[i][7], mesh.elements[i][3])
+
+            newNodes = (mesh.elements[i][2], mesh.elements[i][6], mesh.elements[i][7], mesh.elements[i][3], 
+                        mesh.elements[i][1], mesh.elements[i][5], mesh.elements[i][8], mesh.elements[i][4])
         else
             println("Unknown mesh type while renumerating nodes")
         end
