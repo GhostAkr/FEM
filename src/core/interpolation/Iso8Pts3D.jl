@@ -91,7 +91,7 @@ function dys(r, s, t, yCoords::Array{Float64})
     c5 = 0.125 * (1 + r) * (1 - t)
     c6 = 0.125 * (1 - r) * (1 - t)
     c7 = -0.125 * (1 - r) * (1 - t)
-    c8 = -0.125 * (1 + r) * (1 - t) 
+    c8 = -0.125 * (1 + r) * (1 - t)
     return c1 * yCoords[1] + c2 * yCoords[2] + c3 * yCoords[3] + c4 * yCoords[4] + c5 * yCoords[5] + c6 * yCoords[6] + c7 * yCoords[7] + c8 * yCoords[8]
 end
 
@@ -104,7 +104,7 @@ function dzs(r, s, t, zCoords::Array{Float64})
     c5 = 0.125 * (1 + r) * (1 - t)
     c6 = 0.125 * (1 - r) * (1 - t)
     c7 = -0.125 * (1 - r) * (1 - t)
-    c8 = -0.125 * (1 + r) * (1 - t) 
+    c8 = -0.125 * (1 + r) * (1 - t)
     return c1 * zCoords[1] + c2 * zCoords[2] + c3 * zCoords[3] + c4 * zCoords[4] + c5 * zCoords[5] + c6 * zCoords[6] + c7 * zCoords[7] + c8 * zCoords[8]
 end
 
@@ -161,7 +161,8 @@ function jacGlobToLocInv(r, s, t, xCoords::Array{Float64}, yCoords::Array{Float6
 end
 
 function ElementTypes.DetJs(r, s, t, xCoords::Array{Float64}, yCoords::Array{Float64}, zCoords::Array{Float64}, elemTypeInd::Iso8Pts3DType)
-    return sqrt(dxs(r, s, t, xCoords)^2 + dys(r, s, t, yCoords)^2 + dzs(r, s, t, zCoords))
+    # TODO: Provide correct Jacbians for different directions (this one is appliable for towards and backwards directions)
+    return sqrt(dxs(r, s, t, xCoords)^2 + dys(r, s, t, yCoords)^2 + dzs(r, s, t, zCoords)^2)
 end
 
 # Supporting matrices for calculating gradient matrix
