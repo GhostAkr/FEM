@@ -103,8 +103,10 @@ Determinant of appropriate Jacobi matrix.
 """
 function ElementTypes.DetJs(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}, load_direction::Int, elemTypeInd::Quad4Type)
     if load_direction == 1 || load_direction == 3
+        @show(sqrt(dxr(r, s, xCoords)^2 + dyr(r, s, yCoords)^2))
         return sqrt(dxr(r, s, xCoords)^2 + dyr(r, s, yCoords)^2)
     elseif load_direction == 2 || load_direction == 4
+        @show(sqrt(dxs(r, s, xCoords)^2 + dys(r, s, yCoords)^2))
         return sqrt(dxs(r, s, xCoords)^2 + dys(r, s, yCoords)^2)
     else
         @error("Incorrect direction while calculating \"surface\" Jacobian")
