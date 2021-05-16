@@ -210,10 +210,17 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     intOrder = 3
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]
-    C = elasticityMatrix(E, nu, plainStress)
+    C = elasticityMatrix(E, nu, plainStrain)
     ensembleMatrix = zeros(Float64, 2 * size(parameters.mesh.nodes)[1], 2 * size(parameters.mesh.nodes)[1])
     for elementNum in eachindex(parameters.mesh.elements)
         K = stiffnessMatrix(C, parameters, elementNum, intOrder, elementType)
+
+        # TODO: Remove before commit
+        # if elementNum == 1
+        #     @info("Local stiffness matrix")
+        #     @show(K)
+        # end
+
         assembly_left_part!(parameters, ensembleMatrix, K, elementNum, freedom_deg)
     end
     loadVector = assembly_loads!(parameters, intOrder, elementType, freedom_deg)
@@ -277,7 +284,13 @@ function fem3D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     ensembleMatrix = zeros(Float64, 3 * size(parameters.mesh.nodes)[1], 3 * size(parameters.mesh.nodes)[1])
     for elementNum in eachindex(parameters.mesh.elements)
         K = stiffnessMatrix3D(C, parameters, elementNum, intOrder, elementType)
-        # assemblyFEM3D(parameters, ensembleMatrix, K, elementNum)
+
+        # TODO: Remove before commit
+        # if elementNum == 1
+        #     @info("Local stiffness matrix")
+        #     @show(K)
+        # end
+
         assembly_left_part!(parameters, ensembleMatrix, K, elementNum, freedom_deg)
     end
 
