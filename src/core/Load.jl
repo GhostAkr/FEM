@@ -144,9 +144,6 @@ function elementLoad3D(elementNum::Int, pars::processPars, inputLoad::Array, loa
     zCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][3] for i in 1:nodesPerElement]
     load = inputLoad
 
-    @info("Load direction")
-    @show(loadDirect)
-
     f_integrate_top(r, s) = transpose(displInterpMatr(r, s, 1, elemTypeInd)) * load * DetJs(r, s, 1, xCoords, yCoords, zCoords, elemTypeInd)
     f_integrate_left(r, t) = transpose(displInterpMatr(r, -1, t, elemTypeInd)) * load * DetJs(r, -1, t, xCoords, yCoords, zCoords, elemTypeInd)
     f_integrate_bottom(r, s) = transpose(displInterpMatr(r, s, -1, elemTypeInd)) * load * DetJs(r, s, -1, xCoords, yCoords, zCoords, elemTypeInd)
@@ -193,9 +190,6 @@ function assembly_loads!(pars::processPars, intOrder::Int, elemTypeInd::FiniteEl
         # Global nodes to which load should be applied
         loadGlobalNodes = [element[i] for i in 2:size(element)[1]]
 
-        @info("Load:")
-        @show(load)
-
         # Getting local numeration from given global one
         elNodes = pars.mesh.elements[elNum]
         loadLocalNodes = zeros(Int, size(loadGlobalNodes)[1])
@@ -234,7 +228,6 @@ function assemblyLoads3D(pars::processPars, intOrder::Int, elemTypeInd::FiniteEl
 
     for (element, load) in pars.load
         elNum = element[1]
-        println("Direction is ", element[2])
 
         direction = loadDirection(element[2])
         F = elementLoad3D(elNum, pars, load, direction, intOrder, elemTypeInd)
@@ -250,7 +243,6 @@ function assemblyLoads3D(pars::processPars, intOrder::Int, elemTypeInd::FiniteEl
         for i in eachindex(loadLocalNodes)
             localIndex = loadLocalNodes[i]
             globalIndex = loadGlobalNodes[i]
-            println("Writing ", localIndex, " to ", globalIndex)
             loadsVector[3 * globalIndex - 2] += F[3 * localIndex - 2]
             loadsVector[3 * globalIndex - 1] += F[3 * localIndex - 1]
             loadsVector[3 * globalIndex] += F[3 * localIndex]

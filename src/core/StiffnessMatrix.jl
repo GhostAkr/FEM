@@ -52,33 +52,6 @@ function stiffnessMatrix(elasticityMatrix::AbstractArray, parameters::processPar
     xCoords = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][1] for i in 1:nodesPerElement]
     yCoords = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][2] for i in 1:nodesPerElement]
     FIntegrate(r, s) = F(r, s, xCoords, yCoords, elasticityMatrix, elemTypeInd)  # F representation for integrating (depends only on r and s)
-    
-    # TODO: Remove before commit
-    # 1. Det(J)
-    @info("Determinant:")
-    println(det(jacGlobToLoc(1, 1, xCoords, yCoords, elemTypeInd)))
-    # 2. B^T * C
-    @info("First production (1 line):")
-    bTmp = gradMatr(1, 1, xCoords, yCoords, elemTypeInd)
-    prod = transpose(bTmp) * elasticityMatrix
-    for i in 1:size(prod)[2]
-        print(prod[1, i], " ")
-    end
-    println()
-    # 3. B
-    @info("B matrix (2 column):")
-    for i in 1:size(bTmp)[1]
-        print(bTmp[i, 2], " ")
-    end
-    println()
-    # 4. J
-    @info("Jacobi's matrix:")
-    println(jacGlobToLoc(1, 1, xCoords, yCoords, elemTypeInd))
-    
-    # TODO: Remove before commit
-    @info("Integral function (1, 2):")
-    println(FIntegrate(1, 1)[1, 2])
-
     K = multipleIntegral.gaussMethodMatrix(FIntegrate, intOrder)
     return K
 end  # stiffnessMatrix
@@ -97,33 +70,6 @@ function stiffnessMatrix3D(elasticityMatrix::AbstractArray, parameters::processP
     yCoords = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][2] for i in 1:nodesPerElement]
     zCoords = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][3] for i in 1:nodesPerElement]
     FIntegrate(r, s, t) = F3D(r, s, t, xCoords, yCoords, zCoords, elasticityMatrix, elemTypeInd)
-
-    # TODO: Remove before commit
-    # 1. Det(J)
-    @info("Determinant:")
-    println(det(jacGlobToLoc(1, 1, 1, xCoords, yCoords, zCoords, elemTypeInd)))
-    # 2. B^T * C
-    @info("First production (1 line):")
-    bTmp = gradMatr(1, 1, 1, xCoords, yCoords, zCoords, elemTypeInd)
-    prod = transpose(bTmp) * elasticityMatrix
-    for i in 1:size(prod)[2]
-        print(prod[1, i], " ")
-    end
-    println()
-    # 3. B
-    @info("B matrix (2 column):")
-    for i in 1:size(bTmp)[1]
-        print(bTmp[i, 2], " ")
-    end
-    println()
-    # 4. J
-    @info("Jacobi's matrix:")
-    println(jacGlobToLoc(1, 1, -1, xCoords, yCoords, zCoords, elemTypeInd))
-
-    # TODO: Remove before commit
-    @info("Integral function (1, 2):")
-    println(FIntegrate(1, 1, 1)[1, 2])
-
     K = multipleIntegral.gauss3DMethodMatrix(FIntegrate, intOrder)
     return K
 end
