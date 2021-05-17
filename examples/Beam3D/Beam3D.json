@@ -4,10 +4,10 @@
         "YoungMod": 210000
     },
     "Constraints": {
-        "fixedXY": "LeftEdge"
+        "fixedXYZ": "LeftGR"
     },
     "DistributedLoad": {
-        "Load": [10, 0],
-        "Elements": "RightEdge"
+        "Load": [10, 0, 0],
+        "Elements": "RightGR"
     }
 }

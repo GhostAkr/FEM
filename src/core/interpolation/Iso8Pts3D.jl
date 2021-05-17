@@ -6,6 +6,7 @@ Module describing isoparametric 8-points 3D finite elements.
 module Iso8Pts3D
 
 using ElementTypes
+using LinearAlgebra
 
 export FiniteElement, Iso8Pts3DType
 export jacGlobToLoc, DetJs, gradMatr, displInterpMatr, nodesFromDirection, getRSFromNode
@@ -162,7 +163,9 @@ end
 
 function ElementTypes.DetJs(r, s, t, xCoords::Array{Float64}, yCoords::Array{Float64}, zCoords::Array{Float64}, elemTypeInd::Iso8Pts3DType)
     # TODO: Provide correct Jacbians for different directions (this one is appliable for towards and backwards directions)
-    return sqrt(dxs(r, s, t, xCoords)^2 + dys(r, s, t, yCoords)^2 + dzs(r, s, t, zCoords)^2)
+    squared_matr = [dxs(r, s, t, xCoords)^2 + dys(r, s, t, yCoords)^2 + dzs(r, s, t, zCoords)^2 dxs(r, s, t, xCoords) * dxt(r, s, t, xCoords) + dys(r, s, t, yCoords) * dyt(r, s, t, yCoords) + dzs(r, s, t, zCoords) * dzt(r, s, t, zCoords)
+    dxs(r, s, t, xCoords) * dxt(r, s, t, xCoords) + dys(r, s, t, yCoords) * dyt(r, s, t, yCoords) + dzs(r, s, t, zCoords) * dzt(r, s, t, zCoords) dxt(r, s, t, xCoords)^2 + dyt(r, s, t, yCoords)^2 + dzt(r, s, t, zCoords)^2]
+    return sqrt(det(squared_matr))
 end
 
 # Supporting matrices for calculating gradient matrix
