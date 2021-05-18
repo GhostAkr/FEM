@@ -284,21 +284,12 @@ function fem3D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     ensembleMatrix = zeros(Float64, 3 * size(parameters.mesh.nodes)[1], 3 * size(parameters.mesh.nodes)[1])
     for elementNum in eachindex(parameters.mesh.elements)
         K = stiffnessMatrix3D(C, parameters, elementNum, intOrder, elementType)
-
-        # TODO: Remove before commit
-        # if elementNum == 1
-        #     @info("Local stiffness matrix")
-        #     @show(K)
-        # end
-
         assembly_left_part!(parameters, ensembleMatrix, K, elementNum, freedom_deg)
     end
 
     loadVector = assembly_loads!(parameters, intOrder, elementType, freedom_deg)
 
-    println("Load vector before constraints: ", loadVector)
     applyConstraints3D(parameters, loadVector, ensembleMatrix)
-    println("Load vector after constraints: ", loadVector)
 
     # Writing left part to file
     open("equation/K", "w") do file
@@ -310,8 +301,6 @@ function fem3D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     end
 
     println("Solving...")
-    println("Ensemble matrix sizes: ", size(ensembleMatrix))
-    println("Load vector sizes: ", size(loadVector))
     result = solve(ensembleMatrix, loadVector)
 
     # Writing result to file
