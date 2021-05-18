@@ -163,8 +163,37 @@ end
 
 function ElementTypes.DetJs(r, s, t, xCoords::Array{Float64}, yCoords::Array{Float64}, zCoords::Array{Float64}, elemTypeInd::Iso8Pts3DType)
     # TODO: Provide correct Jacbians for different directions (this one is appliable for towards and backwards directions)
-    squared_matr = [dxs(r, s, t, xCoords)^2 + dys(r, s, t, yCoords)^2 + dzs(r, s, t, zCoords)^2 dxs(r, s, t, xCoords) * dxt(r, s, t, xCoords) + dys(r, s, t, yCoords) * dyt(r, s, t, yCoords) + dzs(r, s, t, zCoords) * dzt(r, s, t, zCoords)
-    dxs(r, s, t, xCoords) * dxt(r, s, t, xCoords) + dys(r, s, t, yCoords) * dyt(r, s, t, yCoords) + dzs(r, s, t, zCoords) * dzt(r, s, t, zCoords) dxt(r, s, t, xCoords)^2 + dyt(r, s, t, yCoords)^2 + dzt(r, s, t, zCoords)^2]
+    squared_matr = []
+    if r == 1 || r == -1
+        jacobi_ss = dxs(r, s, t, xCoords)^2 + dys(r, s, t, yCoords)^2 + dzs(r, s, t, zCoords)^2
+        jacobi_st = dxs(r, s, t, xCoords) * dxt(r, s, t, xCoords) + 
+                    dys(r, s, t, yCoords) * dyt(r, s, t, yCoords) + 
+                    dzs(r, s, t, zCoords) * dzt(r, s, t, zCoords)
+        jacobi_tt = dxt(r, s, t, xCoords)^2 + dyt(r, s, t, yCoords)^2 + dzt(r, s, t, zCoords)^2
+
+        squared_matr = [jacobi_ss jacobi_st
+                        jacobi_st jacobi_tt]
+    elseif s == 1 || s == -1
+        jacobi_rr = dxr(r, s, t, xCoords)^2 + dyr(r, s, t, yCoords)^2 + dzr(r, s, t, zCoords)^2
+        jacobi_rt = dxr(r, s, t, xCoords) * dxt(r, s, t, xCoords) + 
+                    dyr(r, s, t, yCoords) * dyt(r, s, t, yCoords) + 
+                    dzr(r, s, t, zCoords) * dzt(r, s, t, zCoords)
+        jacobi_tt = dxt(r, s, t, xCoords)^2 + dyt(r, s, t, yCoords)^2 + dzt(r, s, t, zCoords)^2
+
+        squared_matr = [jacobi_rr jacobi_rt
+                        jacobi_rt jacobi_tt]
+    elseif t == 1 || t == -1
+        jacobi_rr = dxr(r, s, t, xCoords)^2 + dyr(r, s, t, yCoords)^2 + dzr(r, s, t, zCoords)^2
+        jacobi_rs = dxr(r, s, t, xCoords) * dxs(r, s, t, xCoords) + 
+                    dyr(r, s, t, yCoords) * dys(r, s, t, yCoords) + 
+                    dzr(r, s, t, zCoords) * dzs(r, s, t, zCoords)
+        jacobi_ss = dxs(r, s, t, xCoords)^2 + dys(r, s, t, yCoords)^2 + dzs(r, s, t, zCoords)^2
+
+        squared_matr = [jacobi_rr jacobi_rs
+                        jacobi_rs jacobi_ss]
+    else
+        @error "Incorrect surface determinant calling"
+    end
     return sqrt(det(squared_matr))
 end
 
