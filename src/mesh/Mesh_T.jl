@@ -138,7 +138,7 @@ function renumerateNodes!(mesh::Mesh2D_T, type::meshType)
             # TODO: Renumerate nodes in this case
             # @info("Nodes before renumeration")
             # @show(mesh.elements[i])
-            @info("New renumeration was applied (1)")
+            # @info("New renumeration was applied (1)")
             # newNodes = (mesh.elements[i][1], mesh.elements[i][5], mesh.elements[i][6], mesh.elements[i][2], 
             #             mesh.elements[i][3], mesh.elements[i][7], mesh.elements[i][8], mesh.elements[i][4])
             # (1, 5, 8, 4, 2, 6, 7, 3)
