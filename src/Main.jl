@@ -10,3 +10,4 @@ CoreFEM.fem2D("examples/SimpleBeam2D/SimpleBeam2D.med", "examples/SimpleBeam2D/S
 
 CoreFEM.fem3D("examples/Beam3D/Beam3D.med", "examples/Beam3D/Beam3D.json", Iso8Pts3DTypeID)
 CoreFEM.fem3D("examples/Beam3DBindSimple/Beam3DBindSimple.med", "examples/Beam3DBindSimple/Beam3DBindSimple.json", Iso8Pts3DTypeID)
+CoreFEM.fem3D("examples/Beam3DBindAnsys/Beam3DBindAnsys.med", "examples/Beam3DBindAnsys/Beam3DBindAnsys.json", Iso8Pts3DTypeID)
