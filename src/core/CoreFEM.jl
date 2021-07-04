@@ -303,6 +303,12 @@ function fem3D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     println("Solving...")
     result = solve(ensembleMatrix, loadVector)
 
+    if TestFEM.verify_example(meshPath, dataPath, result)
+        @info "Result is correct"
+    else
+        @info "Result is INcorrect"
+    end
+
     # Writing result to file
     open("equation/result", "w") do file
         writedlm(file, result)
