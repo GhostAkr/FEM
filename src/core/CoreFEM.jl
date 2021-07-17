@@ -205,7 +205,6 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
 
     # Reading parameters
     read_params_JSON!(dataPath, parameters)
-    # readParameters!(dataPath, parameters)
 
     intOrder = 3
     nu = parameters.materialProperties[poisC]
@@ -214,17 +213,9 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     ensembleMatrix = zeros(Float64, 2 * size(parameters.mesh.nodes)[1], 2 * size(parameters.mesh.nodes)[1])
     for elementNum in eachindex(parameters.mesh.elements)
         K = stiffnessMatrix(C, parameters, elementNum, intOrder, elementType)
-
-        # TODO: Remove before commit
-        # if elementNum == 1
-        #     @info("Local stiffness matrix")
-        #     @show(K)
-        # end
-
         assembly_left_part!(parameters, ensembleMatrix, K, elementNum, freedom_deg)
     end
     loadVector = assembly_loads!(parameters, intOrder, elementType, freedom_deg)
-    println("Load vector before constraints: ", loadVector)
     applyConstraints(parameters, loadVector, ensembleMatrix)
     # Writing left part to file
     open("equation/K", "w") do file
@@ -271,8 +262,6 @@ function fem3D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     parameters = processPars(testMaterialProperties(), testBC3D(), testLoad3D(), generateTestMesh3D())
     parameters.mesh = read_mesh_from_med(meshPath, meshType)
     read_params_JSON!(dataPath, parameters)
-
-    printProcessPars(parameters)
 
     intOrder = 2
 
