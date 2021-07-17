@@ -261,8 +261,6 @@ function gauss3DMethodMatrix(F::Function, intOrder::Int)
     end
     resultMatrix = zeros(nOfRows, nOfCols)
 
-    @info("Weigth precalc time")
-    @time begin
     # Precalculating weights
     n_of_weights = size(weights)[1]
     weights_matr = Array{Float64}(undef, n_of_weights, n_of_weights, n_of_weights)
@@ -273,10 +271,7 @@ function gauss3DMethodMatrix(F::Function, intOrder::Int)
             end
         end
     end
-    end
     
-    @info("Integration time:")
-    @time begin
     # Integrating
             for i in 1:intOrder
                 for j in 1:intOrder
@@ -292,7 +287,6 @@ function gauss3DMethodMatrix(F::Function, intOrder::Int)
                 end
             end
         end
-    end
     end
     end
 
