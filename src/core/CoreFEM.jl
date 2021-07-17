@@ -216,7 +216,6 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
         assembly_left_part!(parameters, ensembleMatrix, K, elementNum, freedom_deg)
     end
     loadVector = assembly_loads!(parameters, intOrder, elementType, freedom_deg)
-    println("Load vector before constraints: ", loadVector)
     applyConstraints(parameters, loadVector, ensembleMatrix)
     # Writing left part to file
     open("equation/K", "w") do file
