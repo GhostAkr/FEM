@@ -99,6 +99,14 @@ function parse_constraints_JSON(constraints_data::Dict, mesh::Mesh2D_T)
             constraint_type = CoreFEM.fixedX
         elseif parameter == "fixedy"
             constraint_type = CoreFEM.fixedY
+        elseif parameter == "fixedz"
+            constraint_type = CoreFEM.fixedZ
+        elseif parameter == "fixedxz"
+            constraint_type = CoreFEM.fixedXZ
+        elseif parameter == "fixedyz"
+            constraint_type = CoreFEM.fixedYZ
+        elseif parameter == "fixedxyz"
+            constraint_type = CoreFEM.fixedXYZ
         else
             @error("Incorrect constraint while importing data")
         end

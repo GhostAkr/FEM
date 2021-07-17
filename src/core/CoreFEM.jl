@@ -21,6 +21,7 @@ using TestFEM
 
 using Quad4Pts
 using Quad8Pts
+using Iso8Pts3D
 
 export fem2D
 
@@ -50,6 +51,24 @@ function assembly_left_part!(pars::processPars, targetMatrix::Array, currentElem
     end
 end  # assemblyFEM2D
 
+function assemblyFEM3D(pars::processPars, targetMatrix::Array, currentElementMatrix::Array, elementNum::Number)
+    elementNodes = pars.mesh.elements[elementNum]
+    for i in eachindex(elementNodes)
+        for j in eachindex(elementNodes)
+            # TODO: Fix current matrix indices
+            targetMatrix[3 * elementNodes[i] - 2, 3 * elementNodes[j] - 2] += currentElementMatrix[3 * i - 2, 3 * j - 2]
+            targetMatrix[3 * elementNodes[i] - 2, 3 * elementNodes[j] - 1] += currentElementMatrix[3 * i - 2, 3 * j - 1]
+            targetMatrix[3 * elementNodes[i] - 2, 3 * elementNodes[j]] += currentElementMatrix[3 * i - 2, 3 * j]
+            targetMatrix[3 * elementNodes[i] - 1, 3 * elementNodes[j] - 2] += currentElementMatrix[3 * i - 1, 3 * j - 2]
+            targetMatrix[3 * elementNodes[i] - 1, 3 * elementNodes[j] - 1] += currentElementMatrix[3 * i - 1, 3 * j - 1]
+            targetMatrix[3 * elementNodes[i] - 1, 3 * elementNodes[j]] += currentElementMatrix[3 * i - 1, 3 * j]
+            targetMatrix[3 * elementNodes[i], 3 * elementNodes[j] - 2] += currentElementMatrix[3 * i, 3 * j - 2]
+            targetMatrix[3 * elementNodes[i], 3 * elementNodes[j] - 1] += currentElementMatrix[3 * i, 3 * j - 1]
+            targetMatrix[3 * elementNodes[i], 3 * elementNodes[j]] += currentElementMatrix[3 * i, 3 * j]
+        end
+    end
+end  # assemblyFEM3D
+
 """
     applyConstraints(pars::processPars, loads::Array, globalK::Array)
 
@@ -68,6 +87,33 @@ function applyConstraints(pars::processPars, loads::Array, globalK::Array)
             applyFixedY(node, loads, globalK)
         elseif bc == fixedXY
             applyFixedXY(node, loads, globalK)
+        else
+            println("Unhandled boundary condition")
+        end
+    end
+end  # applyConstraints
+
+function applyConstraints3D(pars::processPars, loads::Array, globalK::Array)
+    for (node, bc) in pars.bc
+        if bc == fixedX
+            applyFixedX3D(node, loads, globalK)
+        elseif bc == fixedY
+            applyFixedY3D(node, loads, globalK)
+        elseif bc == fixedXY
+            applyFixedX3D(node, loads, globalK)
+            applyFixedY3D(node, loads, globalK)
+        elseif bc == fixedZ
+            applyFixedZ3D(node, loads, globalK)
+        elseif bc == fixedXZ
+            applyFixedX3D(node, loads, globalK)
+            applyFixedZ3D(node, loads, globalK)
+        elseif bc == fixedYZ
+            applyFixedY3D(node, loads, globalK)
+            applyFixedZ3D(node, loads, globalK)
+        elseif bc == fixedXYZ
+            applyFixedX3D(node, loads, globalK)
+            applyFixedY3D(node, loads, globalK)
+            applyFixedZ3D(node, loads, globalK)
         else
             println("Unhandled boundary condition")
         end
@@ -99,8 +145,10 @@ function defineElemType(elemTypeID::FETypes)
     resElement = nothing
     if elemTypeID === Quad4TypeID
         resElement = Quad4Type("Quad4Type")
-    elseif (elemTypeID === Quad8TypeID)
+    elseif elemTypeID === Quad8TypeID
         resElement = Quad8Type("Quad8Type")
+    elseif elemTypeID === Iso8Pts3DTypeID
+        resElement = Iso8Pts3DType("Iso8Pts3DType")
     else
         println("Unknown finite element type")
     end
@@ -113,6 +161,8 @@ function typeMeshFromElement(elemTypeID::FETypes)
         resMeshType = Quad4Pts2D
     elseif elemTypeID === Quad8TypeID
         resMeshType = Quad8Pts2D
+    elseif elemTypeID === Iso8Pts3DTypeID
+        resMeshType = Iso8Pts3DMeshType
     else
         println("Unknown element type while converting to mesh type")
     end
@@ -155,12 +205,11 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
 
     # Reading parameters
     read_params_JSON!(dataPath, parameters)
-    # readParameters!(dataPath, parameters)
 
     intOrder = 3
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]
-    C = elasticityMatrix(E, nu, 2)  # 1 - plane strain; 2 - plain stress
+    C = elasticityMatrix(E, nu, plainStrain)
     ensembleMatrix = zeros(Float64, 2 * size(parameters.mesh.nodes)[1], 2 * size(parameters.mesh.nodes)[1])
     for elementNum in eachindex(parameters.mesh.elements)
         K = stiffnessMatrix(C, parameters, elementNum, intOrder, elementType)
@@ -196,5 +245,67 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     BaseInterface.exportToVTK(result, deformations, stresses, vonMises, parameters, meshType)
     return result
 end  # fem2D
+
+function fem3D(meshPath::String, dataPath::String, elemTypeID::FETypes)
+    freedom_deg = 3
+
+    # Getting element type
+    elementType = defineElemType(elemTypeID)
+    if (elementType === nothing)
+        println("Element type passed to fem2D() is unknown")
+        return
+    end
+
+    # Getting mesh type
+    meshType = typeMeshFromElement(elemTypeID)
+
+    parameters = processPars(testMaterialProperties(), testBC3D(), testLoad3D(), generateTestMesh3D())
+    parameters.mesh = read_mesh_from_med(meshPath, meshType)
+    read_params_JSON!(dataPath, parameters)
+
+    intOrder = 2
+
+    nu = parameters.materialProperties[poisC]
+    E = parameters.materialProperties[youngMod]
+
+    C = elasticityMatrix(E, nu, problem3D)
+
+    ensembleMatrix = zeros(Float64, 3 * size(parameters.mesh.nodes)[1], 3 * size(parameters.mesh.nodes)[1])
+    for elementNum in eachindex(parameters.mesh.elements)
+        K = stiffnessMatrix3D(C, parameters, elementNum, intOrder, elementType)
+        assembly_left_part!(parameters, ensembleMatrix, K, elementNum, freedom_deg)
+    end
+
+    loadVector = assembly_loads!(parameters, intOrder, elementType, freedom_deg)
+
+    applyConstraints3D(parameters, loadVector, ensembleMatrix)
+
+    # Writing left part to file
+    open("equation/K", "w") do file
+        writedlm(file, ensembleMatrix)
+    end
+    # Writing right part to file
+    open("equation/F", "w") do file
+        writedlm(file, loadVector)
+    end
+
+    println("Solving...")
+    result = solve(ensembleMatrix, loadVector)
+
+    if TestFEM.verify_example(meshPath, dataPath, result)
+        @info "Result is correct"
+    else
+        @info "Result is INcorrect"
+    end
+
+    # Writing result to file
+    open("equation/result", "w") do file
+        writedlm(file, result)
+    end
+
+    BaseInterface.exportToVTK(result, undef, undef, undef, parameters, meshType)
+
+    return result
+end  # fem3D
 
 end  # Core

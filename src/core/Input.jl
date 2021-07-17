@@ -21,12 +21,16 @@ Return test load: surface force ``f^s = 10 \\text{МПа}`` on the right edge of
 """
 testLoad() = Dict([2, 4, 3, 6] => [10., 0.], [4, 4, 6, 9] => [10., 0.])
 
+testLoad3D() = Dict([2, 4, 6, 12, 3, 9] => [10., 0., 0.])
+
 """
     testBC()
 
 Return test boundary condition: fix plate on the left edge.
 """
 testBC() = Dict(1 => fixedXY, 4 => fixedXY, 7 => fixedXY,)
+
+testBC3D() = Dict(1 => fixedXYZ, 4 =>fixedXYZ, 10 => fixedXYZ, 7 => fixedXYZ, 2 => fixedZ, 5 => fixedZ, 11 => fixedZ, 8 => fixedZ, 3 => fixedZ, 6 => fixedZ, 12 => fixedZ, 9 => fixedZ)
 
 """
     printProcessPars(processPars::processPars)

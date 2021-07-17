@@ -14,6 +14,11 @@ Enum containing different boundary condition cases:
     fixedX
     fixedY
     fixedXY
+    # TODO: Somehow make this more simple
+    fixedZ
+    fixedXZ
+    fixedYZ
+    fixedXYZ
 end
 
 """
@@ -32,4 +37,6 @@ and ``s`` is directed to the top.
     left = 2
     bottom = 3
     right = 4
+    backwards = 5  # To us
+    towards = 6  # From us
 end

@@ -3,6 +3,9 @@ include("MeshVars.jl")
 using AsterReader
 
 export Mesh2D_T, generateTestMesh2D, printNodesMesh2D, printElementsMesh2D, readMeshFromSalomeDAT, read_mesh_from_med
+export generateTestMesh3D
+
+# TODO: Rename mesh type and print functions as well as it can be used for 3D models too.
 
 """
     Mesh2D_T
@@ -48,6 +51,29 @@ function generateTestMesh2D(n::Int)
     end
     return resultMesh
 end  # generateRandomMesh2D
+
+function generateTestMesh3D()
+    nOfNodes = 12
+    nOfElements = 2 
+    resultMesh = Mesh2D_T(Vector{Tuple{Vararg{Float64}}}(undef, nOfNodes), Vector{Tuple{Vararg{Int}}}(undef, nOfElements), Dict{String, Vector{Vector{Int}}}())
+    # Nodes
+    resultMesh.nodes[1] = (0, 0, 0)
+    resultMesh.nodes[2] = (50, 0, 0)
+    resultMesh.nodes[3] = (100, 0, 0)
+    resultMesh.nodes[4] = (0, 0, 100)
+    resultMesh.nodes[5] = (50, 0, 100)
+    resultMesh.nodes[6] = (100, 0, 100)
+    resultMesh.nodes[7] = (0, 100, 0)
+    resultMesh.nodes[8] = (50, 100, 0)
+    resultMesh.nodes[9] = (100, 100, 0)
+    resultMesh.nodes[10] = (0, 100, 100)
+    resultMesh.nodes[11] = (50, 100, 100)
+    resultMesh.nodes[12] = (100, 100, 100)
+    # Elements
+    resultMesh.elements[1] = (5, 11, 10, 4, 2, 8, 7, 1)
+    resultMesh.elements[2] = (6, 12, 11, 5, 3, 9, 8, 2)
+    return resultMesh
+end  # generateTestMesh3D
 
 
 """
@@ -102,10 +128,25 @@ function renumerateNodes!(mesh::Mesh2D_T, type::meshType)
             # Need to check how Salome actually numerates nodes for such finite element.
 
             # All possible renumerations
-            newNodes = (mesh.elements[i][3], mesh.elements[i][2], mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][6], mesh.elements[i][5], mesh.elements[i][8], mesh.elements[i][7])
+            # (1, 5, 6, 2, 3, 7, 8, 4)
+
+            # newNodes = (mesh.elements[i][3], mesh.elements[i][2], mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][6], mesh.elements[i][5], mesh.elements[i][8], mesh.elements[i][7])
             # newNodes = (mesh.elements[i][2], mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][3], mesh.elements[i][5], mesh.elements[i][8], mesh.elements[i][7], mesh.elements[i][6])
             # newNodes = (mesh.elements[i][1], mesh.elements[i][4], mesh.elements[i][3], mesh.elements[i][2], mesh.elements[i][8], mesh.elements[i][7], mesh.elements[i][6], mesh.elements[i][5])
             # newNodes = (mesh.elements[i][4], mesh.elements[i][3], mesh.elements[i][2], mesh.elements[i][1], mesh.elements[i][7], mesh.elements[i][6], mesh.elements[i][5], mesh.elements[i][8])
+        elseif type === Iso8Pts3DMeshType
+            # TODO: Renumerate nodes in this case
+            # @info("Nodes before renumeration")
+            # @show(mesh.elements[i])
+            # @info("New renumeration was applied (1)")
+            # newNodes = (mesh.elements[i][1], mesh.elements[i][5], mesh.elements[i][6], mesh.elements[i][2], 
+            #             mesh.elements[i][3], mesh.elements[i][7], mesh.elements[i][8], mesh.elements[i][4])
+            # (1, 5, 8, 4, 2, 6, 7, 3)
+            # newNodes = (mesh.elements[i][1], mesh.elements[i][5], mesh.elements[i][8], mesh.elements[i][4], 
+            #             mesh.elements[i][2], mesh.elements[i][6], mesh.elements[i][7], mesh.elements[i][3])
+
+            newNodes = (mesh.elements[i][2], mesh.elements[i][6], mesh.elements[i][7], mesh.elements[i][3], 
+                        mesh.elements[i][1], mesh.elements[i][5], mesh.elements[i][8], mesh.elements[i][4])
         else
             println("Unknown mesh type while renumerating nodes")
         end
@@ -144,6 +185,8 @@ function readMeshFromSalomeDAT(pathToFile::String, type::meshType)
         elseif type == Quad8Pts2D
             salomeTypeId = "208"
             nodesPerElement = 8
+        elseif type == Iso8Pts3DMeshType
+            # TODO: Handle this case
         else
             println("Given mesh type is not supported")
         end
@@ -325,16 +368,17 @@ function read_mesh_from_med(mesh_path::String, type::meshType)
         x_coord = nodes[node][1]
 
         y_coord = 0
-        if size(nodes[node])[1] == 2
+        if size(nodes[node])[1] >= 2
             y_coord = nodes[node][2]
         end
 
         z_coord = 0
-        if size(nodes[node])[1] == 3
-            y_coord = nodes[node][3]
+        if size(nodes[node])[1] >= 3
+            z_coord = nodes[node][3]
         end
 
         node_coords = Tuple([x_coord, y_coord, z_coord])
+
         nodes_converted[node] = node_coords
     end
 
@@ -347,6 +391,8 @@ function read_mesh_from_med(mesh_path::String, type::meshType)
         type_name = :QU4
     elseif type == Quad8Pts2D
         type_name = :QU9
+    elseif type == Iso8Pts3DMeshType
+        type_name = :HE8
     else
         @error("Such type of mesh is not supported by MED file reader")
         return nothing
