@@ -1,6 +1,6 @@
 using Quad4Pts
 using Quad8Pts
-using multipleIntegral
+using MultipleIntegral
 
 function calculateDeformations(displacements::Array, pars::processPars, intOrder::Int, elemTypeInd::FiniteElement)
     nOfNodes = size(pars.mesh.nodes)[1]
@@ -15,7 +15,7 @@ function calculateDeformations(displacements::Array, pars::processPars, intOrder
             push!(elementDisplacements, displacements[2 * node - 1])
             push!(elementDisplacements, displacements[2 * node])
         end
-        # gaussPoints = multipleIntegral.getGaussPoints2D(intOrder)
+        # gaussPoints = MultipleIntegral.getgausspoints_2d(intOrder)
         for nodeIndex in eachindex(element)
             # rCoord = gaussPoints[nodeIndex][1]
             # sCoord = gaussPoints[nodeIndex][2]

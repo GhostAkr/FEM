@@ -1,10 +1,10 @@
 """
-    multipleIntegral
+    MultipleIntegral
 
-Module describing integration methods that are neccessary for core calculations.
+Module describes integration methods that are neccessary for core calculations.
 """
-module multipleIntegral
+module MultipleIntegral
 
-include("multipleIntegralMethods.jl")
+include("MultipleIntegralMethods.jl")
 
-end  # multipleIntegral
+end  # MultipleIntegral

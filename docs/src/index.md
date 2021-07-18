@@ -24,9 +24,9 @@ Modules = [CoreFEM]
 Order = [:module, :type, :function]
 ```
 
-## multipleIntegral
+## MultipleIntegral
 
 ```@autodocs
-Modules = [multipleIntegral]
+Modules = [MultipleIntegral]
 Order = [:module, :type, :function]
 ```

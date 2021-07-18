@@ -124,13 +124,13 @@ function elementLoad(elementNum::Int, pars::processPars, inputLoad::Array, loadD
 
     F = nothing
     if loadDirect == top
-        F = multipleIntegral.gauss1DMethodMatrix(f_integrate_top, intOrder)
+        F = MultipleIntegral.gaussmethod_matrix_1d(f_integrate_top, intOrder)
     elseif loadDirect == left
-        F = multipleIntegral.gauss1DMethodMatrix(f_integrate_left, intOrder)
+        F = MultipleIntegral.gaussmethod_matrix_1d(f_integrate_left, intOrder)
     elseif loadDirect == bottom
-        F = multipleIntegral.gauss1DMethodMatrix(f_integrate_bottom, intOrder)
+        F = MultipleIntegral.gaussmethod_matrix_1d(f_integrate_bottom, intOrder)
     elseif loadDirect == right
-        F = multipleIntegral.gauss1DMethodMatrix(f_integrate_right, intOrder)
+        F = MultipleIntegral.gaussmethod_matrix_1d(f_integrate_right, intOrder)
     else
         @error("Given load direction is not supported")
     end
@@ -153,17 +153,17 @@ function elementLoad3D(elementNum::Int, pars::processPars, inputLoad::Array, loa
 
     F = nothing
     if loadDirect == top
-        F = multipleIntegral.gaussMethodMatrix(f_integrate_top, intOrder)
+        F = MultipleIntegral.gaussmethod_matrix_2d(f_integrate_top, intOrder)
     elseif loadDirect == left
-        F = multipleIntegral.gaussMethodMatrix(f_integrate_left, intOrder)
+        F = MultipleIntegral.gaussmethod_matrix_2d(f_integrate_left, intOrder)
     elseif loadDirect == bottom
-        F = multipleIntegral.gaussMethodMatrix(f_integrate_bottom, intOrder)
+        F = MultipleIntegral.gaussmethod_matrix_2d(f_integrate_bottom, intOrder)
     elseif loadDirect == right
-        F = multipleIntegral.gaussMethodMatrix(f_integrate_right, intOrder)
+        F = MultipleIntegral.gaussmethod_matrix_2d(f_integrate_right, intOrder)
     elseif loadDirect == backwards  # To us
-        F = multipleIntegral.gaussMethodMatrix(f_integrate_backwards, intOrder)
+        F = MultipleIntegral.gaussmethod_matrix_2d(f_integrate_backwards, intOrder)
     elseif loadDirect == towards  # From us
-        F = multipleIntegral.gaussMethodMatrix(f_integrate_towards, intOrder)
+        F = MultipleIntegral.gaussmethod_matrix_2d(f_integrate_towards, intOrder)
     else
         @error("Given load direction is not supported")
         return nothing
