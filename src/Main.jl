@@ -1,14 +1,9 @@
-# To provide correct modules loading it's important to execeute Set_Path.jl first.
+# Entry point of application. Run this file in Julia REPL to load all necessary variables
+# to current session.
 
-using CoreFEM
-using ElementTypes
+# Adding paths for current session to properly load all local Julia modules.
+include("Set_Path.jl")
 
-# Example tests
-CoreFEM.fem2D("examples/SmallPlate/PlateMeshSmall.med", "examples/SmallPlate/SmallPlate_Data.json", Quad4TypeID)
-CoreFEM.fem2D("examples/Beam/BeamMesh.med", "examples/Beam/BeamData.json", Quad4TypeID)
-CoreFEM.fem2D("examples/SimpleBeam2D/SimpleBeam2D.med", "examples/SimpleBeam2D/SimpleBeam2D.json", Quad4TypeID)
-CoreFEM.fem2D("examples/Beam2DBindAnsys/Beam2DAnsys.med", "examples/Beam2DBindAnsys/Beam2DBindAnsys.json", Quad4TypeID)
-
-CoreFEM.fem3D("examples/Beam3D/Beam3D.med", "examples/Beam3D/Beam3D.json", Iso8Pts3DTypeID)
-CoreFEM.fem3D("examples/Beam3DBindSimple/Beam3DBindSimple.med", "examples/Beam3DBindSimple/Beam3DBindSimple.json", Iso8Pts3DTypeID)
-CoreFEM.fem3D("examples/Beam3DBindAnsys/Beam3DBindAnsys.med", "examples/Beam3DBindAnsys/Beam3DBindAnsys.json", Iso8Pts3DTypeID)
+# Modules which are used by this application
+using CoreFEM           # Contains all computational routine
+using ElementTypes      # Contains information about finite elements type system
