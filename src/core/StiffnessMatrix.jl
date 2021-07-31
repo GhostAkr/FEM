@@ -4,7 +4,7 @@ export stiffnessMatrix
 
 using Quad8Pts
 using Quad4Pts
-using multipleIntegral
+using MultipleIntegral
 using LinearAlgebra
 
 """
@@ -52,7 +52,7 @@ function stiffnessMatrix(elasticityMatrix::AbstractArray, parameters::processPar
     xCoords = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][1] for i in 1:nodesPerElement]
     yCoords = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][2] for i in 1:nodesPerElement]
     FIntegrate(r, s) = F(r, s, xCoords, yCoords, elasticityMatrix, elemTypeInd)  # F representation for integrating (depends only on r and s)
-    K = multipleIntegral.gaussMethodMatrix(FIntegrate, intOrder)
+    K = MultipleIntegral.gaussmethod_matrix_2d(FIntegrate, intOrder)
     return K
 end  # stiffnessMatrix
 
@@ -70,6 +70,6 @@ function stiffnessMatrix3D(elasticityMatrix::AbstractArray, parameters::processP
     yCoords = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][2] for i in 1:nodesPerElement]
     zCoords = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][3] for i in 1:nodesPerElement]
     FIntegrate(r, s, t) = F3D(r, s, t, xCoords, yCoords, zCoords, elasticityMatrix, elemTypeInd)
-    K = multipleIntegral.gauss3DMethodMatrix(FIntegrate, intOrder)
+    K = MultipleIntegral.gaussmethod_matrix_3d(FIntegrate, intOrder)
     return K
 end

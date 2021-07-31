@@ -10,285 +10,281 @@ Possible intergral limits:
 @enum limits begin
     upper
     lower
-end
+end  # limits
 
 """
-    cellMethod(f::Function, rLimits::Dict{limits, Real}, sLimits::Dict{limits, Real}, n_r_Sections::Int, n_s_Sections::Int)
+    cellmethod(f::Function, rlimits::Dict{limits, Real}, slimits::Dict{limits, Real}, 
+        n_r_sections::Int, n_s_sections::Int)
 
 Multiple integral calculation with cell method. f has to be depended on r and s only. 
 So other functions have to be converted to such format before calling this method.
-This method is very simple but not effective. This method was implemented for tests, so it's recommended to use Gauss integration instead.
+This method is very simple but not effective. This method was implemented for tests, 
+so it's recommended to use Gauss integration instead.
 
 # Arguments
-- `f`: function that needs to be integrated, need to be depended on 2 variables: ``f = f(r, s)``;
-- `rLimits::Dict{limits, Real}`: limits for the first variable;
-- `sLimits::Dict{limits, Real}`: limits for the second variable;
-- `n_r_Sections::Int`: number of sections on ``r`` axis;
-- `n_s_Sections::Int`: number of sections on ``s`` axis.
+- `f`: function that needs to be integrated, need to be depended on 2 variables: 
+``f = f(r, s)``;
+- `rlimits::Dict{limits, Real}`: limits for the first variable;
+- `slimits::Dict{limits, Real}`: limits for the second variable;
+- `n_r_sections::Int`: number of sections on ``r`` axis;
+- `n_s_sections::Int`: number of sections on ``s`` axis.
 """
-function cellMethod(f::Function, rLimits::Dict{limits, Real}, sLimits::Dict{limits, Real}, n_r_Sections::Int, n_s_Sections::Int)
-    hr = (rLimits[upper] - rLimits[lower]) / n_r_Sections
-    hs = (sLimits[upper] - sLimits[lower]) / n_s_Sections
-    rPoints = collect(Float64, rLimits[lower]:hr:rLimits[upper])
-    sPoints = collect(Float64, sLimits[lower]:hs:sLimits[upper])
+function cellmethod(f::Function, rlimits::Dict{limits, Real}, slimits::Dict{limits, Real}, 
+        n_r_sections::Int, n_s_sections::Int
+)
+    hr = (rlimits[upper] - rlimits[lower]) / n_r_sections
+    hs = (slimits[upper] - slimits[lower]) / n_s_sections
+    rpoints = collect(Float64, rlimits[lower]:hr:rlimits[upper])
+    spoints = collect(Float64, slimits[lower]:hs:slimits[upper])
     sum = 0
-    for i in rPoints
-        buffSum = 0
-        for j in sPoints
-            buffSum += (f(i, j) * hr * hs)
+    for i in rpoints
+        buffsum = 0
+        for j in spoints
+            buffsum += (f(i, j) * hr * hs)
         end
-        sum += buffSum
+        sum += buffsum
     end
     return sum
-end
-
-# Integrating matrix of functions
-# F should return matrix depending on two variables, See StiffnessMatrix.jl for details
-# !IMPORTANT! Probably incorrect. For now gauss method can be used (and it's definitely more efficient).
-# function cellMethodMatrix(F::Function, rLimits::Dict{limits, Real}, sLimits::Dict{limits, Real}, n_r_Sections::Int, n_s_Sections::Int)
-#     hr = (rLimits[upper] - rLimits[lower]) / n_r_Sections
-#     hs = (sLimits[upper] - sLimits[lower]) / n_s_Sections
-#     rPoints = collect(Float64, rLimits[lower]:hr:rLimits[upper])
-#     sPoints = collect(Float64, sLimits[lower]:hs:sLimits[upper])
-#     sum = 0
-#     nOfRows = size(F(1, 1))[1]
-#     nOfCols = size(F(1, 1))[2]
-#     resultMatrix = Matrix{Float64}(undef, nOfRows, nOfCols)
-#     # Going through all matrix elements. Integrating each one.
-#     for k in 1:nOfRows
-#         for l in 1:nOfCols
-#             # Integrating [k, l] matrix element
-#             for i in rPoints
-#                 #println("i = ", i)
-#                 buffSum = 0
-#                 for j in sPoints
-#                     buffSum += (F(i, j)[k, l] * hr * hs)
-#                     #print("Element #", i * nOfCols + j)
-#                 end
-#                 sum += buffSum
-#             end
-#             resultMatrix[k, l] = sum
-#             #println("Matrix element ", k, ", ", l)
-#         end
-#     end
-#     return resultMatrix
-# end
-
-function getGaussPoints2D(intOrder::Int)
-    pointsCoords = Array{Tuple{Float64, Float64}}(undef, intOrder^2)
-    if intOrder == 2
-        pointsCoords[1] = (1 / sqrt(3), 1 / sqrt(3))
-        pointsCoords[2] = (-1 / sqrt(3), 1 / sqrt(3))
-        pointsCoords[3] = (-1 / sqrt(3), -1 / sqrt(3))
-        pointsCoords[4] = (1 / sqrt(3), -1 / sqrt(3))
-        return pointsCoords
-    elseif intOrder == 3
-        pointsCoords[1] = (sqrt(0.6), sqrt(0.6))
-        pointsCoords[2] = (-sqrt(0.6), sqrt(0.6))
-        pointsCoords[3] = (-sqrt(0.6), -sqrt(0.6))
-        pointsCoords[4] = (sqrt(0.6), -sqrt(0.6))
-        pointsCoords[5] = (0, sqrt(0.6))
-        pointsCoords[6] = (-sqrt(0.6), 0)
-        pointsCoords[7] = (0, -sqrt(0.6))
-        pointsCoords[8] = (sqrt(0.6), 0)
-        pointsCoords[9] = (0, 0)
-        return pointsCoords
-    else
-        println("Wrong integration order in getGaussPoints")
-        return nothing
-    end
-end
+end  # cellmethod
 
 """
-    gaussMethod(F::Function, intOrder::Int)
+    getgausspoints_2d(int_order::Int)
 
-Multiple integral calculation with Gauss method. F has to be depended on r and s only. 
+Return Gauss integration points for given integration order.
+
+# Arguments
+- `int_order`: integration order.
+"""
+function getgausspoints_2d(int_order::Int)
+    points_coords = Array{Tuple{Float64, Float64}}(undef, int_order^2)
+    if int_order == 2
+        points_coords[1] = (1 / sqrt(3), 1 / sqrt(3))
+        points_coords[2] = (-1 / sqrt(3), 1 / sqrt(3))
+        points_coords[3] = (-1 / sqrt(3), -1 / sqrt(3))
+        points_coords[4] = (1 / sqrt(3), -1 / sqrt(3))
+        return points_coords
+    elseif int_order == 3
+        points_coords[1] = (sqrt(0.6), sqrt(0.6))
+        points_coords[2] = (-sqrt(0.6), sqrt(0.6))
+        points_coords[3] = (-sqrt(0.6), -sqrt(0.6))
+        points_coords[4] = (sqrt(0.6), -sqrt(0.6))
+        points_coords[5] = (0, sqrt(0.6))
+        points_coords[6] = (-sqrt(0.6), 0)
+        points_coords[7] = (0, -sqrt(0.6))
+        points_coords[8] = (sqrt(0.6), 0)
+        points_coords[9] = (0, 0)
+        return points_coords
+    else
+        @error("Wrong integration order in getgausspoints_2d()")
+        return nothing
+    end
+end  # getgausspoints_2d
+
+"""
+    gaussmethod(f::Function, int_order::Int)
+
+Multiple integral calculation with Gauss method. f has to be depended on r and s only. 
 So other functions have to be converted to such format before calling this method.
 Interval of integration should be equal to [-1; 1].
 Supported integration orders: 2.
 
 # Arguments
-- `F::Function`: function that needs to be integrated, need to be depended on 2 variables: ``F = F(r, s)``;
-- `intOrder::Int`: integration order.
+- `f::Function`: function that needs to be integrated, need to be depended on 2 variables: 
+``f = f(r, s)``;
+- `int_order::Int`: integration order.
 """
-function gaussMethod(F::Function, intOrder::Int)
-    rArray = Array  # Array of integration points by r coordinate
-    sArray = Array  # Array of integration points by s coordinate
+function gaussmethod(f::Function, int_order::Int)
+    rarray = Array  # Array of integration points by r coordinate
+    sarray = Array  # Array of integration points by s coordinate
     weights = Array  # Array of integration weights
-    if intOrder == 2
+    if int_order == 2
         r = [-1 / sqrt(3), 1 / sqrt(3)]
         s = [-1 / sqrt(3), 1 / sqrt(3)]
         weights = [1, 1]
     else
-        println("That integration order is not supported")
+        @error("Wrong integration order in gaussmethod()")
+        return nothing
     end
-    resultSum = 0
-    for i in 1:intOrder
-        for j in 1:intOrder
-            resultSum += (weights[i] * weights[j] * F(r[i], s[j]))
+    resultsum = 0
+    for i in 1:int_order
+        for j in 1:int_order
+            resultsum += (weights[i] * weights[j] * f(r[i], s[j]))
         end
     end
-    return resultSum
-end  # gaussMethod
+    return resultsum
+end  # gaussmethod
 
 """
-    gaussMethodMatrix(F::Function, intOrder::Int)
-
-Integrate matrix of functions depending on 2 variables with Gauss method.
-
-# Arguments
-- `F::Function`: functions returning matrix of functions depending on 2 variables;
-- `intOrder::Int`: integration order.
-"""
-function gaussMethodMatrix(F::Function, intOrder::Int)
-    r = Array{Float64}(undef, intOrder)  # Array of integration points by r coordinate
-    s = Array{Float64}(undef, intOrder)  # Array of integration points by s coordinate
-    weights = Array{Float64}(undef, intOrder)  # Array of integration weights
-    if intOrder == 2
-        r = [-1 / sqrt(3), 1 / sqrt(3)]
-        s = [-1 / sqrt(3), 1 / sqrt(3)]
-        weights = [1, 1]
-    elseif intOrder == 3
-        r = [-0.774596669241483, 0, 0.774596669241483]
-        s = [-0.774596669241483, 0, 0.774596669241483]
-        weights = [0.555555555555556, 0.888888888888889, 0.555555555555556]
-    elseif intOrder == 4
-        r = [-0.861136311594053, -0.339981043584856, 0.339981043584856, 0.861136311594053]
-        s = [-0.861136311594053, -0.339981043584856, 0.339981043584856, 0.861136311594053]
-        weights = [0.347854845137454, 0.652145154862546, 0.652145154862546, 0.347854845137454]
-    else
-        println("That integration order is not supported")
-    end
-    nOfRows = size(F(1, 1))[1]
-    if length(size(F(1, 1))) == 1
-        nOfCols = 1
-    else
-        nOfCols = size(F(1, 1))[2]
-    end
-    resultMatrix = Matrix{Float64}(undef, nOfRows, nOfCols)
-    for k in 1:nOfRows
-        for l in 1:nOfCols
-            # Integrating [k, l] element of source matrix
-            resultSum = 0
-            for i in 1:intOrder
-                for j in 1:intOrder
-                    resultSum += (weights[i] * weights[j] * F(r[i], s[j])[k, l])
-                end
-            end
-            resultMatrix[k, l] = resultSum
-        end
-    end
-    return resultMatrix
-end  # gaussMethodMatrix
-
-"""
-    gauss1DMethodMatrix(F::Function, intOrder::Int)
+    gaussmethod_matrix_1d(f::Function, int_order::Int)
 
 Integrate matrix of functions depending on 1 variable with Gauss method.
 
 # Arguments
-- `F::Function`: function returning matrix of functions depending on 1 variable;
-- `intOrder::Int`: integration order.
+- `f::Function`: function returning matrix of functions depending on 1 variable;
+- `int_order::Int`: integration order.
 """
-function gauss1DMethodMatrix(F::Function, intOrder::Int)
-    x = Array{Float64}(undef, intOrder)
-    weights = Array{Float64}(undef, intOrder)
-    if intOrder == 2
+function gaussmethod_matrix_1d(f::Function, int_order::Int)
+    x = Array{Float64}(undef, int_order)
+    weights = Array{Float64}(undef, int_order)
+    if int_order == 2
         # x = [-1 / sqrt(3), 1 / sqrt(3)]
         x = [-0.577350269189626, 0.577350269189626]
         weights = [1.0, 1.0]
-    elseif intOrder == 3
+    elseif int_order == 3
         x = [-0.774596669241483, 0, 0.774596669241483]
         weights = [0.555555555555556, 0.888888888888889, 0.555555555555556]
-    elseif intOrder == 4
+    elseif int_order == 4
         x = [-0.861136311594053, -0.339981043584856, 0.339981043584856, 0.861136311594053]
         weights = [0.347854845137454, 0.652145154862546, 0.652145154862546, 0.347854845137454]
     else
-        println("That integration order is not supported")
+        @error("Wrong integration order in gaussmethod_matrix_1d()")
+        return nothing
     end
-    nOfRows = size(F(1))[1]
-    if length(size(F(1))) == 1
-        nOfCols = 1
+    n_rows = size(f(1))[1]
+    if length(size(f(1))) == 1
+        n_cols = 1
     else
-        nOfCols = size(F(1))[2]
+        n_cols = size(f(1))[2]
     end
-    resultMatrix = Matrix{Float64}(undef, nOfRows, nOfCols)
-    for k in 1:nOfRows
-        for l in 1:nOfCols
+    result_matrix = Matrix{Float64}(undef, n_rows, n_cols)
+    for k in 1:n_rows
+        for l in 1:n_cols
             # Integrating [k, l] element of source matrix
-            resultSum = 0
-            for i in 1:intOrder
-                resultSum += (weights[i] * F(x[i])[k, l])
+            result_sum = 0
+            for i in 1:int_order
+                result_sum += (weights[i] * f(x[i])[k, l])
             end
-            resultMatrix[k, l] = resultSum
+            result_matrix[k, l] = result_sum
         end
     end
-    return resultMatrix
-end  # gauss1DMethodMatrix
+    return result_matrix
+end  # gaussmethod_matrix_1d
 
-function gauss3DMethodMatrix(F::Function, intOrder::Int)
-    r = Array{Float64}(undef, intOrder)  # Array of integration points by r coordinate
-    s = Array{Float64}(undef, intOrder)  # Array of integration points by s coordinate
-    t = Array{Float64}(undef, intOrder)  # Array of integration points by t coordinate
-    weights = Array{Float64}(undef, intOrder)  # Array of integration weights
+"""
+    gaussmethod_matrix_2d(f::Function, int_order::Int)
+
+Integrate matrix of functions depending on 2 variables with Gauss method.
+
+# Arguments
+- `f::Function`: functions returning matrix of functions depending on 2 variables;
+- `int_order::Int`: integration order.
+"""
+function gaussmethod_matrix_2d(f::Function, int_order::Int)
+    r = Array{Float64}(undef, int_order)  # Array of integration points by r coordinate
+    s = Array{Float64}(undef, int_order)  # Array of integration points by s coordinate
+    weights = Array{Float64}(undef, int_order)  # Array of integration weights
+    if int_order == 2
+        r = [-1 / sqrt(3), 1 / sqrt(3)]
+        s = [-1 / sqrt(3), 1 / sqrt(3)]
+        weights = [1, 1]
+    elseif int_order == 3
+        r = [-0.774596669241483, 0, 0.774596669241483]
+        s = [-0.774596669241483, 0, 0.774596669241483]
+        weights = [0.555555555555556, 0.888888888888889, 0.555555555555556]
+    elseif int_order == 4
+        r = [-0.861136311594053, -0.339981043584856, 0.339981043584856, 0.861136311594053]
+        s = [-0.861136311594053, -0.339981043584856, 0.339981043584856, 0.861136311594053]
+        weights = [0.347854845137454, 0.652145154862546, 0.652145154862546, 0.347854845137454]
+    else
+        @error("Wrong integration order in gaussmethod_matrix_2d()")
+        return nothing
+    end
+    n_rows = size(f(1, 1))[1]
+    if length(size(f(1, 1))) == 1
+        n_cols = 1
+    else
+        n_cols = size(f(1, 1))[2]
+    end
+    result_matrix = Matrix{Float64}(undef, n_rows, n_cols)
+    for k in 1:n_rows
+        for l in 1:n_cols
+            # Integrating [k, l] element of source matrix
+            result_sum = 0
+            for i in 1:int_order
+                for j in 1:int_order
+                    result_sum += (weights[i] * weights[j] * f(r[i], s[j])[k, l])
+                end
+            end
+            result_matrix[k, l] = result_sum
+        end
+    end
+    return result_matrix
+end  # gaussmethod_matrix
+
+
+"""
+    gaussmethod_matrix_3d(f::Function, int_order::Int)
+
+Integrate matrix of functions depending on 3 variables with Gauss method.
+
+# Arguments
+- `f::Function`: functions returning matrix of functions depending on 2 variables;
+- `int_order::Int`: integration order.
+"""
+function gaussmethod_matrix_3d(f::Function, int_order::Int)
+    r = Array{Float64}(undef, int_order)  # Array of integration points by r coordinate
+    s = Array{Float64}(undef, int_order)  # Array of integration points by s coordinate
+    t = Array{Float64}(undef, int_order)  # Array of integration points by t coordinate
+    weights = Array{Float64}(undef, int_order)  # Array of integration weights
 
     # Defining integration points and weights
-    if intOrder == 2
+    if int_order == 2
         r = [-1 / sqrt(3), 1 / sqrt(3)]
         s = [-1 / sqrt(3), 1 / sqrt(3)]
         t = [-1 / sqrt(3), 1 / sqrt(3)]
         weights = [1, 1]
-    elseif intOrder == 3
+    elseif int_order == 3
         r = [-0.774596669241483, 0, 0.774596669241483]
         s = [-0.774596669241483, 0, 0.774596669241483]
         t = [-0.774596669241483, 0, 0.774596669241483]
         weights = [0.555555555555556, 0.888888888888889, 0.555555555555556]
-    elseif intOrder == 4
+    elseif int_order == 4
         r = [-0.861136311594053, -0.339981043584856, 0.339981043584856, 0.861136311594053]
         s = [-0.861136311594053, -0.339981043584856, 0.339981043584856, 0.861136311594053]
         t = [-0.861136311594053, -0.339981043584856, 0.339981043584856, 0.861136311594053]
         weights = [0.347854845137454, 0.652145154862546, 0.652145154862546, 0.347854845137454]
     else
-        println("That integration order is not supported")
+        @error("Wrong integration order in gaussmethod_matrix_3d()")
+        return nothing
     end
 
     # Creating result matrix
-    nOfRows = size(F(1, 1, 1))[1]
-    if length(size(F(1, 1, 1))) == 1
-        nOfCols = 1
+    n_rows = size(f(1, 1, 1))[1]
+    if length(size(f(1, 1, 1))) == 1
+        n_cols = 1
     else
-        nOfCols = size(F(1, 1, 1))[2]
+        n_cols = size(f(1, 1, 1))[2]
     end
-    resultMatrix = zeros(nOfRows, nOfCols)
+    result_matrix = zeros(n_rows, n_cols)
 
     # Precalculating weights
-    n_of_weights = size(weights)[1]
-    weights_matr = Array{Float64}(undef, n_of_weights, n_of_weights, n_of_weights)
-    for i in 1:intOrder
-        for j in 1:intOrder
-            for k in 1:intOrder
+    n_weights = size(weights)[1]
+    weights_matr = Array{Float64}(undef, n_weights, n_weights, n_weights)
+    for i in 1:int_order
+        for j in 1:int_order
+            for k in 1:int_order
                 weights_matr[i, j, k] =  weights[i] * weights[j] * weights[k]
             end
         end
     end
     
     # Integrating
-            for i in 1:intOrder
-                for j in 1:intOrder
-                    for v in 1:intOrder
-                fmatrix = F(r[i], s[j], t[v])
+    for i in 1:int_order
+        for j in 1:int_order
+            for v in 1:int_order
+                fmatrix = f(r[i], s[j], t[v])
                 fmatrix .*= weights_matr[i, j, v]
-                for k in 1:nOfCols
-                    for l in k:nOfRows
-                        resultMatrix[l, k] += fmatrix[l, k]
+                for k in 1:n_cols
+                    for l in k:n_rows
+                        result_matrix[l, k] += fmatrix[l, k]
                         if l != k
-                            resultMatrix[k, l] += fmatrix[l, k]
+                            result_matrix[k, l] += fmatrix[l, k]
+                        end
                     end
                 end
             end
         end
     end
-    end
 
-    return resultMatrix
+    return result_matrix
 end
