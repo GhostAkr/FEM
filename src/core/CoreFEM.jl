@@ -246,64 +246,86 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     return result
 end  # fem2D
 
-function fem3D(meshPath::String, dataPath::String, elemTypeID::FETypes)
+"""
+    elasmech_3d(mesh_path::String, data_path::String, elem_type_id::FETypes)
+
+Start calculation of 3D elastic mechanical problem.
+
+# Arguments
+- `mesh_path::String`: Path to mesh;
+- `data_path::String`: Path to initial data;
+- `elem_type_id::FETypes`: ID of finite element type.
+"""
+function elasmech_3d(mesh_path::String, data_path::String, elem_type_id::FETypes)
     freedom_deg = 3
 
-    # Getting element type
-    elementType = defineElemType(elemTypeID)
-    if (elementType === nothing)
-        println("Element type passed to fem2D() is unknown")
+    # 1. Getting element type
+    element_type = defineElemType(elem_type_id)
+    if (element_type === nothing)
+        @error("Element type passed to fem2D() is unknown")
         return
     end
 
-    # Getting mesh type
-    meshType = typeMeshFromElement(elemTypeID)
+    # 2. Getting mesh type
+    mesh_type = typeMeshFromElement(elem_type_id)
 
     parameters = processPars(testMaterialProperties(), testBC3D(), testLoad3D(), generateTestMesh3D())
-    parameters.mesh = read_mesh_from_med(meshPath, meshType)
-    read_params_JSON!(dataPath, parameters)
 
-    intOrder = 2
+    # 3. Reading mesh
+    parameters.mesh = read_mesh_from_med(mesh_path, mesh_type)
 
+    # 4. Reading problem data
+    read_params_JSON!(data_path, parameters)
+
+    # 5. Integration order
+    int_order = 2
+
+    # 6. Problem constants
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]
-
     C = elasticityMatrix(E, nu, problem3D)
 
-    ensembleMatrix = zeros(Float64, 3 * size(parameters.mesh.nodes)[1], 3 * size(parameters.mesh.nodes)[1])
-    for elementNum in eachindex(parameters.mesh.elements)
-        K = stiffnessMatrix3D(C, parameters, elementNum, intOrder, elementType)
-        assembly_left_part!(parameters, ensembleMatrix, K, elementNum, freedom_deg)
+    # 7. Stiffness matrix (left part of final equation)
+    ensemble_matrix = zeros(Float64, 3 * size(parameters.mesh.nodes)[1], 3 * size(parameters.mesh.nodes)[1])
+    for element_num in eachindex(parameters.mesh.elements)
+        k = stiffnessMatrix3D(C, parameters, element_num, int_order, element_type)
+        assembly_left_part!(parameters, ensemble_matrix, k, element_num, freedom_deg)
     end
 
-    loadVector = assembly_loads!(parameters, intOrder, elementType, freedom_deg)
+    # 8. Load vector (right part og final equation)
+    load_vector = assembly_loads!(parameters, int_order, element_type, freedom_deg)
 
-    applyConstraints3D(parameters, loadVector, ensembleMatrix)
+    # 9. Applying constraints to equation
+    applyConstraints3D(parameters, load_vector, ensemble_matrix)
 
-    # Writing left part to file
+    # 10. Writing left part to file
     open("equation/K", "w") do file
-        writedlm(file, ensembleMatrix)
+        writedlm(file, ensemble_matrix)
     end
-    # Writing right part to file
+
+    # 11. Writing right part to file
     open("equation/F", "w") do file
-        writedlm(file, loadVector)
+        writedlm(file, load_vector)
     end
 
-    println("Solving...")
-    result = solve(ensembleMatrix, loadVector)
+    # 12. Solving equation
+    @info("Solving...")
+    result = solve(ensemble_matrix, load_vector)
 
-    if TestFEM.verify_example(meshPath, dataPath, result)
+    # 13. Verifying result
+    if TestFEM.verify_example(mesh_path, data_path, result)
         @info "Result is correct"
     else
         @info "Result is INcorrect"
     end
 
-    # Writing result to file
+    # 14. Writing result to file
     open("equation/result", "w") do file
         writedlm(file, result)
     end
 
-    BaseInterface.exportToVTK(result, undef, undef, undef, parameters, meshType)
+    # 15. Exporting result to VTK
+    BaseInterface.exportToVTK(result, undef, undef, undef, parameters, mesh_type)
 
     return result
 end  # fem3D
