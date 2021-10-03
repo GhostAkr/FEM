@@ -28,7 +28,7 @@ function applyFixedX(node::Int, loads::Array, globalK::Array)
 end  # applyFixedX
 
 # TODO: Unify with `applyFixedX`
-function applyFixedX3D(node::Int, loads::Array, globalK::Array)
+function applyFixedX3D(node::Int, loads::Array, globalK::SparseMatrixCSC)
     loads[3 * node - 2] = 0
     for col in 1:size(globalK)[2]
         globalK[3 * node - 2, col] = 0
@@ -61,7 +61,7 @@ function applyFixedY(node::Int, loads::Array, globalK::Array)
 end  # applyFixedY
 
 # TODO: Unify with `applyFixedY`
-function applyFixedY3D(node::Int, loads::Array, globalK::Array)
+function applyFixedY3D(node::Int, loads::Array, globalK::SparseMatrixCSC)
     loads[3 * node - 1] = 0
     for col in 1:size(globalK)[2]
         globalK[3 * node - 1, col] = 0
@@ -73,7 +73,7 @@ function applyFixedY3D(node::Int, loads::Array, globalK::Array)
 end  # applyFixedY
 
 # TODO: Make an unparsed case for 2D model
-function applyFixedZ3D(node::Int, loads::Array, globalK::Array)
+function applyFixedZ3D(node::Int, loads::Array, globalK::SparseMatrixCSC)
     loads[3 * node] = 0
     for col in 1:size(globalK)[2]
         globalK[3 * node, col] = 0

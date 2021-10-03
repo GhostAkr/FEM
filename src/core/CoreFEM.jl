@@ -18,6 +18,8 @@ using BaseInterface
 using IterativeSolvers
 using ElementTypes
 using TestFEM
+using BenchmarkTools
+using SparseArrays
 
 using Quad4Pts
 using Quad8Pts
@@ -32,12 +34,12 @@ Assemble left part of linear system of equations. This method applies given loca
 
 # Arguments
 - `pars::processPars`: parameters of current model;
-- `targetMatrix::Array`: global stiffness matrix that should be updated;
+- `targetMatrix::SparseMatrixCSC`: global stiffness matrix that should be updated;
 - `currentElementMatrix::Array`: local stiffness matrix of given element that should be applid to global ensemble;
 - `elementNum::Number`: number of given element in current mesh;
 - `freedom_deg::Int`: degree of freedom.
 """
-function assembly_left_part!(pars::processPars, targetMatrix::Array, currentElementMatrix::Array, elementNum::Number, freedom_deg::Int)
+function assembly_left_part!(pars::processPars, targetMatrix::SparseMatrixCSC, currentElementMatrix::Array, elementNum::Number, freedom_deg::Int)
     elementNodes = pars.mesh.elements[elementNum]
     for i in eachindex(elementNodes)
         for j in eachindex(elementNodes)
@@ -93,7 +95,7 @@ function applyConstraints(pars::processPars, loads::Array, globalK::Array)
     end
 end  # applyConstraints
 
-function applyConstraints3D(pars::processPars, loads::Array, globalK::Array)
+function applyConstraints3D(pars::processPars, loads::Array, globalK::SparseMatrixCSC)
     for (node, bc) in pars.bc
         if bc == fixedX
             applyFixedX3D(node, loads, globalK)
@@ -131,10 +133,10 @@ According to official documentation Julia will choose the best solving method by
 If it's not, there should be a way to control it.
 
 # Arguments
-- `globalK::Array`: global stiffness matrix (left part of equations system);
+- `globalK::SparseMatrixCSC`: global stiffness matrix (left part of equations system);
 - `loadVector::Array`: global loads vector (right part of equations system).
 """
-function solve(globalK::Array, loadVector::Array)
+function solve(globalK::SparseMatrixCSC, loadVector::Array)
     initialVector = fill(1.0, size(loadVector)[1])
     # return minres!(initialVector, globalK, loadVector, tol = 1e-10)
     # println("In solver")
@@ -286,7 +288,7 @@ function elasmech_3d(mesh_path::String, data_path::String, elem_type_id::FETypes
     C = elasticityMatrix(E, nu, problem3D)
 
     # 7. Stiffness matrix (left part of final equation)
-    ensemble_matrix = zeros(Float64, 3 * size(parameters.mesh.nodes)[1], 3 * size(parameters.mesh.nodes)[1])
+    ensemble_matrix = spzeros(3 * size(parameters.mesh.nodes)[1], 3 * size(parameters.mesh.nodes)[1])
     for element_num in eachindex(parameters.mesh.elements)
         k = stiffnessMatrix3D(C, parameters, element_num, int_order, element_type)
         assembly_left_part!(parameters, ensemble_matrix, k, element_num, freedom_deg)
@@ -310,7 +312,9 @@ function elasmech_3d(mesh_path::String, data_path::String, elem_type_id::FETypes
 
     # 12. Solving equation
     @info("Solving...")
+    @time begin
     result = solve(ensemble_matrix, load_vector)
+    end  # @time
 
     # 13. Verifying result
     if TestFEM.verify_example(mesh_path, data_path, result)
