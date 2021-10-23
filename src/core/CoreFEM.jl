@@ -4,13 +4,7 @@ Module describing FEM core.
 """
 module CoreFEM
 
-include("MaterialVars.jl")
-include("Load.jl")
 include("Input.jl")
-include("StiffnessMatrix.jl")
-include("Deformations.jl")
-include("Constants.jl")
-include("Stresses.jl")
 
 using MeshFEM
 using DelimitedFiles
@@ -24,6 +18,13 @@ using SparseArrays
 using Quad4Pts
 using Quad8Pts
 using Iso8Pts3D
+
+include("MaterialVars.jl")
+include("Load.jl")
+include("StiffnessMatrix.jl")
+include("Deformations.jl")
+include("Constants.jl")
+include("Stresses.jl")
 
 export fem2D
 
