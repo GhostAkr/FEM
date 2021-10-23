@@ -289,17 +289,26 @@ function elasmech_3d(mesh_path::String, data_path::String, elem_type_id::FETypes
     C = elasticityMatrix(E, nu, problem3D)
 
     # 7. Stiffness matrix (left part of final equation)
+    @info("Assembling left part...")
+    @time begin
     ensemble_matrix = spzeros(3 * size(parameters.mesh.nodes)[1], 3 * size(parameters.mesh.nodes)[1])
     for element_num in eachindex(parameters.mesh.elements)
         k = stiffnessMatrix3D(C, parameters, element_num, int_order, element_type)
         assembly_left_part!(parameters, ensemble_matrix, k, element_num, freedom_deg)
     end
+    end  # @time
 
     # 8. Load vector (right part og final equation)
+    @info("Assembling right part...")
+    @time begin
     load_vector = assembly_loads!(parameters, int_order, element_type, freedom_deg)
+    end  # @time
 
     # 9. Applying constraints to equation
+    @info("Applying constraints...")
+    @time begin
     applyConstraints3D(parameters, load_vector, ensemble_matrix)
+    end
 
     # 10. Writing left part to file
     open("equation/K", "w") do file
