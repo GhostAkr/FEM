@@ -25,6 +25,7 @@ include("StiffnessMatrix.jl")
 include("Deformations.jl")
 include("Constants.jl")
 include("Stresses.jl")
+include("NonLoc.jl")
 
 export fem2D
 
