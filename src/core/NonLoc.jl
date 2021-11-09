@@ -53,3 +53,21 @@ function get_elem_neighbours!(neighbours::Array, elemnum::Int, distance::Number,
         end
     end
 end
+
+"""
+	nonloc_gaussimpact(normfactor::Number, impactdistance::Number, distance::Number)
+
+Computes non-local impact of point which is located at a distance `distance` from start 
+one. Impact functions is represented as gauss function: ``a(r) = k exp(-r^2 / l^2)``, 
+where ``k`` is normalization factor which can be obtained by solving normalization 
+condition: ``\\int \\limits_{\\mathbb{R}^3} a(|x' - x|) \\text{d} V' = 1``, where
+``r = |x' - x|``.
+
+# Arguments
+- `normfactor::Number`: normalization factor;
+- `impactdistance::Number`: impact distance ``l``;
+- `distance::Number`: distance from start point to current one.
+"""
+function nonloc_gaussimpact(normfactor::Number, impactdistance::Number, distance::Number)
+    return normfactor * exp(-distance^2 / impactdistance^2)
+end
