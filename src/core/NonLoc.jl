@@ -71,3 +71,38 @@ condition: ``\\int \\limits_{\\mathbb{R}^3} a(|x' - x|) \\text{d} V' = 1``, wher
 function nonloc_gaussimpact(normfactor::Number, impactdistance::Number, distance::Number)
     return normfactor * exp(-distance^2 / impactdistance^2)
 end
+
+"""
+	contribute_leftpart_nonloc!(pars::processPars, targetmatr::Array, currmatr::Array, 
+    source_elemnum::Int, impact_elemnum::Int, freedom_deg::Int)
+
+Process a contribute of non-local stiffness matrix `currmatr` to global stiffness matrix
+`targetmatr`.
+
+# Arguments
+- `pars::processPars`: parameters of current process;
+- `targetmatr::Array`: global stiffness matrix;
+- `currmatr::Array`: non-local stiffness matrix;
+- `source_elemnum::Int`: number of element which is under impact;
+- `impact_elemnum::Int`: number of element which impacts;
+- `freedom_deg::Int`: number of degrees of freedom.
+"""
+function contribute_leftpart_nonloc!(pars::processPars, targetmatr::Array, currmatr::Array, 
+	source_elemnum::Int, impact_elemnum::Int, freedom_deg::Int
+)
+    source_nodes = pars.mesh.elements[source_elemnum]
+    impact_nodes = pars.mesh.elements[impact_elemnum]
+
+    for i in eachindex(source_nodes)
+        for j in eachindex(impact_nodes)
+            for first_offset in 1:freedom_deg
+                for second_offset in 1:freedom_deg
+                    targetMatrix[freedom_deg * source_nodes[i] - (first_offset - 1), 
+                        freedom_deg * impact_nodes[j] - (second_offset - 1)] += 
+                        currentElementMatrix[freedom_deg * i - (first_offset - 1), 
+                        freedom_deg * j - (second_offset - 1)]
+                end
+            end
+        end
+    end
+end
