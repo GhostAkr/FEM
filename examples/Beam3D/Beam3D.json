@@ -1,0 +1,13 @@
+{
+    "Material": {
+        "PRatio": 0.3,
+        "YoungMod": 210000
+    },
+    "Constraints": {
+        "fixedXYZ": "StartSide"
+    },
+    "DistributedLoad": {
+        "Load": [0, 0, 10],
+        "Elements": "EndTop"
+    }
+}
