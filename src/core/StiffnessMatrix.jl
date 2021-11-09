@@ -8,13 +8,6 @@ using MultipleIntegral
 using LinearAlgebra
 
 """
-    testIntegralFunc(x, y)
-
-Just random function depending on 2 variables: ``f(x, y) = x^2 + y``.
-"""
-testIntegralFunc(x, y) = x ^ 2 + y  # Should give 4/3 after integration
-
-"""
     F(r, s, xCoords::Array{Float64}, yCoords::Array{Float64}, elasticityMatrix::AbstractArray)
 
 Function that should be integrated to calculate local stiffness matrix for element: ``F = B^T \\cdot C \\cdot B \\cdot det(J)``, 
