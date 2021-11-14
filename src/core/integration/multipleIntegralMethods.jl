@@ -1,3 +1,5 @@
+using VectorFEM
+
 export upper, lower, cell, limits
 
 """
@@ -279,6 +281,108 @@ function gaussmethod_matrix_3d(f::Function, int_order::Int)
                         result_matrix[l, k] += fmatrix[l, k]
                         if l != k
                             result_matrix[k, l] += fmatrix[l, k]
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    return result_matrix
+end
+
+"""
+    gaussmethod_matrix_3d_nonloc(f::Function, impactfunc::Function, impactdist::Number, 
+        int_order::Int)
+
+Integrate matrix of functions depending on 3 variables with Gauss method twice taking
+into account impact function.
+
+`f` should depend on 6 variables: local r, s, t and impact r, s, t. Impact function is
+assumed to be in Gauss form and should depend on 3 variables: normalization factor, impact
+distance and current distance.
+
+# Arguments
+- `f::Function`: functions returning matrix of functions depending on 6 variables;
+- `impactfunc::Function`: impact function;
+- `impactdist::Number`: impact distance;
+- `int_order::Int`: integration order.
+"""
+function gaussmethod_matrix_3d_nonloc(f::Function, impactfunc::Function, impactdist::Number, 
+    int_order::Int
+)
+    # Defining integration points and weights
+    if int_order == 2
+        r = [-1 / sqrt(3), 1 / sqrt(3)]
+        s = [-1 / sqrt(3), 1 / sqrt(3)]
+        t = [-1 / sqrt(3), 1 / sqrt(3)]
+        weights = [1, 1]
+    elseif int_order == 3
+        r = [-0.774596669241483, 0, 0.774596669241483]
+        s = [-0.774596669241483, 0, 0.774596669241483]
+        t = [-0.774596669241483, 0, 0.774596669241483]
+        weights = [0.555555555555556, 0.888888888888889, 0.555555555555556]
+    elseif int_order == 4
+        r = [-0.861136311594053, -0.339981043584856, 0.339981043584856, 0.861136311594053]
+        s = [-0.861136311594053, -0.339981043584856, 0.339981043584856, 0.861136311594053]
+        t = [-0.861136311594053, -0.339981043584856, 0.339981043584856, 0.861136311594053]
+        weights = [0.347854845137454, 0.652145154862546, 0.652145154862546, 
+                    0.347854845137454]
+    else
+        @error("Wrong integration order in gaussmethod_matrix_3d()")
+        return nothing
+    end
+
+    # Creating result matrix
+    n_rows = size(f(1, 1, 1))[1]
+    if length(size(f(1, 1, 1))) == 1
+        n_cols = 1
+    else
+        n_cols = size(f(1, 1, 1))[2]
+    end
+    result_matrix = zeros(n_rows, n_cols)
+
+    # Precalculating weights
+    n_weights = size(weights)[1]
+    weights_matr = Array{Float64}(undef, n_weights, n_weights, n_weights)
+    for i in 1:int_order
+        for j in 1:int_order
+            for k in 1:int_order
+                weights_matr[i, j, k] =  weights[i] * weights[j] * weights[k]
+            end
+        end
+    end
+
+    # Normalization factor for impact function
+    normfact = 1 / (2 * pi * impactdist^2)
+
+    # Integrating
+    for i_loc in 1:int_order
+        for j_loc in 1:int_order
+            for v_loc in 1:int_order
+                for i_imp in 1:int_order
+                    for j_imp in 1:int_order
+                        for v_imp in 1:int_order
+                            fmatrix = f(r[i_loc], s[j_loc], t[v_loc], r[i_imp], s[j_imp], 
+                                t[v_imp])
+                            fmatrix .*= weights_matr[i_loc, j_loc, v_loc]
+                            fmatrix .*= weights_matr[i_imp, j_imp, v_imp]
+
+                            # Calculating impact function
+                            firstPt = (r[i_loc], s[j_loc], t[v_loc])
+                            secondPt = (r[i_imp], s[j_imp], t[v_imp])
+                            vec = vecfrompoints_3d(firstPt, secondPt)
+                            dist = veclength_3d(vec)
+                            fmatrix .*= impactfunc(normfact, impactdist, dist)
+
+                            for k in 1:n_cols
+                                for l in k:n_rows
+                                    result_matrix[l, k] += fmatrix[l, k]
+                                    if l != k
+                                        result_matrix[k, l] += fmatrix[l, k]
+                                    end
+                                end
+                            end
                         end
                     end
                 end
