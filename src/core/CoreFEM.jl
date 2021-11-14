@@ -347,18 +347,23 @@ end  # fem3D
 
 """
 	elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Number, 
-        elem_type_id::FETypes)
+        beta_loc::Number, beta_nonloc::Number, elem_type_id::FETypes)
 
-Start calculation of 3D elastic non-local mechanical problem.
+Start calculation of 3D elastic non-local mechanical problem. `beta_loc` and `beta_nonloc`
+are coefficients which define impact of local and non-local parts of stiffness matrix 
+appropriately.
 
 # Arguments
 - `mesh_path::String`: path to mesh;
 - `data_path::String`: path to initial data;
 - `impactdist::Number`: impact distance;
+- `beta_loc::Number`: coefficient which defines impact of local part of stiffness matrix;
+- `beta_nonloc::Number`: coefficient which defines impact of non-local part of stiffness 
+    matrix;
 - `elem_type_id::FETypes`: ID of finite element type.
 """
 function elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Number, 
-        elem_type_id::FETypes
+        beta_loc::Number, beta_nonloc::Number, elem_type_id::FETypes
 )
     freedom_deg = 3
 
@@ -394,6 +399,7 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
         size(parameters.mesh.nodes)[1])
     for element_num in eachindex(parameters.mesh.elements)
         k = stiffnessMatrix3D(C, parameters, element_num, int_order, element_type)
+        k .*= beta_loc;
         assembly_left_part!(parameters, ensemble_matrix, k, element_num, freedom_deg)
     end
 
@@ -409,6 +415,7 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
         for elem_impact in neighbours
             nonloc_matr = stiffnessmatr_3d_nonloc(C, parameters, elem_source, elem_impact, 
                 int_order, element_type)
+            nonloc_matr .*= beta_nonloc
             contribute_leftpart_nonloc!(parameters, ensembleMatrix, nonloc_matr, 
                 elem_source, elem_impact, freedom_deg)
         end
