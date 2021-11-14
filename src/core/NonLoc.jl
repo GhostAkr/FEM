@@ -133,15 +133,16 @@ Computes intgrand to calculate non-local stiffness matrix: ``F = A(r) B_e^T C B_
 - `elasticitymatrix::AbstractArray`: elasticity matrix;
 - `elemtype::FiniteElement`: type of finite element.
 """
-function stiffnessintegrand_3d_nonloc(r, s, t, distance::Number, 
+function stiffnessintegrand_3d_nonloc(r_source, s_source, t_source, 
+    r_impact, s_impact, t_impact, distance::Number, 
     x_source::Array{Float64}, y_source::Array{Float64}, z_source::Array{Float64}, 
     x_impact::Array{Float64}, y_impact::Array{Float64}, z_impact::Array{Float64},
     elasticitymatrix::AbstractArray, elemtype::FiniteElement
 )
-    b_source = transpose(gradMatr(r, s, t, x_source, y_source, z_source, elemtype))
-    b_impact = gradMatr(r, s, t, x_impact, y_impact, z_impact, elemtype)
-    jac_source = jacGlobToLoc(r, s, t, x_source, y_source, z_source, elemtype)
-    jac_impact = jacGlobToLoc(r, s, t, x_impact, y_impact, z_impact, elemtype)
+    b_source = transpose(gradMatr(r_source, s_source, t_source, x_source, y_source, z_source, elemtype))
+    b_impact = gradMatr(r_impact, s_impact, t_impact, x_impact, y_impact, z_impact, elemtype)
+    jac_source = jacGlobToLoc(r_source, s_source, t_source, x_source, y_source, z_source, elemtype)
+    jac_impact = jacGlobToLoc(r_impact, s_impact, t_impact, x_impact, y_impact, z_impact, elemtype)
 
     return b_source * elasticitymatrix * b_impact * det(jac_source) * det(jac_impact)
 end
@@ -184,8 +185,10 @@ function stiffnessmatr_3d_nonloc(elasmatr::Array, parameters::processPars,
         for i in 1:nodes_impact_cnt]
 
     # TODO: Deal with impact function 
-    f_integrand(r, s, t) = stiffnessintegrand_3d_nonloc(r, s, t, 0, x_source, y_source,
-        z_source, x_impact, y_impact, z_impact, elasmatr, elemtype)
+    f_integrand(r_loc, s_loc, t_loc, r_imp, s_imp, t_imp) = stiffnessintegrand_3d_nonloc(
+        r_loc, s_loc, t_loc, r_imp, s_imp, t_imp, 0, x_source, y_source, z_source, x_impact, 
+        y_impact, z_impact, elasmatr, elemtype
+    )
 
     nonloc_matr = MultipleIntegral.gaussmethod_matrix_3d(f_integrand, intorder)
     return nonloc_matr
