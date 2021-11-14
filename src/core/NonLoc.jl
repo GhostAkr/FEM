@@ -184,12 +184,13 @@ function stiffnessmatr_3d_nonloc(elasmatr::Array, parameters::processPars,
     z_impact = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][3] 
         for i in 1:nodes_impact_cnt]
 
-    # TODO: Deal with impact function 
     f_integrand(r_loc, s_loc, t_loc, r_imp, s_imp, t_imp) = stiffnessintegrand_3d_nonloc(
         r_loc, s_loc, t_loc, r_imp, s_imp, t_imp, 0, x_source, y_source, z_source, x_impact, 
         y_impact, z_impact, elasmatr, elemtype
     )
 
-    nonloc_matr = MultipleIntegral.gaussmethod_matrix_3d(f_integrand, intorder)
+    # nonloc_matr = MultipleIntegral.gaussmethod_matrix_3d(f_integrand, intorder)
+    nonloc_matr = MultipleIntegral.gaussmethod_matrix_3d_nonloc(f_integrand, 
+        nonloc_gaussimpact, distance, intorder)
     return nonloc_matr
 end
