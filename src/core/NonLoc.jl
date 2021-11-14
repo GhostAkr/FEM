@@ -1,4 +1,8 @@
 using VectorFEM
+using Quad8Pts
+using Quad4Pts
+using MultipleIntegral
+using LinearAlgebra
 
 """
     get_elem_neighbours!(neighbours::Array, elemnum::Int, distance::Number, 
@@ -105,4 +109,84 @@ function contribute_leftpart_nonloc!(pars::processPars, targetmatr::Array, currm
             end
         end
     end
+end
+
+"""
+    stiffnessintegrand_3d_nonloc(r, s, t, distance::Number,
+        x_source::Array{Float64}, y_source::Array{Float64}, z_source::Array{Float64}, 
+        x_impact::Array{Float64}, y_impact::Array{Float64}, z_impact::Array{Float64},
+        elasticitymatrix::AbstractArray, elemtype::FiniteElement)
+
+Computes intgrand to calculate non-local stiffness matrix: ``F = A(r) B_e^T C B_{e'}``. 
+
+# Arguments
+- `r`: r-coordinate;
+- `s`: s-coordinate;
+- `t`: t-coordinate;
+- `distance::Number`: impact distance;
+- `x_source::Array{Float64}`: x-coordinates of nodes in source element;
+- `y_source::Array{Float64}`: y-coordinates of nodes in source element;
+- `z_source::Array{Float64}`: z-coordinates of nodes in source element;
+- `x_impact::Array{Float64}`: x-coordinates of nodes in impact element;
+- `y_impact::Array{Float64}`: y-coordinates of nodes in impact element;
+- `z_impact::Array{Float64}`: z-coordinates of nodes in impact element;
+- `elasticitymatrix::AbstractArray`: elasticity matrix;
+- `elemtype::FiniteElement`: type of finite element.
+"""
+function stiffnessintegrand_3d_nonloc(r, s, t, distance::Number, 
+    x_source::Array{Float64}, y_source::Array{Float64}, z_source::Array{Float64}, 
+    x_impact::Array{Float64}, y_impact::Array{Float64}, z_impact::Array{Float64},
+    elasticitymatrix::AbstractArray, elemtype::FiniteElement
+)
+    b_source = transpose(gradMatr(r, s, t, x_source, y_source, z_source, elemtype))
+    b_impact = gradMatr(r, s, t, x_impact, y_impact, z_impact, elemtype)
+    jac_source = jacGlobToLoc(r, s, t, x_source, y_source, z_source, elemtype)
+    jac_impact = jacGlobToLoc(r, s, t, x_impact, y_impact, z_impact, elemtype)
+
+    return b_source * elasticitymatrix * b_impact * det(jac_source) * det(jac_impact)
+end
+
+"""
+    stiffnessmatr_3d_nonloc(elasmatr::Array, parameters::processPars, 
+        source_elemnum::Int, impact_elemnum::Int, intorder::Int, 
+        elemtype::FiniteElement)
+
+Calcuulate non-local stiffness matrix for element number `source_elemnum` with 
+respect to impact of element number `impact_elemnum`.
+
+# Arguments
+- `elasmatr::Array`: elasticity matrix;
+- `parameters::processPars`: parameters of current process;
+- `source_elemnum::Int`: number of element which is under impact;
+- `impact_elemnum::Int`: number of element which impacts;
+- `intorder::Int`: integration order;
+- `elemtype::FiniteElement`: type of finite element.
+"""
+function stiffnessmatr_3d_nonloc(elasmatr::Array, parameters::processPars, 
+	source_elemnum::Int, impact_elemnum::Int, intorder::Int, 
+	elemtype::FiniteElement
+)
+    nodes_source_cnt = length(parameters.mesh.elements[source_elemnum])
+    nodes_impact_cnt = length(parameters.mesh.elements[impact_elemnum])
+
+    x_source = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][1] 
+        for i in 1:nodes_source_cnt]
+    y_source = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][2] 
+        for i in 1:nodes_source_cnt]
+    z_source = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][3] 
+        for i in 1:nodes_source_cnt]
+
+    x_impact = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][1] 
+        for i in 1:nodes_impact_cnt]
+    y_impact = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][2] 
+        for i in 1:nodes_impact_cnt]
+    z_impact = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][3] 
+        for i in 1:nodes_impact_cnt]
+
+    # TODO: Deal with impact function 
+    f_integrand(r, s, t) = stiffnessintegrand_3d_nonloc(r, s, t, 0, x_source, y_source,
+        z_source, x_impact, y_impact, z_impact, elasmatr, elemtype)
+
+    nonloc_matr = MultipleIntegral.gaussmethod_matrix_3d(f_integrand, intorder)
+    return nonloc_matr
 end
