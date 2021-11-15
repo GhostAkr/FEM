@@ -56,6 +56,9 @@ CoreFEM.fem2D("examples/NonLoc2DPlate/Mesh.med",
 
 # NonLoc2DPlate example (non-local model)
 ##
-# CoreFEM.fem2D("examples/NonLoc2DPlate/Mesh.med", 
-    # "examples/NonLoc2DPlate/Data.json", Quad4TypeID)
+impact_distance = 80
+beta_loc = 1
+beta_nonloc = 0
+CoreFEM.elasmech_3d_nonloc("examples/NonLoc2DPlate/Mesh.med", 
+    "examples/NonLoc2DPlate/Data.json", impact_distance, beta_loc, beta_nonloc, Quad4TypeID)
 ##
