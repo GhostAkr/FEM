@@ -139,9 +139,6 @@ If it's not, there should be a way to control it.
 - `loadVector::Array`: global loads vector (right part of equations system).
 """
 function solve(globalK::Array, loadVector::Array)
-    initialVector = fill(1.0, size(loadVector)[1])
-    # return minres!(initialVector, globalK, loadVector, tol = 1e-10)
-    # println("In solver")
     return globalK \ loadVector
 end
 
@@ -421,7 +418,6 @@ function elasmech_2d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
 
         # Contribute neighbours impact
         for elem_impact in neighbours
-            # println("Found neighbours of ", elem_source)
             nonloc_matr = stiffnessmatr_2d_nonloc(C, parameters, elem_source, elem_impact, 
                 impactdist, int_order, element_type)
             nonloc_matr .*= beta_nonloc

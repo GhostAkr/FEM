@@ -101,16 +101,6 @@ function contribute_leftpart_nonloc!(pars::processPars, targetmatr::Array, currm
         for j in eachindex(impact_nodes)
             for first_offset in 1:freedom_deg
                 for second_offset in 1:freedom_deg
-                    # RBC
-                    if (freedom_deg * source_nodes[i] - (first_offset - 1) == 8) && (freedom_deg * impact_nodes[j] - (second_offset - 1) == 8)
-                        println("Get 4.Y impact from ", impact_elemnum, ": ", currmatr[freedom_deg * i - (first_offset - 1), 
-                            freedom_deg * j - (second_offset - 1)])
-                    end
-                    if (freedom_deg * source_nodes[i] - (first_offset - 1) == 6) && (freedom_deg * impact_nodes[j] - (second_offset - 1) == 6)
-                        println("Get 3.Y impact from ", impact_elemnum, ": ", currmatr[freedom_deg * i - (first_offset - 1), 
-                            freedom_deg * j - (second_offset - 1)])
-                    end
-                    #
                     targetmatr[freedom_deg * source_nodes[i] - (first_offset - 1), 
                         freedom_deg * impact_nodes[j] - (second_offset - 1)] += 
                         currmatr[freedom_deg * i - (first_offset - 1), 
