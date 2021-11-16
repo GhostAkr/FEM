@@ -125,7 +125,7 @@ end
     stiffnessintegrand_2d_nonloc(r_source, s_source, r_impact, s_impact,
         x_source::Array{Float64}, y_source::Array{Float64}, 
         x_impact::Array{Float64}, y_impact::Array{Float64},
-        elasticitymatrix::AbstractArray, elemtype::FiniteElement)
+        impactdist::Number, elasticitymatrix::AbstractArray, elemtype::FiniteElement)
 
 Computes intgrand to calculate non-local stiffness matrix: ``F = A(r) B_e^T C B_{e'}``. 
 
@@ -138,20 +138,33 @@ Computes intgrand to calculate non-local stiffness matrix: ``F = A(r) B_e^T C B_
 - `y_source::Array{Float64}`: y-coordinates of nodes in source element;
 - `x_impact::Array{Float64}`: x-coordinates of nodes in impact element;
 - `y_impact::Array{Float64}`: y-coordinates of nodes in impact element;
+- `impactdist::Number`: impact distance;
 - `elasticitymatrix::AbstractArray`: elasticity matrix;
 - `elemtype::FiniteElement`: type of finite element.
 """
 function stiffnessintegrand_2d_nonloc(r_source, s_source, r_impact, s_impact, 
     x_source::Array{Float64}, y_source::Array{Float64}, 
     x_impact::Array{Float64}, y_impact::Array{Float64},
-    elasticitymatrix::AbstractArray, elemtype::FiniteElement
+    impactdist::Number, elasticitymatrix::AbstractArray, elemtype::FiniteElement
 )
     b_source = transpose(gradMatr(r_source, s_source, x_source, y_source, elemtype))
     b_impact = gradMatr(r_impact, s_impact, x_impact, y_impact, elemtype)
     jac_source = jacGlobToLoc(r_source, s_source, x_source, y_source, elemtype)
     jac_impact = jacGlobToLoc(r_impact, s_impact, x_impact, y_impact, elemtype)
 
-    return b_source * elasticitymatrix * b_impact * det(jac_source) * det(jac_impact)
+    integrmatr = b_source * elasticitymatrix * b_impact * det(jac_source) * det(jac_impact)
+
+    # Calculating impact function
+    sourcept_glob = conv_loc_to_glob(r_source, s_source, x_source, y_source)
+    impactpt_glob = conv_loc_to_glob(r_impact, s_impact, x_impact, y_impact)
+    impactvec = vecfrompoints_2d(sourcept_glob, impactpt_glob)
+    currdist = veclength_3d(impactvec)
+    normfact = 1 / (2 * pi * impactdist^2)
+    impact = nonloc_gaussimpact(normfact, impactdist, currdist)
+
+    integrmatr .*= impact
+
+    return integrmatr
 end
 
 """
@@ -228,12 +241,10 @@ function stiffnessmatr_2d_nonloc(elasmatr::Array, parameters::processPars,
         for i in 1:nodes_impact_cnt]
 
     f_integrand(r_loc, s_loc, r_imp, s_imp) = stiffnessintegrand_2d_nonloc( r_loc, s_loc, 
-        r_imp, s_imp, x_source, y_source, x_impact, y_impact, elasmatr, elemtype
+        r_imp, s_imp, x_source, y_source, x_impact, y_impact, impactdist, elasmatr, elemtype
     )
 
-    nonloc_matr = MultipleIntegral.gaussmethod_matrix_2d_nonloc(f_integrand, 
-        nonloc_gaussimpact, impactdist, conv_loc_to_glob, x_source, y_source, x_impact, 
-        y_impact, intorder)
+    nonloc_matr = MultipleIntegral.gaussmethod_matrix_2d_nonloc(f_integrand, intorder)
     return nonloc_matr
 end
 

@@ -382,8 +382,6 @@ function elasmech_2d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
 
     # 3. Reading mesh
     parameters.mesh = read_mesh_from_med(mesh_path, mesh_type)
-
-    printProcessPars(parameters)
     
     # 4. Reading problem data
     read_params_JSON!(data_path, parameters)
@@ -420,14 +418,6 @@ function elasmech_2d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
         startpt_glob_3d = (startpt_glob[1], startpt_glob[2], 0)
         get_elem_neighbours!(neighbours, elem_source, impactdist, startpt_glob_3d, 
             parameters)
-
-        # RBC
-        if elem_source == 48 || elem_source == 45
-            println("Neighbours of ", elem_source, " element:")
-            println("Start point of ", elem_source, " is ", startpt_glob_3d)
-            println(neighbours)
-        end
-        #
 
         # Contribute neighbours impact
         for elem_impact in neighbours

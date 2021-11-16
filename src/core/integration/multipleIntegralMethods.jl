@@ -292,31 +292,18 @@ function gaussmethod_matrix_3d(f::Function, int_order::Int)
 end
 
 """
-    gaussmethod_matrix_2d_nonloc(f::Function, impactfunc::Function, impactdist::Number, 
-        loc_to_glob::Function, x_coords::Array{Float64}, y_coords::Array{Float64} 
-        int_order::Int)
+    gaussmethod_matrix_2d_nonloc(f::Function, int_order::Int)
 
 Integrate matrix of functions depending on 2 variables with Gauss method twice taking
 into account impact function.
 
-`f` should depend on 4 variables: local r, s and impact r, s. Impact function is
-assumed to be in Gauss form and should depend on 3 variables: normalization factor, impact
-distance and current distance.
+`f` should depend on 4 variables: local r, s and impact r, s.
 
 # Arguments
 - `f::Function`: functions returning matrix of functions depending on 6 variables;
-- `impactfunc::Function`: impact function;
-- `impactdist::Number`: impact distance;
-- `loc_to_glob::Function`: function which allows to convert local coordinates to global 
-ones;
-- `x_coords::Array{Float64}`: x-coords of each node in current element;
-- `y_coords::Array{Float64}`: y-coords of each node in current element; 
 - `int_order::Int`: integration order.
 """
-function gaussmethod_matrix_2d_nonloc(f::Function, impactfunc::Function, impactdist::Number, 
-    loc_to_glob::Function, x_source::Array{Float64}, y_source::Array{Float64},
-    x_impact::Array{Float64}, y_impact::Array{Float64}, int_order::Int
-)
+function gaussmethod_matrix_2d_nonloc(f::Function, int_order::Int)
     # Defining integration points and weights
     if int_order == 2
         r = [-1 / sqrt(3), 1 / sqrt(3)]
@@ -354,12 +341,7 @@ function gaussmethod_matrix_2d_nonloc(f::Function, impactfunc::Function, impactd
         end
     end
 
-    # Normalization factor for impact function
-    normfact = 1 / (2 * pi * impactdist^2)
-
     # Integrating
-    firstpt_loc = (0, 0)  # Center of element (in r, s coordinates)
-    firstpt_glob = loc_to_glob(firstpt_loc[1], firstpt_loc[2], x_source, y_source)
     for i_loc in 1:int_order
         for j_loc in 1:int_order
             for i_imp in 1:int_order
@@ -367,15 +349,6 @@ function gaussmethod_matrix_2d_nonloc(f::Function, impactfunc::Function, impactd
                     fmatrix = f(r[i_loc], s[j_loc], r[i_imp], s[j_imp])
                     fmatrix .*= weights_matr[i_loc, j_loc]
                     fmatrix .*= weights_matr[i_imp, j_imp]
-
-                    # Calculating impact function
-                    secondpt_loc = (r[i_imp], s[j_imp])
-                    secondpt_glob = loc_to_glob(secondpt_loc[1], secondpt_loc[2], x_impact, 
-                        y_impact)
-                    vec = vecfrompoints_2d(firstpt_glob, secondpt_glob)
-                    dist = veclength_3d(vec)
-                    fmatrix .*= impactfunc(normfact, impactdist, dist)
-
                     for k in 1:n_cols
                         for l in k:n_rows
                             result_matrix[l, k] += fmatrix[l, k]
