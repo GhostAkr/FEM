@@ -2,7 +2,8 @@ module ElementTypes
 
 export FiniteElement
 
-export jacGlobToLoc, DetJs, gradMatr, displInterpMatr, nodesFromDirection, directionFromNodes, getRSFromNode
+export jacGlobToLoc, DetJs, gradMatr, displInterpMatr, nodesFromDirection
+export directionFromNodes, getRSFromNode, conv_loc_to_glob
 
 # TODO: Write macro to export whole enum at once
 export FETypes, Quad4TypeID, Quad8TypeID, Iso8Pts3DTypeID
@@ -28,5 +29,7 @@ nodesFromDirection(direction::Int, elType::FiniteElement) = nothing
 directionFromNodes(nodes::Array, elType:: FiniteElement) = nothing
 
 getRSFromNode(nodeIndex::Int) = nothing
+
+conv_loc_to_glob(r, s, x_coords::Array{Float64}, y_coords::Array{Float64}) = nothing
 
 end

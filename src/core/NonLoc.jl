@@ -20,18 +20,18 @@ calculated;
 - `parameters::processPars`::
 """
 function get_elem_neighbours!(neighbours::Array, elemnum::Int, distance::Number, 
-    startpt::Tuple{Number, Number, Number}, parameters::processPars
-)
+    startpt::Tuple{Number, Number, Number}, parameters::processPars)
+
     nodes = parameters.mesh.elements[elemnum]
     for node in nodes
         # KLUDGE: due to historical restrictions one node can be represented as 2 
         # coordinates (x and y) instead of 3.
-        nodes_cnt = length(parameters.mesh.nodes[node + 1])
+        nodes_cnt = length(parameters.mesh.nodes[node])
         if nodes_cnt == 2
-            node_coords = (parameters.mesh.nodes[node + 1][1], 
-                parameters.mesh.nodes[node + 1][2], 0)
+            node_coords = (parameters.mesh.nodes[node][1], 
+                parameters.mesh.nodes[node][2], 0)
         elseif nodes_cnt == 3
-            node_coords = parameters.mesh.nodes[node + 1]
+            node_coords = parameters.mesh.nodes[node]
         else
             @error("Bad node in get_elem_neighbours!()")
             return nothing
@@ -101,9 +101,19 @@ function contribute_leftpart_nonloc!(pars::processPars, targetmatr::Array, currm
         for j in eachindex(impact_nodes)
             for first_offset in 1:freedom_deg
                 for second_offset in 1:freedom_deg
-                    targetMatrix[freedom_deg * source_nodes[i] - (first_offset - 1), 
+                    # RBC
+                    if (freedom_deg * source_nodes[i] - (first_offset - 1) == 8) && (freedom_deg * impact_nodes[j] - (second_offset - 1) == 8)
+                        println("Get 4.Y impact from ", impact_elemnum, ": ", currmatr[freedom_deg * i - (first_offset - 1), 
+                            freedom_deg * j - (second_offset - 1)])
+                    end
+                    if (freedom_deg * source_nodes[i] - (first_offset - 1) == 6) && (freedom_deg * impact_nodes[j] - (second_offset - 1) == 6)
+                        println("Get 3.Y impact from ", impact_elemnum, ": ", currmatr[freedom_deg * i - (first_offset - 1), 
+                            freedom_deg * j - (second_offset - 1)])
+                    end
+                    #
+                    targetmatr[freedom_deg * source_nodes[i] - (first_offset - 1), 
                         freedom_deg * impact_nodes[j] - (second_offset - 1)] += 
-                        currentElementMatrix[freedom_deg * i - (first_offset - 1), 
+                        currmatr[freedom_deg * i - (first_offset - 1), 
                         freedom_deg * j - (second_offset - 1)]
                 end
             end
@@ -112,7 +122,41 @@ function contribute_leftpart_nonloc!(pars::processPars, targetmatr::Array, currm
 end
 
 """
-    stiffnessintegrand_3d_nonloc(r, s, t, distance::Number,
+    stiffnessintegrand_2d_nonloc(r_source, s_source, r_impact, s_impact,
+        x_source::Array{Float64}, y_source::Array{Float64}, 
+        x_impact::Array{Float64}, y_impact::Array{Float64},
+        elasticitymatrix::AbstractArray, elemtype::FiniteElement)
+
+Computes intgrand to calculate non-local stiffness matrix: ``F = A(r) B_e^T C B_{e'}``. 
+
+# Arguments
+- `r_source`: r-coordinate of node in source element;
+- `s_source`: s-coordinate of node in source element;
+- `r_impact`: r-coordinate of node in impact element;
+- `s_impact`: s-coordinate of node in impact element;
+- `x_source::Array{Float64}`: x-coordinates of nodes in source element;
+- `y_source::Array{Float64}`: y-coordinates of nodes in source element;
+- `x_impact::Array{Float64}`: x-coordinates of nodes in impact element;
+- `y_impact::Array{Float64}`: y-coordinates of nodes in impact element;
+- `elasticitymatrix::AbstractArray`: elasticity matrix;
+- `elemtype::FiniteElement`: type of finite element.
+"""
+function stiffnessintegrand_2d_nonloc(r_source, s_source, r_impact, s_impact, 
+    x_source::Array{Float64}, y_source::Array{Float64}, 
+    x_impact::Array{Float64}, y_impact::Array{Float64},
+    elasticitymatrix::AbstractArray, elemtype::FiniteElement
+)
+    b_source = transpose(gradMatr(r_source, s_source, x_source, y_source, elemtype))
+    b_impact = gradMatr(r_impact, s_impact, x_impact, y_impact, elemtype)
+    jac_source = jacGlobToLoc(r_source, s_source, x_source, y_source, elemtype)
+    jac_impact = jacGlobToLoc(r_impact, s_impact, x_impact, y_impact, elemtype)
+
+    return b_source * elasticitymatrix * b_impact * det(jac_source) * det(jac_impact)
+end
+
+"""
+    stiffnessintegrand_3d_nonloc(r_source, s_source, t_source, 
+        r_impact, s_impact, t_impact,
         x_source::Array{Float64}, y_source::Array{Float64}, z_source::Array{Float64}, 
         x_impact::Array{Float64}, y_impact::Array{Float64}, z_impact::Array{Float64},
         elasticitymatrix::AbstractArray, elemtype::FiniteElement)
@@ -120,10 +164,12 @@ end
 Computes intgrand to calculate non-local stiffness matrix: ``F = A(r) B_e^T C B_{e'}``. 
 
 # Arguments
-- `r`: r-coordinate;
-- `s`: s-coordinate;
-- `t`: t-coordinate;
-- `distance::Number`: impact distance;
+- `r_source`: r-coordinate of node in source element;
+- `s_source`: s-coordinate of node in source element;
+- `t_source`: t-coordinate of node in source element;
+- `r_impact`: r-coordinate of node in impact element;
+- `s_impact`: s-coordinate of node in impact element;
+- `t_impact`: t-coordinate of node in impact element;
 - `x_source::Array{Float64}`: x-coordinates of nodes in source element;
 - `y_source::Array{Float64}`: y-coordinates of nodes in source element;
 - `z_source::Array{Float64}`: z-coordinates of nodes in source element;
@@ -134,7 +180,7 @@ Computes intgrand to calculate non-local stiffness matrix: ``F = A(r) B_e^T C B_
 - `elemtype::FiniteElement`: type of finite element.
 """
 function stiffnessintegrand_3d_nonloc(r_source, s_source, t_source, 
-    r_impact, s_impact, t_impact, distance::Number, 
+    r_impact, s_impact, t_impact, 
     x_source::Array{Float64}, y_source::Array{Float64}, z_source::Array{Float64}, 
     x_impact::Array{Float64}, y_impact::Array{Float64}, z_impact::Array{Float64},
     elasticitymatrix::AbstractArray, elemtype::FiniteElement
@@ -148,8 +194,8 @@ function stiffnessintegrand_3d_nonloc(r_source, s_source, t_source,
 end
 
 """
-    stiffnessmatr_3d_nonloc(elasmatr::Array, parameters::processPars, 
-        source_elemnum::Int, impact_elemnum::Int, intorder::Int, 
+    stiffnessmatr_2d_nonloc(elasmatr::Array, parameters::processPars, 
+        source_elemnum::Int, impact_elemnum::Int, impactdist::Number, intorder::Int, 
         elemtype::FiniteElement)
 
 Calcuulate non-local stiffness matrix for element number `source_elemnum` with 
@@ -160,37 +206,82 @@ respect to impact of element number `impact_elemnum`.
 - `parameters::processPars`: parameters of current process;
 - `source_elemnum::Int`: number of element which is under impact;
 - `impact_elemnum::Int`: number of element which impacts;
+- `impactdist::Number`: impact distance;
 - `intorder::Int`: integration order;
 - `elemtype::FiniteElement`: type of finite element.
 """
-function stiffnessmatr_3d_nonloc(elasmatr::Array, parameters::processPars, 
-	source_elemnum::Int, impact_elemnum::Int, intorder::Int, 
+function stiffnessmatr_2d_nonloc(elasmatr::Array, parameters::processPars, 
+	source_elemnum::Int, impact_elemnum::Int, impactdist::Number, intorder::Int, 
 	elemtype::FiniteElement
 )
     nodes_source_cnt = length(parameters.mesh.elements[source_elemnum])
     nodes_impact_cnt = length(parameters.mesh.elements[impact_elemnum])
 
-    x_source = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][1] 
+    x_source = [parameters.mesh.nodes[parameters.mesh.elements[source_elemnum][i]][1] 
         for i in 1:nodes_source_cnt]
-    y_source = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][2] 
-        for i in 1:nodes_source_cnt]
-    z_source = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][3] 
+    y_source = [parameters.mesh.nodes[parameters.mesh.elements[source_elemnum][i]][2] 
         for i in 1:nodes_source_cnt]
 
-    x_impact = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][1] 
+    x_impact = [parameters.mesh.nodes[parameters.mesh.elements[impact_elemnum][i]][1] 
         for i in 1:nodes_impact_cnt]
-    y_impact = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][2] 
+    y_impact = [parameters.mesh.nodes[parameters.mesh.elements[impact_elemnum][i]][2] 
         for i in 1:nodes_impact_cnt]
-    z_impact = [parameters.mesh.nodes[parameters.mesh.elements[elementNum][i]][3] 
+
+    f_integrand(r_loc, s_loc, r_imp, s_imp) = stiffnessintegrand_2d_nonloc( r_loc, s_loc, 
+        r_imp, s_imp, x_source, y_source, x_impact, y_impact, elasmatr, elemtype
+    )
+
+    nonloc_matr = MultipleIntegral.gaussmethod_matrix_2d_nonloc(f_integrand, 
+        nonloc_gaussimpact, impactdist, conv_loc_to_glob, x_source, y_source, x_impact, 
+        y_impact, intorder)
+    return nonloc_matr
+end
+
+"""
+    stiffnessmatr_3d_nonloc(elasmatr::Array, parameters::processPars, 
+        source_elemnum::Int, impact_elemnum::Int, impactdist::Number intorder::Int, 
+        elemtype::FiniteElement)
+
+Calcuulate non-local stiffness matrix for element number `source_elemnum` with 
+respect to impact of element number `impact_elemnum`.
+
+# Arguments
+- `elasmatr::Array`: elasticity matrix;
+- `parameters::processPars`: parameters of current process;
+- `source_elemnum::Int`: number of element which is under impact;
+- `impact_elemnum::Int`: number of element which impacts;
+- `impactdist::Number`: impact distance;
+- `intorder::Int`: integration order;
+- `elemtype::FiniteElement`: type of finite element.
+"""
+function stiffnessmatr_3d_nonloc(elasmatr::Array, parameters::processPars, 
+	source_elemnum::Int, impact_elemnum::Int, impactdist::Number, intorder::Int, 
+	elemtype::FiniteElement
+)
+    nodes_source_cnt = length(parameters.mesh.elements[source_elemnum])
+    nodes_impact_cnt = length(parameters.mesh.elements[impact_elemnum])
+
+    x_source = [parameters.mesh.nodes[parameters.mesh.elements[source_elemnum][i]][1] 
+        for i in 1:nodes_source_cnt]
+    y_source = [parameters.mesh.nodes[parameters.mesh.elements[source_elemnum][i]][2] 
+        for i in 1:nodes_source_cnt]
+    z_source = [parameters.mesh.nodes[parameters.mesh.elements[source_elemnum][i]][3] 
+        for i in 1:nodes_source_cnt]
+
+    x_impact = [parameters.mesh.nodes[parameters.mesh.elements[impact_elemnum][i]][1] 
+        for i in 1:nodes_impact_cnt]
+    y_impact = [parameters.mesh.nodes[parameters.mesh.elements[impact_elemnum][i]][2] 
+        for i in 1:nodes_impact_cnt]
+    z_impact = [parameters.mesh.nodes[parameters.mesh.elements[impact_elemnum][i]][3] 
         for i in 1:nodes_impact_cnt]
 
     f_integrand(r_loc, s_loc, t_loc, r_imp, s_imp, t_imp) = stiffnessintegrand_3d_nonloc(
-        r_loc, s_loc, t_loc, r_imp, s_imp, t_imp, 0, x_source, y_source, z_source, x_impact, 
+        r_loc, s_loc, t_loc, r_imp, s_imp, t_imp, x_source, y_source, z_source, x_impact, 
         y_impact, z_impact, elasmatr, elemtype
     )
 
     # nonloc_matr = MultipleIntegral.gaussmethod_matrix_3d(f_integrand, intorder)
     nonloc_matr = MultipleIntegral.gaussmethod_matrix_3d_nonloc(f_integrand, 
-        nonloc_gaussimpact, distance, intorder)
+        nonloc_gaussimpact, impactdist, intorder)
     return nonloc_matr
 end

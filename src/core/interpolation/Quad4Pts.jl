@@ -8,7 +8,8 @@ module Quad4Pts
 using ElementTypes
 
 export FiniteElement, Quad4Type
-export jacGlobToLoc, DetJs, gradMatr, displInterpMatr, nodesFromDirection, directionFromNodes, getRSFromNode
+export jacGlobToLoc, DetJs, gradMatr, displInterpMatr, nodesFromDirection
+export directionFromNodes, getRSFromNode, conv_loc_to_glob
 
 struct Quad4Type <: FiniteElement
     name::String
@@ -45,6 +46,24 @@ dh3r(r, s) = (-1 + s) / 4
 dh3s(r, s) = (-1 + r) / 4
 dh4r(r, s) = (1 - s) / 4
 dh4s(r, s) = (-1 - r) / 4
+
+"""
+    conv_loc_to_glob(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
+
+Convert local coordinates (r, s) to global ones.
+
+# Arguments
+- `r`: local r-coordinate;
+- `s`: local s-coordinate;
+- `xCoords::Array{Float64}`: global x coordinates of each node in current element;
+- `yCoords::Array{Float64}`: global y coordinates of each node in current element.
+"""
+function ElementTypes.conv_loc_to_glob(r, s, x_coords::Array{Float64}, 
+    y_coords::Array{Float64}
+)
+    result = (x(r, s, x_coords), y(r, s, y_coords))
+    return result
+end
 
 """
     jacGlobToLoc(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
