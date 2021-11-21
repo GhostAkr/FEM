@@ -4,6 +4,7 @@ using ElementTypes
 
 export FiniteElement, Quad8Type
 export jacGlobToLoc, DetJs, gradMatr, displInterpMatr, nodesFromDirection, getRSFromNode
+export conv_loc_to_glob
 
 struct Quad8Type <: FiniteElement
     name::String
@@ -17,6 +18,42 @@ h5(r, s) = 0.5 * (1 - r^2) * (1 + s)
 h6(r, s) = 0.5 * (1 - s^2) * (1 - r)
 h7(r, s) = 0.5 * (1 - r^2) * (1 - s)
 h8(r, s) = 0.5 * (1 - s^2) * (1 + r)
+
+x(r, s, x_coords::Array{Float64}) =  h1(r, s) * x_coords[1] + 
+                                        h2(r, s) * x_coords[2] + 
+                                        h3(r, s) * x_coords[3] +
+                                        h4(r, s) * x_coords[4] +
+                                        h5(r, s) * x_coords[5] +
+                                        h6(r, s) * x_coords[6] +
+                                        h7(r, s) * x_coords[7] +
+                                        h8(r, s) * x_coords[8]
+
+y(r, s, y_coords::Array{Float64}) =  h1(r, s) * y_coords[1] + 
+                                        h2(r, s) * y_coords[2] + 
+                                        h3(r, s) * y_coords[3] +
+                                        h4(r, s) * y_coords[4] +
+                                        h5(r, s) * y_coords[5] +
+                                        h6(r, s) * y_coords[6] +
+                                        h7(r, s) * y_coords[7] +
+                                        h8(r, s) * y_coords[8]
+
+"""
+    conv_loc_to_glob(r, s, xCoords::Array{Float64}, yCoords::Array{Float64})
+
+Convert local coordinates (r, s) to global ones.
+
+# Arguments
+- `r`: local r-coordinate;
+- `s`: local s-coordinate;
+- `xCoords::Array{Float64}`: global x coordinates of each node in current element;
+- `yCoords::Array{Float64}`: global y coordinates of each node in current element.
+"""
+function ElementTypes.conv_loc_to_glob(r, s, x_coords::Array{Float64}, 
+    y_coords::Array{Float64}, elemTypeInd::Quad8Type
+)
+    result = (x(r, s, x_coords), y(r, s, y_coords))
+    return result
+end
 
 function dxr(r, s, xCoords::Array{Float64})
     c1 = (1 + s) / 4 + 0.5 * r * (1 + s) + 0.25 * (-1 + s^2)

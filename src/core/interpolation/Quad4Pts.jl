@@ -59,7 +59,7 @@ Convert local coordinates (r, s) to global ones.
 - `yCoords::Array{Float64}`: global y coordinates of each node in current element.
 """
 function ElementTypes.conv_loc_to_glob(r, s, x_coords::Array{Float64}, 
-    y_coords::Array{Float64}
+    y_coords::Array{Float64}, elemTypeInd::Quad4Type
 )
     result = (x(r, s, x_coords), y(r, s, y_coords))
     return result
