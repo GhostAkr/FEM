@@ -113,6 +113,26 @@ function contribute_leftpart_nonloc!(pars::processPars, targetmatr::Array, currm
 end
 
 """
+	contribute_leftpart_by_connmatr_nonloc!(targetmatr::Array, 
+    currmatr::Array, source_connmatr::Array, impact_connmatr::Array)
+
+Process a contribute of non-local stiffness matrix `currmatr` to global stiffness matrix
+`targetmatr` using given connectivity matrices.
+
+# Arguments
+- `targetmatr::Array`: global stiffness matrix;
+- `currmatr::Array`: non-local stiffness matrix;
+- `source_connmatr::Array`: connectivity matrix of source element;
+- `impact_connmatr::Array`: connectivity matrix of impact element.
+"""
+function contribute_leftpart_by_connmatr_nonloc!(targetmatr::Array, currmatr::Array, 
+    source_connmatr::Array, impact_connmatr::Array
+)
+    contribution = transpose(source_connmatr) * currmatr * impact_connmatr
+    targetmatr += contribution
+end
+
+"""
     stiffnessintegrand_2d_nonloc(r_source, s_source, r_impact, s_impact,
         x_source::Array{Float64}, y_source::Array{Float64}, 
         x_impact::Array{Float64}, y_impact::Array{Float64},
