@@ -26,6 +26,7 @@ include("Deformations.jl")
 include("Constants.jl")
 include("Stresses.jl")
 include("NonLoc.jl")
+include("Common.jl")
 
 export fem2D
 
@@ -422,8 +423,13 @@ function elasmech_2d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
             nonloc_matr = stiffnessmatr_2d_nonloc(C, parameters, elem_source, elem_impact, 
                 impactdist, int_order, element_type)
             nonloc_matr .*= beta_nonloc
-            contribute_leftpart_nonloc!(parameters, ensemble_matrix, nonloc_matr, 
-                elem_source, elem_impact, freedom_deg)
+            # contribute_leftpart_nonloc!(parameters, ensemble_matrix, nonloc_matr, 
+                # elem_source, elem_impact, freedom_deg)
+
+            source_connmatr = get_connmatr(parameters, elem_source, freedom_deg)
+            impact_connmatr = get_connmatr(parameters, elem_impact, freedom_deg)
+            contribute_leftpart_by_connmatr_nonloc!(ensemble_matrix, nonloc_matr, 
+                source_connmatr, impact_connmatr)
         end
     end
 
@@ -533,8 +539,13 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
             nonloc_matr = stiffnessmatr_3d_nonloc(C, parameters, elem_source, elem_impact, 
                 impactdist, int_order, element_type)
             nonloc_matr .*= beta_nonloc
-            contribute_leftpart_nonloc!(parameters, ensemble_matrix, nonloc_matr, 
-                elem_source, elem_impact, freedom_deg)
+            # contribute_leftpart_nonloc!(parameters, ensemble_matrix, nonloc_matr, 
+                # elem_source, elem_impact, freedom_deg)
+
+            source_connmatr = get_connmatr(parameters, elem_source, freedom_deg)
+            impact_connmatr = get_connmatr(parameters, elem_impact, freedom_deg)
+            contribute_leftpart_by_connmatr_nonloc!(ensemble_matrix, nonloc_matr, 
+                source_connmatr, impact_connmatr)
         end
     end
 
