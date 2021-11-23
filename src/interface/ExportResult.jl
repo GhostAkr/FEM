@@ -121,16 +121,29 @@ function exportToVTK(result::Array, deformations, stresses, vonMises, pars::proc
         end
         write(file, "\n")
 
-        if isnothing(deformations)
+        if !isnothing(deformations)
+            deformations_cnt = size(deformations)[2]
             deformationsKeyword = "Deformations"
-            write(file, vtkVectorsKeyword * " " * deformationsKeyword * " " * vtkPointsType * "\n")  # By defalt it uses 1 scalar per point
+            write(file, vtkScalarKeyword * " " * deformationsKeyword * " " * vtkPointsType * 
+                " " * string(deformations_cnt) * "\n" * vtkTableKeyword * " " * 
+                vtkTableDefault * "\n")
             for nodeIndex in 1:nOfNodes
-                write(file, string(deformations[nodeIndex, 1]) * " " * string(deformations[nodeIndex, 2]) * " " * string(deformations[nodeIndex, 3]) * "\n")
+                node_def = ""
+                for defidx in 1:deformations_cnt
+                    node_def *= string(deformations[nodeIndex, defidx])
+                    if defidx == deformations_cnt
+                        break
+                    end
+                    node_def *= " "
+                end
+                node_def *= "\n"
+                write(file, node_def)
+                # write(file, string(deformations[nodeIndex, 1]) * " " * string(deformations[nodeIndex, 2]) * " " * string(deformations[nodeIndex, 3]) * "\n")
             end
             write(file, "\n")
         end
 
-        if isnothing(stresses)
+        if !isnothing(stresses)
             stressesKeyword = "Stresses"
             write(file, vtkVectorsKeyword * " " * stressesKeyword * " " * vtkPointsType * "\n")  # By defalt it uses 1 scalar per point
             for nodeIndex in 1:nOfNodes
@@ -139,7 +152,7 @@ function exportToVTK(result::Array, deformations, stresses, vonMises, pars::proc
             write(file, "\n")
         end
 
-        if isnothing(vonMises)
+        if !isnothing(vonMises)
             vonMisesKeyword = "VonMises"
             write(file, vtkScalarKeyword * " " * vonMisesKeyword * " " * vtkPointsType * "\n")  # By defalt it uses 1 scalar per point
             write(file, vtkTableKeyword * " " * vtkTableDefault * "\n")

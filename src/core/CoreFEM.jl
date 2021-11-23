@@ -571,8 +571,11 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
     result = solve(ensemble_matrix, load_vector)
     end  # @time
 
-    # 14. Exporting result to VTK
-    BaseInterface.exportToVTK(result, undef, undef, undef, parameters, mesh_type)
+    # 14. Calclualting deformations
+    deformations = calculate_deformations_3d(result, parameters, element_type)
+
+    # 15. Exporting result to VTK
+    BaseInterface.exportToVTK(result, deformations, nothing, nothing, parameters, mesh_type)
 end
 
 end  # Core
