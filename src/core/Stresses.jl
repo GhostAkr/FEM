@@ -15,15 +15,36 @@ function calculateStresses(deformations::Array, elasticityMatrix::Matrix, pars::
 end  # stressesKeyword
 
 function calculateVonMises(stresses::Array)
-    vonMises = []
-    for nodeStress in stresses
-        nodeVonMises = sqrt(nodeStress[1]^2 - nodeStress[1] * nodeStress[2] + nodeStress[2]^2 + 3 * nodeStress[3]^2)
-        sxx = nodeStress[1]  # Stress by XX
-        syy = nodeStress[2]  # Stress by YY
-        sxy = nodeStress[3]  # Stress by XY
-        # szz = nodeStress[4]  # Stress by ZZ
-        # nodeVonMises = sqrt(0.5 * ((sxx - syy)^2 + (syy - szz)^2 + (szz - sxx)^2 + 6 * sxy^2))
-        push!(vonMises, nodeVonMises)
+    von_mises = []
+    stresses_size = size(stresses)
+    stresses_rows = stresses_size[1]
+    stresses_cols = stresses_size[2]
+
+    for stress_node_idx in 1:stresses_rows
+
+        node_von_mises = 0
+        if stresses_cols == 3  # 2D case
+            sxx = stresses[stress_node_idx, 1]
+            syy = stresses[stress_node_idx, 2]
+            sxy = stresses[stress_node_idx, 3]
+
+            node_von_mises = sqrt(sxx^2 - sxx * syy + syy^2 + 3 * sxy^2)
+        elseif stresses_cols == 6  # 3D case
+            sxx = stresses[stress_node_idx, 1]
+            syy = stresses[stress_node_idx, 2]
+            szz = stresses[stress_node_idx, 3]
+            sxy = stresses[stress_node_idx, 4]
+            syz = stresses[stress_node_idx, 5]
+            szx = stresses[stress_node_idx, 6]
+
+            node_von_mises = sqrt(0.5 * ((sxx - syy)^2 + (syy - szz)^2 + (szz - sxx)^2 + 
+                6 * (syz^2 + szx^2 + sxy^2)))
+        else
+            @error("Error while calculating von Mises stresses in calculateVonMises()")
+            return nothing
+        end
+
+        push!(von_mises, node_von_mises)
     end
-    return vonMises
+    return von_mises
 end  # calculateVonMises

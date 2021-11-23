@@ -577,8 +577,11 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
     # 15. Calcualting stresses
     stresses = calculateStresses(deformations, C, parameters)
 
+    # 16 Calculating Von-Mises stresses
+    von_mises = calculateVonMises(stresses)
+
     # 16. Exporting result to VTK
-    BaseInterface.exportToVTK(result, deformations, stresses, nothing, parameters, mesh_type)
+    BaseInterface.exportToVTK(result, deformations, stresses, von_mises, parameters, mesh_type)
 end
 
 end  # Core
