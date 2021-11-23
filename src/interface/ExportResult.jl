@@ -138,16 +138,27 @@ function exportToVTK(result::Array, deformations, stresses, vonMises, pars::proc
                 end
                 node_def *= "\n"
                 write(file, node_def)
-                # write(file, string(deformations[nodeIndex, 1]) * " " * string(deformations[nodeIndex, 2]) * " " * string(deformations[nodeIndex, 3]) * "\n")
             end
             write(file, "\n")
         end
 
         if !isnothing(stresses)
+            stresses_cnt = size(deformations)[2]
             stressesKeyword = "Stresses"
-            write(file, vtkVectorsKeyword * " " * stressesKeyword * " " * vtkPointsType * "\n")  # By defalt it uses 1 scalar per point
+            write(file, vtkScalarKeyword * " " * stressesKeyword * " " * vtkPointsType * 
+            " " * string(stresses_cnt) * "\n" * vtkTableKeyword * " " * vtkTableDefault * 
+            "\n")
             for nodeIndex in 1:nOfNodes
-                write(file, string(stresses[nodeIndex][1]) * " " * string(stresses[nodeIndex][2]) * " " * string(stresses[nodeIndex][3]) * "\n")
+                node_stress = ""
+                for stressidx in 1:stresses_cnt
+                    node_stress *= string(stresses[nodeIndex, stressidx])
+                    if stressidx == stresses_cnt
+                        break
+                    end
+                    node_stress *= " "
+                end
+                node_stress *= "\n"
+                write(file, node_stress)
             end
             write(file, "\n")
         end

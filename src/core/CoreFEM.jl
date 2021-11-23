@@ -574,8 +574,11 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
     # 14. Calclualting deformations
     deformations = calculate_deformations_3d(result, parameters, element_type)
 
-    # 15. Exporting result to VTK
-    BaseInterface.exportToVTK(result, deformations, nothing, nothing, parameters, mesh_type)
+    # 15. Calcualting stresses
+    stresses = calculateStresses(deformations, C, parameters)
+
+    # 16. Exporting result to VTK
+    BaseInterface.exportToVTK(result, deformations, stresses, nothing, parameters, mesh_type)
 end
 
 end  # Core
