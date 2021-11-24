@@ -424,7 +424,7 @@ function ElementTypes.getRSFromNode(nodeIndex::Int, elemTypeInd::Iso8Pts3DType)
     elseif nodeIndex == 8
         return (1, -1, -1)
     else
-        println("Invalid node index while getting (r, s, t) coordinates from node")
+        @error("Invalid node index while getting (r, s, t) coordinates from node")
         return nothing
     end
 end  # getRSFromNode

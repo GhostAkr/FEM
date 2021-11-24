@@ -237,7 +237,7 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     end
 
     deformations = calculateDeformations(result, parameters, intOrder, elementType)
-    stresses = calculateStresses(deformations, C, parameters)
+    stresses = calculateStresses(deformations, C)
     vonMises = calculateVonMises(stresses)
     # Writing result to file
     open("equation/result", "w") do file
@@ -518,22 +518,25 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
     end
 
     # 8. Non-local part of stiffness matrix (left part of final equation)
+    global_neighbours = []
     for elem_source in eachindex(parameters.mesh.elements)
         # Get list of neighbours
         nodes = parameters.mesh.elements[elem_source]
         neighbours = []
-            nodes_cnt = length(nodes)
-            x_source = [parameters.mesh.nodes[parameters.mesh.elements[elem_source][i]][1] 
-                for i in 1:nodes_cnt]
-            y_source = [parameters.mesh.nodes[parameters.mesh.elements[elem_source][i]][2] 
-                for i in 1:nodes_cnt]
-            z_source = [parameters.mesh.nodes[parameters.mesh.elements[elem_source][i]][3] 
-                for i in 1:nodes_cnt]
-            startpt_loc = (0, 0, 0)
-            startpt_glob = conv_loc_to_glob(startpt_loc[1], startpt_loc[2], startpt_loc[3], 
-                x_source, y_source, z_source, element_type)
-            get_elem_neighbours!(neighbours, elem_source, impactdist, startpt_glob, parameters)
+        nodes_cnt = length(nodes)
+        x_source = [parameters.mesh.nodes[parameters.mesh.elements[elem_source][i]][1] 
+            for i in 1:nodes_cnt]
+        y_source = [parameters.mesh.nodes[parameters.mesh.elements[elem_source][i]][2] 
+            for i in 1:nodes_cnt]
+        z_source = [parameters.mesh.nodes[parameters.mesh.elements[elem_source][i]][3] 
+            for i in 1:nodes_cnt]
+        startpt_loc = (0, 0, 0)
+        startpt_glob = conv_loc_to_glob(startpt_loc[1], startpt_loc[2], startpt_loc[3], 
+            x_source, y_source, z_source, element_type)
+        get_elem_neighbours!(neighbours, elem_source, impactdist, startpt_glob, parameters)
 
+        push!(global_neighbours, neighbours)
+        
         # Contribute neighbours impact
         for elem_impact in neighbours
             nonloc_matr = stiffnessmatr_3d_nonloc(C, parameters, elem_source, elem_impact, 
@@ -575,12 +578,17 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
     deformations = calculate_deformations_3d(result, parameters, element_type)
 
     # 15. Calcualting stresses
-    stresses = calculateStresses(deformations, C, parameters)
+    @info("Calculating stresses")
+    @time begin
+    # stresses = calculateStresses(deformations, C)
+    stresses = calulate_stresses_3d_nonloc(deformations, result, C, beta_loc, beta_nonloc,
+        global_neighbours, impactdist, parameters, int_order, element_type)
+    end
 
     # 16 Calculating Von-Mises stresses
     von_mises = calculateVonMises(stresses)
 
-    # 16. Exporting result to VTK
+    # 17. Exporting result to VTK
     BaseInterface.exportToVTK(result, deformations, stresses, von_mises, parameters, mesh_type)
 end
 

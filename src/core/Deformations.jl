@@ -1,5 +1,6 @@
 using Quad4Pts
 using Quad8Pts
+using Iso8Pts3D
 using MultipleIntegral
 
 function calculateDeformations(displacements::Array, pars::processPars, intOrder::Int, elemTypeInd::FiniteElement)
