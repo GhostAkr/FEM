@@ -68,7 +68,7 @@ function nonloc_stresses_integrand(r_source, s_source, t_source, r_impact, s_imp
     normfact = 1 / (8 * pi * impactdist^3)
     impact = nonloc_gaussimpact(normfact, impactdist, currdist)
 
-    integrvec *= impact
+    integrvec .*= impact
 
     return integrvec
 end
