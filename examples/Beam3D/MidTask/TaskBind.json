@@ -7,7 +7,7 @@
         "fixedXYZ": "StartSide"
     },
     "DistributedLoad": {
-        "Load": [10, 0, 0],
-        "Elements": "EndSide"
+        "Load": [0, 0, 10],
+        "Elements": "EndTop"
     }
 }

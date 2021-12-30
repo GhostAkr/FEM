@@ -46,6 +46,16 @@ CoreFEM.elasmech_3d_nonloc("examples/Beam3D/SmallTask/Mesh.med",
     Iso8Pts3DTypeID)
 ##
 
+# Beam3D/MidTask example (non-local model)
+##
+impact_distance = 5
+beta_loc = 1
+beta_nonloc = 0
+CoreFEM.elasmech_3d_nonloc("examples/Beam3D/MidTask/Mesh.med", 
+    "examples/Beam3D/MidTask/TaskBind.json", impact_distance, beta_loc, beta_nonloc, 
+    Iso8Pts3DTypeID)
+##
+
 # Beam3D example (non-local model, 2D analogue)
 ##
 impact_distance = 5
