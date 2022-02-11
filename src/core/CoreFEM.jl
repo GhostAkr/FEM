@@ -25,6 +25,8 @@ include("StiffnessMatrix.jl")
 include("Deformations.jl")
 include("Constants.jl")
 include("Stresses.jl")
+include("NonLoc.jl")
+include("Common.jl")
 
 export fem2D
 
@@ -138,9 +140,6 @@ If it's not, there should be a way to control it.
 - `loadVector::Array`: global loads vector (right part of equations system).
 """
 function solve(globalK::Array, loadVector::Array)
-    initialVector = fill(1.0, size(loadVector)[1])
-    # return minres!(initialVector, globalK, loadVector, tol = 1e-10)
-    # println("In solver")
     return globalK \ loadVector
 end
 
@@ -238,7 +237,7 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     end
 
     deformations = calculateDeformations(result, parameters, intOrder, elementType)
-    stresses = calculateStresses(deformations, C, parameters)
+    stresses = calculateStresses(deformations, C)
     vonMises = calculateVonMises(stresses)
     # Writing result to file
     open("equation/result", "w") do file
@@ -343,5 +342,250 @@ function elasmech_3d(mesh_path::String, data_path::String, elem_type_id::FETypes
 
     return result
 end  # fem3D
+
+"""
+	elasmech_2d_nonloc(mesh_path::String, data_path::String, impactdist::Number, 
+        beta_loc::Number, beta_nonloc::Number, elem_type_id::FETypes)
+
+Start calculation of 2D elastic non-local mechanical problem. `beta_loc` and `beta_nonloc`
+are coefficients which define impact of local and non-local parts of stiffness matrix 
+appropriately.
+
+# Arguments
+- `mesh_path::String`: path to mesh;
+- `data_path::String`: path to initial data;
+- `impactdist::Number`: impact distance;
+- `beta_loc::Number`: coefficient which defines impact of local part of stiffness matrix;
+- `beta_nonloc::Number`: coefficient which defines impact of non-local part of stiffness 
+    matrix;
+- `elem_type_id::FETypes`: ID of finite element type.
+"""
+function elasmech_2d_nonloc(mesh_path::String, data_path::String, impactdist::Number, 
+        beta_loc::Number, beta_nonloc::Number, elem_type_id::FETypes
+)
+    freedom_deg = 2
+
+    # 1. Getting element type
+    element_type = defineElemType(elem_type_id)
+    if (element_type === nothing)
+        @error("Element type passed to fem2D() is unknown")
+        return
+    end
+
+    # 2. Getting mesh type
+    mesh_type = typeMeshFromElement(elem_type_id)
+
+    parameters = processPars(testMaterialProperties(), testBC(), testLoad(), 
+        generateTestMesh2D(2))
+
+    # 3. Reading mesh
+    parameters.mesh = read_mesh_from_med(mesh_path, mesh_type)
+    
+    # 4. Reading problem data
+    read_params_JSON!(data_path, parameters)
+
+    # 5. Integration order
+    int_order = 2
+
+    # 6. Problem constants
+    nu = parameters.materialProperties[poisC]
+    E = parameters.materialProperties[youngMod]
+    C = elasticityMatrix(E, nu, plainStrain)
+
+    # 7. Local part of stiffness matrix (left part of final equation)
+    ensemble_matrix = zeros(2 * size(parameters.mesh.nodes)[1], 2 * 
+        size(parameters.mesh.nodes)[1])
+    for element_num in eachindex(parameters.mesh.elements)
+        k = stiffnessMatrix(C, parameters, element_num, int_order, element_type)
+        k .*= beta_loc;
+        assembly_left_part!(parameters, ensemble_matrix, k, element_num, freedom_deg)
+    end
+
+    # 8. Non-local part of stiffness matrix (left part of final equation)
+    for elem_source in eachindex(parameters.mesh.elements)
+        # Get list of neighbours
+        nodes = parameters.mesh.elements[elem_source]
+        neighbours = []
+        nodes_cnt = length(nodes)
+        x_source = [parameters.mesh.nodes[parameters.mesh.elements[elem_source][i]][1] 
+            for i in 1:nodes_cnt]
+        y_source = [parameters.mesh.nodes[parameters.mesh.elements[elem_source][i]][2] 
+            for i in 1:nodes_cnt]
+        startpt_loc = (0, 0)
+        startpt_glob = conv_loc_to_glob(startpt_loc[1], startpt_loc[2], x_source, y_source,
+            element_type)
+        startpt_glob_3d = (startpt_glob[1], startpt_glob[2], 0)
+        get_elem_neighbours!(neighbours, elem_source, impactdist, startpt_glob_3d, 
+            parameters)
+
+        # Contribute neighbours impact
+        for elem_impact in neighbours
+            nonloc_matr = stiffnessmatr_2d_nonloc(C, parameters, elem_source, elem_impact, 
+                impactdist, int_order, element_type)
+            nonloc_matr .*= beta_nonloc
+            # contribute_leftpart_nonloc!(parameters, ensemble_matrix, nonloc_matr, 
+                # elem_source, elem_impact, freedom_deg)
+
+            source_connmatr = get_connmatr(parameters, elem_source, freedom_deg)
+            impact_connmatr = get_connmatr(parameters, elem_impact, freedom_deg)
+            contribute_leftpart_by_connmatr_nonloc!(ensemble_matrix, nonloc_matr, 
+                source_connmatr, impact_connmatr)
+        end
+    end
+
+    # 9. Load vector (right part og final equation)
+    load_vector = assembly_loads!(parameters, int_order, element_type, freedom_deg)
+
+    # 10. Applying constraints to equation
+    applyConstraints(parameters, load_vector, ensemble_matrix)
+
+    # 11. Writing left part to file
+    open("equation/K", "w") do file
+        writedlm(file, ensemble_matrix)
+    end
+
+    # 12. Writing right part to file
+    open("equation/F", "w") do file
+        writedlm(file, load_vector)
+    end
+
+    # 13. Solving equation
+    @info("Solving...")
+    @time begin
+    result = solve(ensemble_matrix, load_vector)
+    end  # @time
+
+    # 14. Exporting result to VTK
+    BaseInterface.exportToVTK(result, undef, undef, undef, parameters, mesh_type)
+end
+
+"""
+	elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Number, 
+        beta_loc::Number, beta_nonloc::Number, elem_type_id::FETypes)
+
+Start calculation of 3D elastic non-local mechanical problem. `beta_loc` and `beta_nonloc`
+are coefficients which define impact of local and non-local parts of stiffness matrix 
+appropriately.
+
+# Arguments
+- `mesh_path::String`: path to mesh;
+- `data_path::String`: path to initial data;
+- `impactdist::Number`: impact distance;
+- `beta_loc::Number`: coefficient which defines impact of local part of stiffness matrix;
+- `beta_nonloc::Number`: coefficient which defines impact of non-local part of stiffness 
+    matrix;
+- `elem_type_id::FETypes`: ID of finite element type.
+"""
+function elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Number, 
+        beta_loc::Number, beta_nonloc::Number, elem_type_id::FETypes
+)
+    freedom_deg = 3
+
+    # 1. Getting element type
+    element_type = defineElemType(elem_type_id)
+    if (element_type === nothing)
+        @error("Element type passed to elasmech_3d_nonloc() is unknown")
+        return
+    end
+
+    # 2. Getting mesh type
+    mesh_type = typeMeshFromElement(elem_type_id)
+
+    parameters = processPars(testMaterialProperties(), testBC3D(), testLoad3D(), 
+        generateTestMesh3D())
+
+    # 3. Reading mesh
+    parameters.mesh = read_mesh_from_med(mesh_path, mesh_type)
+    
+    # 4. Reading problem data
+    read_params_JSON!(data_path, parameters)
+
+    # 5. Integration order
+    int_order = 2
+
+    # 6. Problem constants
+    nu = parameters.materialProperties[poisC]
+    E = parameters.materialProperties[youngMod]
+    C = elasticityMatrix(E, nu, problem3D)
+
+    # 7. Local part of stiffness matrix (left part of final equation)
+    ensemble_matrix = zeros(3 * size(parameters.mesh.nodes)[1], 3 * 
+        size(parameters.mesh.nodes)[1])
+    for element_num in eachindex(parameters.mesh.elements)
+        k = stiffnessMatrix3D(C, parameters, element_num, int_order, element_type)
+        k .*= beta_loc;
+        assembly_left_part!(parameters, ensemble_matrix, k, element_num, freedom_deg)
+    end
+
+    # 8. Non-local part of stiffness matrix (left part of final equation)
+    global_neighbours = []
+    for elem_source in eachindex(parameters.mesh.elements)
+        # Get list of neighbours
+        nodes = parameters.mesh.elements[elem_source]
+        neighbours = []
+        nodes_cnt = length(nodes)
+        x_source = [parameters.mesh.nodes[parameters.mesh.elements[elem_source][i]][1] 
+            for i in 1:nodes_cnt]
+        y_source = [parameters.mesh.nodes[parameters.mesh.elements[elem_source][i]][2] 
+            for i in 1:nodes_cnt]
+        z_source = [parameters.mesh.nodes[parameters.mesh.elements[elem_source][i]][3] 
+            for i in 1:nodes_cnt]
+        startpt_loc = (0, 0, 0)
+        startpt_glob = conv_loc_to_glob(startpt_loc[1], startpt_loc[2], startpt_loc[3], 
+            x_source, y_source, z_source, element_type)
+        get_elem_neighbours!(neighbours, elem_source, impactdist, startpt_glob, parameters)
+
+        push!(global_neighbours, neighbours)
+        
+        # Contribute neighbours impact
+        for elem_impact in neighbours
+            nonloc_matr = stiffnessmatr_3d_nonloc(C, parameters, elem_source, elem_impact, 
+                impactdist, int_order, element_type)
+            nonloc_matr .*= beta_nonloc
+            # contribute_leftpart_nonloc!(parameters, ensemble_matrix, nonloc_matr, 
+                # elem_source, elem_impact, freedom_deg)
+
+            source_connmatr = get_connmatr(parameters, elem_source, freedom_deg)
+            impact_connmatr = get_connmatr(parameters, elem_impact, freedom_deg)
+            contribute_leftpart_by_connmatr_nonloc!(ensemble_matrix, nonloc_matr, 
+                source_connmatr, impact_connmatr)
+        end
+    end
+
+    # 9. Load vector (right part og final equation)
+    load_vector = assembly_loads!(parameters, int_order, element_type, freedom_deg)
+
+    # 10. Applying constraints to equation
+    applyConstraints3D(parameters, load_vector, ensemble_matrix)
+
+    # 11. Writing left part to file
+    open("equation/K", "w") do file
+        writedlm(file, ensemble_matrix)
+    end
+
+    # 12. Writing right part to file
+    open("equation/F", "w") do file
+        writedlm(file, load_vector)
+    end
+
+    # 13. Solving equation
+    @info("Solving...")
+    @time begin
+    result = solve(ensemble_matrix, load_vector)
+    end  # @time
+
+    # 14. Calclualting deformations
+    deformations = calculate_deformations_3d(result, parameters, element_type)
+
+    # 15. Calcualting stresses
+    # stresses = calulate_stresses_3d_nonloc(deformations, result, C, beta_loc, beta_nonloc,
+        # global_neighbours, impactdist, parameters, int_order, element_type)
+
+    # 16 Calculating Von-Mises stresses
+    # von_mises = calculateVonMises(stresses)
+
+    # 17. Exporting result to VTK
+    BaseInterface.exportToVTK(result, deformations, nothing, nothing, parameters, mesh_type)
+end
 
 end  # Core

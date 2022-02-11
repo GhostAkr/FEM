@@ -10,6 +10,7 @@ using LinearAlgebra
 
 export FiniteElement, Iso8Pts3DType
 export jacGlobToLoc, DetJs, gradMatr, displInterpMatr, nodesFromDirection, getRSFromNode
+export conv_loc_to_glob
 
 
 struct Iso8Pts3DType <: FiniteElement
@@ -28,6 +29,35 @@ h5(r, s, t) = 0.125 * (1 + r) * (1 + s) * (1 - t)
 h6(r, s, t) = 0.125 * (1 - r) * (1 + s) * (1 - t)
 h7(r, s, t) = 0.125 * (1 - r) * (1 - s) * (1 - t)
 h8(r, s, t) = 0.125 * (1 + r) * (1 - s) * (1 - t)
+
+# Connection between coordinates
+
+x(r, s, t, x_coords::Array{Float64}) =  h1(r, s, t) * x_coords[1] + h2(r, s, t) * x_coords[2] + h3(r, s, t) * x_coords[3] + h4(r, s, t) * x_coords[4] + h5(r, s, t) * x_coords[5] + h6(r, s, t) * x_coords[6] + h7(r, s, t) * x_coords[7] + h8(r, s, t) * x_coords[8]
+
+y(r, s, t, y_coords::Array{Float64}) =  h1(r, s, t) * y_coords[1] + h2(r, s, t) * y_coords[2] + h3(r, s, t) * y_coords[3] + h4(r, s, t) * y_coords[4] + h5(r, s, t) * y_coords[5] + h6(r, s, t) * y_coords[6] + h7(r, s, t) * y_coords[7] + h8(r, s, t) * y_coords[8]
+
+z(r, s, t, z_coords::Array{Float64}) =  h1(r, s, t) * z_coords[1] + h2(r, s, t) * z_coords[2] + h3(r, s, t) * z_coords[3] + h4(r, s, t) * z_coords[4] + h5(r, s, t) * z_coords[5] + h6(r, s, t) * z_coords[6] + h7(r, s, t) * z_coords[7] + h8(r, s, t) * z_coords[8]
+
+"""
+    conv_loc_to_glob(r, s, t, x_coords::Array{Float64}, 
+        y_coords::Array{Float64}, z_coords::Array{Float64})
+
+Convert local coordinates (r, s, t) to global ones.
+
+# Arguments
+- `r`: local r-coordinate;
+- `s`: local s-coordinate;
+- `t`: local t-coordinate;
+- `xCoords::Array{Float64}`: global x coordinates of each node in current element;
+- `yCoords::Array{Float64}`: global y coordinates of each node in current element;
+- `zCoords::Array{Float64}`: global z coordinates of each node in current element.
+"""
+function ElementTypes.conv_loc_to_glob(r, s, t, x_coords::Array{Float64}, 
+    y_coords::Array{Float64}, z_coords::Array{Float64}, elemTypeInd::Iso8Pts3DType
+)
+    result = (x(r, s, t, x_coords), y(r, s, t, y_coords), z(r, s, t, z_coords))
+    return result
+end
 
 # Coordinates derivatives
 
@@ -394,7 +424,7 @@ function ElementTypes.getRSFromNode(nodeIndex::Int, elemTypeInd::Iso8Pts3DType)
     elseif nodeIndex == 8
         return (1, -1, -1)
     else
-        println("Invalid node index while getting (r, s, t) coordinates from node")
+        @error("Invalid node index while getting (r, s, t) coordinates from node")
         return nothing
     end
 end  # getRSFromNode
