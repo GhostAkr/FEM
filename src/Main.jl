@@ -2,7 +2,7 @@
 # to current session.
 
 # Adding paths for current session to properly load all local Julia modules.
-include("Set_Path.jl")
+include("../Set_Path.jl")
 
 # Modules which are used by this application
 using CoreFEM           # Contains all computational routine
