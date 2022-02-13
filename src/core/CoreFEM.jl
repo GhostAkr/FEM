@@ -8,7 +8,6 @@ include("Input.jl")
 
 using MeshFEM
 using DelimitedFiles
-using BaseInterface
 using IterativeSolvers
 using ElementTypes
 using TestFEM
@@ -27,6 +26,11 @@ include("Constants.jl")
 include("Stresses.jl")
 include("NonLoc.jl")
 include("Common.jl")
+
+# Interface functions
+include("interface/ExportResult.jl")
+include("interface/ImportParams.jl")
+include("interface/ImportJSON.jl")
 
 export fem2D
 
@@ -244,7 +248,7 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
         writedlm(file, result)
     end
     # Exporting results to VTK file
-    BaseInterface.exportToVTK(result, deformations, stresses, vonMises, parameters, meshType)
+    exportToVTK(result, deformations, stresses, vonMises, parameters, meshType)
     return result
 end  # fem2D
 
@@ -338,7 +342,7 @@ function elasmech_3d(mesh_path::String, data_path::String, elem_type_id::FETypes
     end
 
     # 15. Exporting result to VTK
-    BaseInterface.exportToVTK(result, undef, undef, undef, parameters, mesh_type)
+    exportToVTK(result, nothing, nothing, nothing, parameters, mesh_type)
 
     return result
 end  # fem3D
@@ -456,7 +460,7 @@ function elasmech_2d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
     end  # @time
 
     # 14. Exporting result to VTK
-    BaseInterface.exportToVTK(result, undef, undef, undef, parameters, mesh_type)
+    exportToVTK(result, nothing, nothing, nothing, parameters, mesh_type)
 end
 
 """
@@ -585,7 +589,7 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
     # von_mises = calculateVonMises(stresses)
 
     # 17. Exporting result to VTK
-    BaseInterface.exportToVTK(result, deformations, nothing, nothing, parameters, mesh_type)
+    exportToVTK(result, deformations, nothing, nothing, parameters, mesh_type)
 end
 
 end  # Core

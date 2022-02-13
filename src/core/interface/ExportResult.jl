@@ -51,6 +51,20 @@ function vtkCellsListSize(pars::processPars)
     return cellsListSize
 end  # vtkCellsListSize
 
+"""
+    exportToVTK(result::Array, deformations, stresses, vonMises, pars::processPars, 
+        type::meshType)
+
+Create VTK file and export given data to it. Note that `deformations`, `stresses` and
+`vonMises` are optional: if you don't want to put it into VTK file you can pass `nothing`.
+
+`result::Array`: displacements array;
+`deformations`: deformations array;
+`stresses`: stresses array;
+`vonMises`: von Mises stresses array;
+`pars::processPars`: process parameteres;
+`type::meshType`: type of mesh.
+"""
 function exportToVTK(result::Array, deformations, stresses, vonMises, pars::processPars, type::meshType)
     vtkIdentifier = "# vtk DataFile Version 3.0\n"
     vtkFormat = "ASCII\n"

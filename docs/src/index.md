@@ -10,13 +10,6 @@ Modules = [MeshFEM]
 Order = [:module, :type, :function]
 ```
 
-## BaseInterface
-
-```@autodocs
-Modules = [BaseInterface]
-Order = [:module, :type, :function]
-```
-
 ## CoreFEM
 
 ```@autodocs
