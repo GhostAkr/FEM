@@ -14,19 +14,12 @@
 
 # SmallPlate example
 ##
-CoreFEM.fem2D("examples/SmallPlate/PlateMeshSmall.med", 
-    "examples/SmallPlate/SmallPlate_Data.json", Quad4TypeID)
+CoreFEM.fem2D("examples/SmallPlate/Mesh.med", "examples/SmallPlate/Task.json", Quad4TypeID)
 ##
 
 # Beam example
 ##
 CoreFEM.fem2D("examples/Beam/BeamMesh.med", "examples/Beam/BeamData.json", Quad4TypeID)
-##
-
-# Beam2DBindAnsys example
-##
-CoreFEM.fem2D("examples/Beam2DBindAnsys/Beam2DAnsys.med", 
-    "examples/Beam2DBindAnsys/Beam2DBindAnsys.json", Quad4TypeID)
 ##
 
 # 3D models
