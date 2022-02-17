@@ -9,8 +9,8 @@ function verify_example(meshPath::String, dataPath::String, result::Array)
     if meshPath == "examples/SmallPlate/Mesh.med" &&
         dataPath == "examples/SmallPlate/Task.json"
         answer = small_example()
-    elseif meshPath == "examples/Beam/BeamMesh.med" &&
-        dataPath == "examples/Beam/BeamData.json"
+    elseif meshPath == "examples/Beam/Mesh.med" &&
+        dataPath == "examples/Beam/Task.json"
         answer = beam_example()
     elseif meshPath == "examples/Beam3DBindAnsys/Beam3DBindAnsys.med" &&
         dataPath == "examples/Beam3DBindAnsys/Beam3DBindAnsys.json"
@@ -39,7 +39,7 @@ function small_example()
 end
 
 function beam_example()
-    answer_path = "examples/Beam/BeamAnswer"
+    answer_path = "examples/Beam/Answer"
     answer = readdlm(answer_path, '\t', Float64, '\n')
     return answer
 end
