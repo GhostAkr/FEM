@@ -59,22 +59,10 @@ CoreFEM.elasmech_3d_nonloc("examples/Beam3D/2DAnalogue/Mesh.med",
     Iso8Pts3DTypeID)
 ##
 
-# Beam3DBindSimple example
-##
-CoreFEM.elasmech_3d("examples/Beam3DBindSimple/Beam3DBindSimple.med", 
-    "examples/Beam3DBindSimple/Beam3DBindSimple.json", Iso8Pts3DTypeID)
-##
-
 # Beam3DBindAnsys example
 ##
 CoreFEM.elasmech_3d("examples/Beam3DBindAnsys/Beam3DBindAnsys.med", 
     "examples/Beam3DBindAnsys/Beam3DBindAnsys.json", Iso8Pts3DTypeID)
-##
-
-# NonLoc2DPlate example (local model)
-##
-CoreFEM.fem2D("examples/NonLoc2DPlate/Mesh.med", 
-    "examples/NonLoc2DPlate/Data.json", Quad4TypeID)
 ##
 
 # NonLoc2DPlate example (non-local model)
