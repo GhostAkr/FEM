@@ -58,18 +58,3 @@ CoreFEM.elasmech_3d_nonloc("examples/Beam3D/2DAnalogue/Mesh.med",
     "examples/Beam3D/2DAnalogue/TaskStretch.json", impact_distance, beta_loc, beta_nonloc, 
     Iso8Pts3DTypeID)
 ##
-
-# Beam3DBindAnsys example
-##
-CoreFEM.elasmech_3d("examples/Beam3DBindAnsys/Beam3DBindAnsys.med", 
-    "examples/Beam3DBindAnsys/Beam3DBindAnsys.json", Iso8Pts3DTypeID)
-##
-
-# NonLoc2DPlate example (non-local model)
-##
-impact_distance = 80
-beta_loc = 0.8
-beta_nonloc = 0.2
-CoreFEM.elasmech_2d_nonloc("examples/NonLoc2DPlate/Mesh.med", 
-    "examples/NonLoc2DPlate/Data.json", impact_distance, beta_loc, beta_nonloc, Quad4TypeID)
-##
