@@ -24,9 +24,10 @@ CoreFEM.fem2D("examples/Beam/Mesh.med", "examples/Beam/Task.json", Quad4TypeID)
 
 # 3D models
 
-# Beam3D example
+# Beam3D/BigTask
 ##
-CoreFEM.elasmech_3d("examples/Beam3D/Beam3D.med", "examples/Beam3D/Beam3D.json", Iso8Pts3DTypeID)
+CoreFEM.elasmech_3d("examples/Beam3D/BigTask/Mesh.med", 
+    "examples/Beam3D/BigTask/TaskBind.json", Iso8Pts3DTypeID)
 ##
 
 # Beam3D example (non-local model)
@@ -46,15 +47,5 @@ beta_loc = 1
 beta_nonloc = 0
 CoreFEM.elasmech_3d_nonloc("examples/Beam3D/MidTask/Mesh.med", 
     "examples/Beam3D/MidTask/TaskBind.json", impact_distance, beta_loc, beta_nonloc, 
-    Iso8Pts3DTypeID)
-##
-
-# Beam3D example (non-local model, 2D analogue)
-##
-impact_distance = 5
-beta_loc = 0.8
-beta_nonloc = 0.2
-CoreFEM.elasmech_3d_nonloc("examples/Beam3D/2DAnalogue/Mesh.med", 
-    "examples/Beam3D/2DAnalogue/TaskStretch.json", impact_distance, beta_loc, beta_nonloc, 
     Iso8Pts3DTypeID)
 ##

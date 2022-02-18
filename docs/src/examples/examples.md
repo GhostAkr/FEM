@@ -26,3 +26,15 @@ over the beam.
 
 - **Task**. Beam is fixed at one side and is stretched at the opposite one. Type of finite 
     element model: plain stress.
+
+## Beam3D. Big task
+
+3D beam, ``10 \times 10 \times 100`` mm. Mesh consists of 2500 elements which are evenly
+distributed over the beam.
+
+![Beam3D/Big example](./images/beam3D_big.png)
+
+### Tasks
+
+- **TaskBind**. Beam is fixed at one side. On the oppsite side pressure is applied to the 
+    top of beam.
