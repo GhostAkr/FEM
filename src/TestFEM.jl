@@ -12,6 +12,9 @@ function verify_example(meshPath::String, dataPath::String, result::Array)
     elseif meshPath == "examples/Beam/Mesh.med" &&
         dataPath == "examples/Beam/Task.json"
         answer = beam_example()
+    elseif meshPath == "examples/Beam3D/SmallTask/Mesh.med" &&
+        dataPath == "examples/Beam3D/SmallTask/TaskStretch.json"
+        answer = beam3dsmall_example()
     elseif meshPath == "examples/Beam3D/BigTask/Mesh.med" &&
         dataPath == "examples/Beam3D/BigTask/TaskBind.json"
         answer = beam3dbig_example()
@@ -37,6 +40,12 @@ end
 
 function beam_example()
     answer_path = "examples/Beam/Answer"
+    answer = readdlm(answer_path, '\t', Float64, '\n')
+    return answer
+end
+
+function beam3dsmall_example()
+    answer_path = "examples/Beam3D/SmallTask/AnswerStretch"
     answer = readdlm(answer_path, '\t', Float64, '\n')
     return answer
 end

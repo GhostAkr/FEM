@@ -19,6 +19,12 @@ CoreFEM.fem2D("examples/Beam/Mesh.med", "examples/Beam/Task.json", Quad4TypeID)
 
 # 3D models
 
+# Beam3D/SmallTask
+##
+CoreFEM.elasmech_3d("examples/Beam3D/SmallTask/Mesh.med",
+    "examples/Beam3D/SmallTask/TaskStretch.json", Iso8Pts3DTypeID)
+##
+
 # Beam3D/BigTask
 ##
 CoreFEM.elasmech_3d("examples/Beam3D/BigTask/Mesh.med", 
