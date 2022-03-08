@@ -223,6 +223,8 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     end
     loadVector = assembly_loads!(parameters, intOrder, elementType, freedom_deg)
     applyConstraints(parameters, loadVector, ensembleMatrix)
+
+    mkpath("equation")
     # Writing left part to file
     open("equation/K", "w") do file
         writedlm(file, ensembleMatrix)
@@ -313,35 +315,38 @@ function elasmech_3d(mesh_path::String, data_path::String, elem_type_id::FETypes
     applyConstraints3D(parameters, load_vector, ensemble_matrix)
     end
 
-    # 10. Writing left part to file
+    # 10. Creating folder for the equation entities
+    mkpath("equation")
+
+    # 11. Writing left part to file
     open("equation/K", "w") do file
         writedlm(file, ensemble_matrix)
     end
 
-    # 11. Writing right part to file
+    # 12. Writing right part to file
     open("equation/F", "w") do file
         writedlm(file, load_vector)
     end
 
-    # 12. Solving equation
+    # 13. Solving equation
     @info("Solving...")
     @time begin
     result = solve(ensemble_matrix, load_vector)
     end  # @time
 
-    # 13. Verifying result
+    # 14. Verifying result
     if TestFEM.verify_example(mesh_path, data_path, result)
         @info "Result is correct"
     else
         @info "Result is INcorrect"
     end
 
-    # 14. Writing result to file
+    # 15. Writing result to file
     open("equation/result", "w") do file
         writedlm(file, result)
     end
 
-    # 15. Exporting result to VTK
+    # 16. Exporting result to VTK
     exportToVTK(result, nothing, nothing, nothing, parameters, mesh_type)
 
     return result
@@ -443,23 +448,26 @@ function elasmech_2d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
     # 10. Applying constraints to equation
     applyConstraints(parameters, load_vector, ensemble_matrix)
 
-    # 11. Writing left part to file
+    # 11. Creating folder for the equation entities
+    mkpath("equation")
+
+    # 12. Writing left part to file
     open("equation/K", "w") do file
         writedlm(file, ensemble_matrix)
     end
 
-    # 12. Writing right part to file
+    # 13. Writing right part to file
     open("equation/F", "w") do file
         writedlm(file, load_vector)
     end
 
-    # 13. Solving equation
+    # 14. Solving equation
     @info("Solving...")
     @time begin
     result = solve(ensemble_matrix, load_vector)
     end  # @time
 
-    # 14. Exporting result to VTK
+    # 15. Exporting result to VTK
     exportToVTK(result, nothing, nothing, nothing, parameters, mesh_type)
 end
 
@@ -562,33 +570,36 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
     # 10. Applying constraints to equation
     applyConstraints3D(parameters, load_vector, ensemble_matrix)
 
-    # 11. Writing left part to file
+    # 11. Creating folder for the equation entities
+    mkpath("equation")
+
+    # 12. Writing left part to file
     open("equation/K", "w") do file
         writedlm(file, ensemble_matrix)
     end
 
-    # 12. Writing right part to file
+    # 13. Writing right part to file
     open("equation/F", "w") do file
         writedlm(file, load_vector)
     end
 
-    # 13. Solving equation
+    # 14. Solving equation
     @info("Solving...")
     @time begin
     result = solve(ensemble_matrix, load_vector)
     end  # @time
 
-    # 14. Calclualting deformations
+    # 15. Calclualting deformations
     deformations = calculate_deformations_3d(result, parameters, element_type)
 
-    # 15. Calcualting stresses
+    # 16. Calcualting stresses
     # stresses = calulate_stresses_3d_nonloc(deformations, result, C, beta_loc, beta_nonloc,
         # global_neighbours, impactdist, parameters, int_order, element_type)
 
-    # 16 Calculating Von-Mises stresses
+    # 17 Calculating Von-Mises stresses
     # von_mises = calculateVonMises(stresses)
 
-    # 17. Exporting result to VTK
+    # 18. Exporting result to VTK
     exportToVTK(result, deformations, nothing, nothing, parameters, mesh_type)
 end
 

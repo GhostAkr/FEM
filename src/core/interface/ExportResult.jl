@@ -91,6 +91,7 @@ function exportToVTK(result::Array, deformations, stresses, vonMises, pars::proc
     vtkTableKeyword = "LOOKUP_TABLE"
     vtkTableDefault = "default"
     vtkVectorsKeyword = "VECTORS"
+    mkpath("output")
     open("output/Results.vtk", "w") do file
         # Writing headers
         vtkHeader = "FEM Results\n"
