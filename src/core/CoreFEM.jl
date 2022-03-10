@@ -589,17 +589,29 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
     result = solve(ensemble_matrix, load_vector)
     end  # @time
 
-    # 15. Calclualting deformations
+    # 15. Verifying result
+    if TestFEM.verify_example(mesh_path, data_path, result, true)
+        @info "Result is correct"
+    else
+        @info "Result is INcorrect"
+    end
+
+    # 16. Writing result to file
+    open("equation/result", "w") do file
+        writedlm(file, result)
+    end
+
+    # 17. Calclualting deformations
     deformations = calculate_deformations_3d(result, parameters, element_type)
 
-    # 16. Calcualting stresses
+    # 18. Calcualting stresses
     # stresses = calulate_stresses_3d_nonloc(deformations, result, C, beta_loc, beta_nonloc,
         # global_neighbours, impactdist, parameters, int_order, element_type)
 
-    # 17 Calculating Von-Mises stresses
+    # 19. Calculating Von-Mises stresses
     # von_mises = calculateVonMises(stresses)
 
-    # 18. Exporting result to VTK
+    # 20. Exporting result to VTK
     exportToVTK(result, deformations, nothing, nothing, parameters, mesh_type)
 end
 
