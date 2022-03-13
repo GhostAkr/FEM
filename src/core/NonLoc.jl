@@ -129,7 +129,7 @@ function contribute_leftpart_by_connmatr_nonloc!(targetmatr::Array, currmatr::Ar
     source_connmatr::Array, impact_connmatr::Array
 )
     contribution = transpose(source_connmatr) * currmatr * impact_connmatr
-    targetmatr += contribution
+    targetmatr .+= contribution
 end
 
 """
