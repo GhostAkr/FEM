@@ -529,6 +529,8 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
         assembly_left_part!(parameters, ensemble_matrix, k, element_num, freedom_deg)
     end
 
+    @info("Assembling non-local part")
+    @time begin
     # 8. Non-local part of stiffness matrix (left part of final equation)
     global_neighbours = []
     for elem_source in eachindex(parameters.mesh.elements)
@@ -554,14 +556,10 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
             nonloc_matr = stiffnessmatr_3d_nonloc(C, parameters, elem_source, elem_impact, 
                 impactdist, int_order, element_type)
             nonloc_matr .*= beta_nonloc
-            # contribute_leftpart_nonloc!(parameters, ensemble_matrix, nonloc_matr, 
-                # elem_source, elem_impact, freedom_deg)
-
-            source_connmatr = get_connmatr(parameters, elem_source, freedom_deg)
-            impact_connmatr = get_connmatr(parameters, elem_impact, freedom_deg)
-            contribute_leftpart_by_connmatr_nonloc!(ensemble_matrix, nonloc_matr, 
-                source_connmatr, impact_connmatr)
+            contribute_leftpart_nonloc!(parameters, ensemble_matrix, nonloc_matr, 
+                elem_source, elem_impact, freedom_deg)
         end
+    end
     end
 
     # 9. Load vector (right part og final equation)
