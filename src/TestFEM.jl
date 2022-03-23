@@ -23,6 +23,9 @@ function verify_example(meshPath::String, dataPath::String, result::Array,
     elseif meshPath == "examples/Beam3D/BigTask/Mesh.med" &&
         dataPath == "examples/Beam3D/BigTask/TaskBind.json" && !nonloc
         answer = beam3dbig_example()
+    elseif meshPath == "examples/Beam3D/Analogue2D/Mesh.med" &&
+        dataPath == "examples/Beam3D/Analogue2D/TaskStretch.json" && !nonloc
+        answer = beam3danalogue2d_example()
     else
         @warn "Example answer wasn't found"
         return false
@@ -63,6 +66,12 @@ end
 
 function beam3dbig_example()
     answer_path = "examples/Beam3D/BigTask/AnswerBind"
+    answer = readdlm(answer_path, '\t', Float64, '\n')
+    return answer
+end
+
+function beam3danalogue2d_example()
+    answer_path = "examples/Beam3D/Analogue2D/AnswerStretch"
     answer = readdlm(answer_path, '\t', Float64, '\n')
     return answer
 end

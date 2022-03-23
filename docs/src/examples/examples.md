@@ -50,3 +50,15 @@ distributed over the beam.
 
 - **TaskBind**. Beam is fixed at one side. On the oppsite side pressure is applied to the 
     top of beam.
+
+## Beam3D. Analogue 2D
+
+3D beam, ``10 \times 10 \times 100`` mm. Mesh consists only of 14 elements. Main feature of
+this example is that mesh has only one element along Z axis.
+
+![Beam3D/Analogue 2D](./images/beam3D_analogue2d.png)
+
+### Tasks
+
+- **TaskStretch**. Beam is fixed at one side. On the opposite side pressure is applied to
+    the end of beam.
