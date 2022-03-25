@@ -50,3 +50,13 @@ begin
     CoreFEM.elasmech_3d("examples/Beam3D/MiniTask/Mesh.med", 
         "examples/Beam3D/MiniTask/TaskStretch.json", Iso8Pts3DTypeID)
 end
+
+# Beam3D/MiniTask (non-local model)
+begin
+    impactdist = 5
+    beta_loc = 0.8
+    beta_nonloc = 0.2
+    CoreFEM.elasmech_3d_nonloc("examples/Beam3D/MiniTask/Mesh.med", 
+        "examples/Beam3D/MiniTask/TaskStretch.json", impactdist, beta_loc, beta_nonloc, 
+        Iso8Pts3DTypeID)
+end

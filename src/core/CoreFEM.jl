@@ -532,7 +532,7 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
     @info("Assembling non-local part")
     @time begin
     # 8. Non-local part of stiffness matrix (left part of final equation)
-    global_neighbours = []
+    global_neighbours = Dict()
     for elem_source in eachindex(parameters.mesh.elements)
         # Get list of neighbours
         nodes = parameters.mesh.elements[elem_source]
@@ -549,8 +549,27 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
             x_source, y_source, z_source, element_type)
         get_elem_neighbours!(neighbours, elem_source, impactdist, startpt_glob, parameters)
 
-        push!(global_neighbours, neighbours)
-        
+        if isempty(neighbours)
+            append!(neighbours, elem_source)
+        end
+
+        global_neighbours[elem_source] = neighbours
+
+    end
+
+    # Synchronize neighbours
+    for (elem, neighbours) in global_neighbours
+        for neighbour in neighbours
+            counter_neighbours = global_neighbours[neighbour]
+
+            if !(elem in counter_neighbours)
+                append!(counter_neighbours, elem)
+            end
+        end
+    end
+
+
+    for (elem_source, neighbours) in global_neighbours
         # Contribute neighbours impact
         for elem_impact in neighbours
             nonloc_matr = stiffnessmatr_3d_nonloc(C, parameters, elem_source, elem_impact, 
