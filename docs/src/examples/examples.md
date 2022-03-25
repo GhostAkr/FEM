@@ -62,3 +62,16 @@ this example is that mesh has only one element along Z axis.
 
 - **TaskStretch**. Beam is fixed at one side. On the opposite side pressure is applied to
     the end of beam.
+
+## Beam3D. Mini task
+
+3D beam, ``10 \times 10 \times 100`` mm. Mesh consists only of 16 elements. Initially this
+example was created to investigate non-local model behaviour. For example we can easily
+check how neighbours interaction works for each element.
+
+![Beam3D/Mini example](./images/beam3D_mini.png)
+
+### Tasks
+
+- **TaskStretch**. Beam is fixed at one side. On the opposite side pressure is applied to
+    the end of beam.

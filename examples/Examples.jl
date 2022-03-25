@@ -44,3 +44,9 @@ begin
     CoreFEM.elasmech_3d("examples/Beam3D/Analogue2D/Mesh.med",
         "examples/Beam3D/Analogue2D/TaskStretch.json", Iso8Pts3DTypeID)
 end
+
+# Beam3D/MiniTask
+begin
+    CoreFEM.elasmech_3d("examples/Beam3D/MiniTask/Mesh.med", 
+        "examples/Beam3D/MiniTask/TaskStretch.json", Iso8Pts3DTypeID)
+end
