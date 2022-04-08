@@ -425,7 +425,7 @@ function elasmech_2d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
             element_type)
         startpt_glob_3d = (startpt_glob[1], startpt_glob[2], 0)
         get_elem_neighbours!(neighbours, elem_source, impactdist, startpt_glob_3d, 
-            parameters)
+            parameters, element_type)
 
         # Contribute neighbours impact
         for elem_impact in neighbours
@@ -547,7 +547,8 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
         startpt_loc = (0, 0, 0)
         startpt_glob = conv_loc_to_glob(startpt_loc[1], startpt_loc[2], startpt_loc[3], 
             x_source, y_source, z_source, element_type)
-        get_elem_neighbours!(neighbours, elem_source, impactdist, startpt_glob, parameters)
+        get_elem_neighbours!(neighbours, elem_source, impactdist, startpt_glob, parameters,
+            element_type)
 
         if isempty(neighbours)
             append!(neighbours, elem_source)
