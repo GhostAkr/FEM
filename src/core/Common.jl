@@ -1,14 +1,14 @@
 """
-    get_connmatr(pars::processPars, elemnum::Int, freedom_deg::Int)
+    get_connmatr(pars::ProcessPars, elemnum::Int, freedom_deg::Int)
 
 Computes connectivity matrix for nodes in given element.
 
 # Arguments
-- `pars::processPars`: parameters of current process;
+- `pars::ProcessPars`: parameters of current process;
 - `elemnum::Int`: number of finite element in mesh;
 - `freedom_deg::Int`: number of degrees of freedom.
 """
-function get_connmatr(pars::processPars, elemnum::Int, freedom_deg::Int)
+function get_connmatr(pars::ProcessPars, elemnum::Int, freedom_deg::Int)
     elem_nodes = pars.mesh.elements[elemnum]
     nodes_cnt = length(pars.mesh.nodes)
 

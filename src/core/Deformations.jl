@@ -3,7 +3,7 @@ using Quad8Pts
 using Iso8Pts3D
 using MultipleIntegral
 
-function calculateDeformations(displacements::Array, pars::processPars, intOrder::Int, elemTypeInd::FiniteElement)
+function calculateDeformations(displacements::Array, pars::ProcessPars, intOrder::Int, elemTypeInd::FiniteElement)
     nOfNodes = size(pars.mesh.nodes)[1]
     nOfDeformationsTypes = 3
     deformations = zeros(Float64, nOfNodes, nOfDeformationsTypes)
@@ -41,17 +41,17 @@ function calculateDeformations(displacements::Array, pars::processPars, intOrder
 end  # calculateDeformations
 
 """
-    calculate_deformations_3d(displacements::Array, pars::processPars, 
+    calculate_deformations_3d(displacements::Array, pars::ProcessPars, 
         elemtype::FiniteElement)
 
 Calculate 3D deformations by given displacements vector.
 
 # Arguments
 - `displacements::Array`: displacements vector;
-- `pars::processPars`: process parameters;
+- `pars::ProcessPars`: process parameters;
 - `elemtype::FiniteElement`: type of finite element.
 """
-function calculate_deformations_3d(displacements::Array, pars::processPars, 
+function calculate_deformations_3d(displacements::Array, pars::ProcessPars, 
     elemtype::FiniteElement
 )
     n_of_nodes = size(pars.mesh.nodes)[1]

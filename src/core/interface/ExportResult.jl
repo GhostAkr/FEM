@@ -3,15 +3,15 @@ using MeshFEM
 
 # Method assumes that result is for 2D object
 """
-    exportToCSV(result::Array, pars::processPars)
+    exportToCSV(result::Array, pars::ProcessPars)
 
 Export given result to CSV file.
 
 # Arguments
 - `result::Array`: results vector (assuming that given result is for some 2D object);
-- `pars::processPars`: parameters of current model.
+- `pars::ProcessPars`: parameters of current model.
 """
-function exportToCSV(result::Array, pars::processPars)
+function exportToCSV(result::Array, pars::ProcessPars)
     displacementHeader = "X, Y, Z, Displacement\n"
     open("output/displacementX.csv", "w") do file
         write(file, displacementHeader)
@@ -27,7 +27,7 @@ function exportToCSV(result::Array, pars::processPars)
     end
 end  # exportToCSV
 
-function exportToDAT2D(result::Array, pars::processPars)
+function exportToDAT2D(result::Array, pars::ProcessPars)
     open("output/displacementX.dat", "w") do file
         for i in 1:size(pars.mesh.nodes)[1]
             write(file, string(pars.mesh.nodes[i][1]) * " " * string(pars.mesh.nodes[i][2]) * " " * string(result[2 * i - 1]) * "\n")
@@ -40,7 +40,7 @@ function exportToDAT2D(result::Array, pars::processPars)
     end
 end # exportToDAT2D
 
-function vtkCellsListSize(pars::processPars)
+function vtkCellsListSize(pars::ProcessPars)
     cellsListSize = 0
     for element in pars.mesh.elements
         cellsListSize += 1
@@ -52,7 +52,7 @@ function vtkCellsListSize(pars::processPars)
 end  # vtkCellsListSize
 
 """
-    exportToVTK(result::Array, deformations, stresses, vonMises, pars::processPars, 
+    exportToVTK(result::Array, deformations, stresses, vonMises, pars::ProcessPars, 
         type::meshType)
 
 Create VTK file and export given data to it. Note that `deformations`, `stresses` and
@@ -62,10 +62,10 @@ Create VTK file and export given data to it. Note that `deformations`, `stresses
 `deformations`: deformations array;
 `stresses`: stresses array;
 `vonMises`: von Mises stresses array;
-`pars::processPars`: process parameteres;
+`pars::ProcessPars`: process parameteres;
 `type::meshType`: type of mesh.
 """
-function exportToVTK(result::Array, deformations, stresses, vonMises, pars::processPars, type::meshType)
+function exportToVTK(result::Array, deformations, stresses, vonMises, pars::ProcessPars, type::meshType)
     vtkIdentifier = "# vtk DataFile Version 3.0\n"
     vtkFormat = "ASCII\n"
     vtkDataSetKeyword = "DATASET"

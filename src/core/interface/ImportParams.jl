@@ -6,7 +6,7 @@ export readParameters!
 """
     parseMaterial(materialData::String)
 
-Process given material. Return dictionary compatible with `processPars` structure.
+Process given material. Return dictionary compatible with `ProcessPars` structure.
 
 # Arguments
 - `materialData::String`: Parameters of given material.
@@ -43,7 +43,7 @@ end  # parseMaterial
 """
     parseConstraints(constraintsData::String)
 
-Process given constraints. Return dictionary compatible with `processPars` structure.
+Process given constraints. Return dictionary compatible with `ProcessPars` structure.
 
 # Arguments
 - `constraintsData::String`: Parameters of given constraints.
@@ -195,7 +195,7 @@ Process given property.
 - `propertyName::String`: Name of given property;
 - `propertyData::String`: Parameters of given property.
 """
-function parseProperty!(propertyName::String, propertyData::String, params::CoreFEM.processPars)
+function parseProperty!(propertyName::String, propertyData::String, params::CoreFEM.ProcessPars)
     propertyName = Unicode.normalize(propertyName, casefold = true)
     if propertyName == "material"
         params.materialProperties = parseMaterial(propertyData)
@@ -216,7 +216,7 @@ Read model parameters from given file.
 # Arguments
 - `filePath::String`: Path to given file.
 """
-function readParameters!(filePath::String, params::CoreFEM.processPars)
+function readParameters!(filePath::String, params::CoreFEM.ProcessPars)
     fileContents = []
     open(filePath, "r") do file
         fileContents = read(file, String)

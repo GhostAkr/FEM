@@ -8,7 +8,7 @@ Test `CoreFEM.get_elem_neighbours!()` function.
 """
 ##
 function get_elem_neighbours_test()
-    parameters = processPars(testMaterialProperties(), testBC(), testLoad(), 
+    parameters = ProcessPars(testMaterialProperties(), testBC(), testLoad(), 
         MeshFEM.generateTestMesh2D(5))
     @info("CoreFEM.get_elem_neighbours!() test...")
 

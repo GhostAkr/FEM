@@ -7,7 +7,7 @@ using LinearAlgebra
 
 """
     get_elem_neighbours!(neighbours::Array, elemnum::Int, distance::Number, 
-        startpt::Tuple{Number, Number, Number}, parameters::processPars)
+        startpt::Tuple{Number, Number, Number}, parameters::ProcessPars)
 
 Find all neighbours of given element. Neighbours are elements which are located not
 more then `distance` from given one. This method calls itself recursively.
@@ -18,10 +18,10 @@ more then `distance` from given one. This method calls itself recursively.
 - `distance::Number`: distance which should be used to find neighbours;
 - `startpt::Tuple{Number, Number, Number}: start point from which distance should be 
 calculated;
-- `parameters::processPars`::
+- `parameters::ProcessPars`: simulation parameters.
 """
 function get_elem_neighbours!(neighbours::Array, elemnum::Int, distance::Number, 
-    startpt::Tuple{Number, Number, Number}, parameters::processPars, 
+    startpt::Tuple{Number, Number, Number}, parameters::ProcessPars, 
     elem_type::FiniteElement
 )
     nodes = parameters.mesh.elements[elemnum]
@@ -98,21 +98,21 @@ function nonloc_gaussimpact(normfactor::Number, impactdistance::Number, distance
 end
 
 """
-	contribute_leftpart_nonloc!(pars::processPars, targetmatr::Array, currmatr::Array, 
+	contribute_leftpart_nonloc!(pars::ProcessPars, targetmatr::Array, currmatr::Array, 
     source_elemnum::Int, impact_elemnum::Int, freedom_deg::Int)
 
 Process a contribute of non-local stiffness matrix `currmatr` to global stiffness matrix
 `targetmatr`.
 
 # Arguments
-- `pars::processPars`: parameters of current process;
+- `pars::ProcessPars`: parameters of current process;
 - `targetmatr::Array`: global stiffness matrix;
 - `currmatr::Array`: non-local stiffness matrix;
 - `source_elemnum::Int`: number of element which is under impact;
 - `impact_elemnum::Int`: number of element which impacts;
 - `freedom_deg::Int`: number of degrees of freedom.
 """
-function contribute_leftpart_nonloc!(pars::processPars, targetmatr::Array, currmatr::Array, 
+function contribute_leftpart_nonloc!(pars::ProcessPars, targetmatr::Array, currmatr::Array, 
 	source_elemnum::Int, impact_elemnum::Int, freedom_deg::Int
 )
     source_nodes = pars.mesh.elements[source_elemnum]
@@ -257,7 +257,7 @@ function stiffnessintegrand_3d_nonloc(r_source, s_source, t_source,
 end
 
 """
-    stiffnessmatr_2d_nonloc(elasmatr::Array, parameters::processPars, 
+    stiffnessmatr_2d_nonloc(elasmatr::Array, parameters::ProcessPars, 
         source_elemnum::Int, impact_elemnum::Int, impactdist::Number, intorder::Int, 
         elemtype::FiniteElement)
 
@@ -266,14 +266,14 @@ respect to impact of element number `impact_elemnum`.
 
 # Arguments
 - `elasmatr::Array`: elasticity matrix;
-- `parameters::processPars`: parameters of current process;
+- `parameters::ProcessPars`: parameters of current process;
 - `source_elemnum::Int`: number of element which is under impact;
 - `impact_elemnum::Int`: number of element which impacts;
 - `impactdist::Number`: impact distance;
 - `intorder::Int`: integration order;
 - `elemtype::FiniteElement`: type of finite element.
 """
-function stiffnessmatr_2d_nonloc(elasmatr::Array, parameters::processPars, 
+function stiffnessmatr_2d_nonloc(elasmatr::Array, parameters::ProcessPars, 
 	source_elemnum::Int, impact_elemnum::Int, impactdist::Number, intorder::Int, 
 	elemtype::FiniteElement
 )
@@ -299,7 +299,7 @@ function stiffnessmatr_2d_nonloc(elasmatr::Array, parameters::processPars,
 end
 
 """
-    stiffnessmatr_3d_nonloc(elasmatr::Array, parameters::processPars, 
+    stiffnessmatr_3d_nonloc(elasmatr::Array, parameters::ProcessPars, 
         source_elemnum::Int, impact_elemnum::Int, impactdist::Number, intorder::Int, 
         elemtype::FiniteElement)
 
@@ -308,14 +308,14 @@ respect to impact of element number `impact_elemnum`.
 
 # Arguments
 - `elasmatr::Array`: elasticity matrix;
-- `parameters::processPars`: parameters of current process;
+- `parameters::ProcessPars`: parameters of current process;
 - `source_elemnum::Int`: number of element which is under impact;
 - `impact_elemnum::Int`: number of element which impacts;
 - `impactdist::Number`: impact distance;
 - `intorder::Int`: integration order;
 - `elemtype::FiniteElement`: type of finite element.
 """
-function stiffnessmatr_3d_nonloc(elasmatr::Array, parameters::processPars, 
+function stiffnessmatr_3d_nonloc(elasmatr::Array, parameters::ProcessPars, 
 	source_elemnum::Int, impact_elemnum::Int, impactdist::Number, intorder::Int, 
 	elemtype::FiniteElement
 )

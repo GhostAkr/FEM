@@ -35,18 +35,18 @@ include("interface/ImportJSON.jl")
 export fem2D
 
 """
-    assembly_left_part!(pars::processPars, targetMatrix::Array, currentElementMatrix::Array, elementNum::Number, freedom_deg::Int)
+    assembly_left_part!(pars::ProcessPars, targetMatrix::Array, currentElementMatrix::Array, elementNum::Number, freedom_deg::Int)
 
 Assemble left part of linear system of equations. This method applies given local stiffness matrix to global ensemble.
 
 # Arguments
-- `pars::processPars`: parameters of current model;
+- `pars::ProcessPars`: parameters of current model;
 - `targetMatrix::Array`: global stiffness matrix that should be updated;
 - `currentElementMatrix::Array`: local stiffness matrix of given element that should be applid to global ensemble;
 - `elementNum::Number`: number of given element in current mesh;
 - `freedom_deg::Int`: degree of freedom.
 """
-function assembly_left_part!(pars::processPars, targetMatrix::Array, currentElementMatrix::Array, elementNum::Number, freedom_deg::Int)
+function assembly_left_part!(pars::ProcessPars, targetMatrix::Array, currentElementMatrix::Array, elementNum::Number, freedom_deg::Int)
     elementNodes = pars.mesh.elements[elementNum]
     for i in eachindex(elementNodes)
         for j in eachindex(elementNodes)
@@ -60,7 +60,7 @@ function assembly_left_part!(pars::processPars, targetMatrix::Array, currentElem
     end
 end  # assemblyFEM2D
 
-function assemblyFEM3D(pars::processPars, targetMatrix::Array, currentElementMatrix::Array, elementNum::Number)
+function assemblyFEM3D(pars::ProcessPars, targetMatrix::Array, currentElementMatrix::Array, elementNum::Number)
     elementNodes = pars.mesh.elements[elementNum]
     for i in eachindex(elementNodes)
         for j in eachindex(elementNodes)
@@ -79,16 +79,16 @@ function assemblyFEM3D(pars::processPars, targetMatrix::Array, currentElementMat
 end  # assemblyFEM3D
 
 """
-    applyConstraints(pars::processPars, loads::Array, globalK::Array)
+    applyConstraints(pars::ProcessPars, loads::Array, globalK::Array)
 
 Applies constraints from model parameters to given ensemble.
 
 # Arguments
-- `pars::processPars`: parameters of current model;
+- `pars::ProcessPars`: parameters of current model;
 - `loads::Array`: global loads vector (right part of equations system);
 - `globalK::Array`: global stiffness matrix (left part of equations system).
 """
-function applyConstraints(pars::processPars, loads::Array, globalK::Array)
+function applyConstraints(pars::ProcessPars, loads::Array, globalK::Array)
     for (node, bc) in pars.bc
         if bc == fixedX
             applyFixedX(node, loads, globalK)
@@ -102,7 +102,7 @@ function applyConstraints(pars::processPars, loads::Array, globalK::Array)
     end
 end  # applyConstraints
 
-function applyConstraints3D(pars::processPars, loads::Array, globalK::Array)
+function applyConstraints3D(pars::ProcessPars, loads::Array, globalK::Array)
     for (node, bc) in pars.bc
         if bc == fixedX
             applyFixedX3D(node, loads, globalK)
@@ -196,7 +196,7 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     # Getting mesh type
     meshType = typeMeshFromElement(elemTypeID)
 
-    parameters = processPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D(2))
+    parameters = ProcessPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D(2))
 
     # Reading mesh
     split_path = splitext(meshPath)
@@ -277,7 +277,7 @@ function elasmech_3d(mesh_path::String, data_path::String, elem_type_id::FETypes
     # 2. Getting mesh type
     mesh_type = typeMeshFromElement(elem_type_id)
 
-    parameters = processPars(testMaterialProperties(), testBC3D(), testLoad3D(), generateTestMesh3D())
+    parameters = ProcessPars(testMaterialProperties(), testBC3D(), testLoad3D(), generateTestMesh3D())
 
     # 3. Reading mesh
     parameters.mesh = read_mesh_from_med(mesh_path, mesh_type)
@@ -384,7 +384,7 @@ function elasmech_2d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
     # 2. Getting mesh type
     mesh_type = typeMeshFromElement(elem_type_id)
 
-    parameters = processPars(testMaterialProperties(), testBC(), testLoad(), 
+    parameters = ProcessPars(testMaterialProperties(), testBC(), testLoad(), 
         generateTestMesh2D(2))
 
     # 3. Reading mesh
@@ -503,7 +503,7 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
     # 2. Getting mesh type
     mesh_type = typeMeshFromElement(elem_type_id)
 
-    parameters = processPars(testMaterialProperties(), testBC3D(), testLoad3D(), 
+    parameters = ProcessPars(testMaterialProperties(), testBC3D(), testLoad3D(), 
         generateTestMesh3D())
 
     # 3. Reading mesh

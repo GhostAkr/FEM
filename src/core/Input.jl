@@ -33,14 +33,14 @@ testBC() = Dict(1 => fixedXY, 4 => fixedXY, 7 => fixedXY,)
 testBC3D() = Dict(1 => fixedXYZ, 4 =>fixedXYZ, 10 => fixedXYZ, 7 => fixedXYZ, 2 => fixedZ, 5 => fixedZ, 11 => fixedZ, 8 => fixedZ, 3 => fixedZ, 6 => fixedZ, 12 => fixedZ, 9 => fixedZ)
 
 """
-    printProcessPars(processPars::processPars)
+    printProcessPars(processPars::ProcessPars)
 
 Print given model parameters.
 
 # Arguments
-- `processPars::processPars`: parameters of current model.
+- `processPars::ProcessPars`: parameters of current model.
 """
-function printProcessPars(processPars::processPars)
+function printProcessPars(processPars::ProcessPars)
     print("Nodes:\n")
     printNodesMesh2D(processPars.mesh)
     print("Elements:\n")

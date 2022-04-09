@@ -100,18 +100,18 @@ function applyFixedXY(node::Int, loads::Array, globalK::Array)
 end  # applyFixedXY
 
 """
-    elementLoad(inputNodes::Array, pars::processPars, inputLoad::Array, loadDirect::loadDirection)
+    elementLoad(inputNodes::Array, pars::ProcessPars, inputLoad::Array, loadDirect::loadDirection)
 
 Return local load vector for given element.
 
 # Arguments
 - 
 - `inputNodes::Array`: given nodes to which load should be applied;
-- `pars::processPars`: parameters of current model;
+- `pars::ProcessPars`: parameters of current model;
 - `inputLoad::Array`: given load;
 - `loadDirect::loadDirection`: direction of given load.
 """
-function elementLoad(elementNum::Int, pars::processPars, inputLoad::Array, loadDirect::loadDirection, intOrder::Int, elemTypeInd::FiniteElement)
+function elementLoad(elementNum::Int, pars::ProcessPars, inputLoad::Array, loadDirect::loadDirection, intOrder::Int, elemTypeInd::FiniteElement)
     nodesPerElement = length(pars.mesh.elements[elementNum])
     xCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][1] for i in 1:nodesPerElement]
     yCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][2] for i in 1:nodesPerElement]
@@ -137,7 +137,7 @@ function elementLoad(elementNum::Int, pars::processPars, inputLoad::Array, loadD
     return F
 end  # elementLoad
 
-function elementLoad3D(elementNum::Int, pars::processPars, inputLoad::Array, loadDirect::loadDirection, intOrder::Int, elemTypeInd::FiniteElement)
+function elementLoad3D(elementNum::Int, pars::ProcessPars, inputLoad::Array, loadDirect::loadDirection, intOrder::Int, elemTypeInd::FiniteElement)
     nodesPerElement = length(pars.mesh.elements[elementNum])
     xCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][1] for i in 1:nodesPerElement]
     yCoords = [pars.mesh.nodes[pars.mesh.elements[elementNum][i]][2] for i in 1:nodesPerElement]
@@ -173,17 +173,17 @@ function elementLoad3D(elementNum::Int, pars::processPars, inputLoad::Array, loa
 end  # elementLoad
 
 """
-    assembly_loads!(pars::processPars, intOrder::Int, elemTypeInd::FiniteElement, freedom_deg::Int)
+    assembly_loads!(pars::ProcessPars, intOrder::Int, elemTypeInd::FiniteElement, freedom_deg::Int)
 
 Assemble right part of linear system of equations. This method applies given local load vector to global ensemble.
 
 # Arguments
-- `pars::processPars`: parameters of current model;
+- `pars::ProcessPars`: parameters of current model;
 - `intOrder::Int`: order of integration;
 - `elemTypeInd::FiniteElement`: type of finite element;
 - `freedom_deg::Int`: degree of freedom.
 """
-function assembly_loads!(pars::processPars, intOrder::Int, elemTypeInd::FiniteElement, freedom_deg::Int)
+function assembly_loads!(pars::ProcessPars, intOrder::Int, elemTypeInd::FiniteElement, freedom_deg::Int)
     loadsVector = zeros(Float64, freedom_deg * size(pars.mesh.nodes)[1])
     for (element, load) in pars.load
         elNum = element[1]
@@ -223,7 +223,7 @@ function assembly_loads!(pars::processPars, intOrder::Int, elemTypeInd::FiniteEl
     return loadsVector
 end  # assemblyLoads
 
-function assemblyLoads3D(pars::processPars, intOrder::Int, elemTypeInd::FiniteElement)
+function assemblyLoads3D(pars::ProcessPars, intOrder::Int, elemTypeInd::FiniteElement)
     loadsVector = zeros(Float64, 3 * size(pars.mesh.nodes)[1])
 
     for (element, load) in pars.load

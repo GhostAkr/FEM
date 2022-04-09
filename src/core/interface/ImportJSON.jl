@@ -6,15 +6,15 @@ import JSON
 export read_params_JSON!
 
 """
-    read_params_JSON!(file_path::String, params::CoreFEM.processPars)
+    read_params_JSON!(file_path::String, params::CoreFEM.ProcessPars)
 
 Read model parameters from given JSON file.
 
 # Arguments
 - `file_path::String`: path to given file;
-- `params::CoreFEM.processPars`: target process parameters.
+- `params::CoreFEM.ProcessPars`: target process parameters.
 """
-function read_params_JSON!(file_path::String, params::CoreFEM.processPars)
+function read_params_JSON!(file_path::String, params::CoreFEM.ProcessPars)
     model_data = Dict()
     open(file_path, "r") do file
         model_data = JSON.parse(file)
@@ -26,16 +26,16 @@ function read_params_JSON!(file_path::String, params::CoreFEM.processPars)
 end  # read_params_JSON!
 
 """
-    parse_property_JSON!(property_name::String, property_data::Dict, params::CoreFEM.processPars)
+    parse_property_JSON!(property_name::String, property_data::Dict, params::CoreFEM.ProcessPars)
 
 Process given property.
 
 # Arguments
 - `property_name::String`: name of given property;
 - `property_data::Dict`: parameters of given property;
-- `params::CoreFEM.processPars`: target process parameters.
+- `params::CoreFEM.ProcessPars`: target process parameters.
 """
-function parse_property_JSON!(property_name::String, property_data::Dict, params::CoreFEM.processPars)
+function parse_property_JSON!(property_name::String, property_data::Dict, params::CoreFEM.ProcessPars)
     property_name = Unicode.normalize(property_name, casefold = true)
 
     if property_name == "material"
@@ -52,7 +52,7 @@ end  # parse_property_JSON!
 """
     parse_material_JSON(material_data::Dict)
 
-Process given material. Return dictionary compatible with `processPars` structure.
+Process given material. Return dictionary compatible with `ProcessPars` structure.
 
 # Arguments
 - `material_data::Dict`: parameters of given material.
@@ -79,7 +79,7 @@ end  # parse_material_JSON
 """
     parse_constraints_JSON(constraints_data::Dict)
 
-Process given constraints. Return dictionary compatible with `processPars` structure.
+Process given constraints. Return dictionary compatible with `ProcessPars` structure.
 
 # Arguments
 - `constraints_data::Dict`: parameters of given constraints.
@@ -143,7 +143,7 @@ end  # parse_constraints_JSON
 """
     parse_loads_JSON(loads_data::Dict)
 
-Process given loads. Return dictionary compatible with `processPars` structure.
+Process given loads. Return dictionary compatible with `ProcessPars` structure.
 
 # Arguments
 - `loads_data::Dict`: parameters of given loads.
