@@ -1,4 +1,7 @@
 {
+    "Model": {
+        "Type": "plainstress_2d"
+    },
     "Material": {
         "PRatio": 0.3,
         "YoungMod": 210000

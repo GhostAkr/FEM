@@ -44,6 +44,8 @@ function parse_property_JSON!(property_name::String, property_data::Dict, params
         params.bc = parse_constraints_JSON(property_data, params.mesh)
     elseif property_name == "distributedload"
         params.load = parse_loads_JSON(property_data, params.mesh)
+    elseif property_name == "model"
+        params.model = parse_model_JSON(property_data)
     else
         @error("Given property is not supported")
     end
@@ -197,4 +199,61 @@ function parse_loads_JSON(loads_data::Dict, mesh::Mesh2D_T)
     end
 
     return resDict
+end
+
+"""
+    parse_model_JSON(model_data::Dict)
+
+Process given model. Return parsed `ModelPars` structure.
+
+# Arguments
+`model_data::Dict`: parameters of given model.
+"""
+function parse_model_JSON(model_data::Dict)
+    model_type::ModelType = default_modeltype
+    nlpars::Union{NonLocPars, Nothing} = nothing
+
+    for parameter in keys(model_data)
+        value = model_data[parameter]
+        parameter = Unicode.normalize(parameter, casefold = true)
+
+        if parameter == "type"
+            model_type = convert_model_type(value)
+        elseif parameter == "nonlocparams"
+            nlpars = NonLocPars(value["LocImpact"], value["NonLocImpact"], 
+                value["ImpactDistance"])
+        else
+            @error("Given model parameter is not supported")
+        end
+    end
+
+    return ModelPars(model_type, nlpars)
+end
+
+"""
+    convert_model_type(type_str::String)
+
+Convert string which denotes type of simulation model to `ModelType`. Return value of 
+`ModelType` type.
+
+# Arguments
+- `type_str::String`: string denoting model type.
+"""
+function convert_model_type(type_str::String)
+    type_str = Unicode.normalize(type_str, casefold = true)
+    res_type::ModelType = default_modeltype
+
+    if type_str == "default_modeltype"
+        res_type = default_modeltype
+    elseif type_str == "gen_3d"
+        res_type = gen_3d
+    elseif type_str == "plainstress_2d"
+        res_type = plainstress_2d
+    elseif type_str == "plainstrain_2d"
+        res_type = plainstrain_2d
+    else
+        @error("Unknown type of model in convert_model_type()")
+    end
+
+    return res_type
 end

@@ -196,7 +196,11 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     # Getting mesh type
     meshType = typeMeshFromElement(elemTypeID)
 
-    parameters = ProcessPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D(2))
+    # Model type
+    model_type = default_modeltype
+
+    parameters = ProcessPars(testMaterialProperties(), testBC(), testLoad(), 
+        generateTestMesh2D(2), ModelPars(model_type))
 
     # Reading mesh
     split_path = splitext(meshPath)
@@ -215,7 +219,7 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     intOrder = 3
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]
-    C = elasticityMatrix(E, nu, plainStrain)
+    C = elasticityMatrix(E, nu, parameters.model.type)
     ensembleMatrix = zeros(Float64, 2 * size(parameters.mesh.nodes)[1], 2 * size(parameters.mesh.nodes)[1])
     for elementNum in eachindex(parameters.mesh.elements)
         K = stiffnessMatrix(C, parameters, elementNum, intOrder, elementType)
@@ -277,7 +281,11 @@ function elasmech_3d(mesh_path::String, data_path::String, elem_type_id::FETypes
     # 2. Getting mesh type
     mesh_type = typeMeshFromElement(elem_type_id)
 
-    parameters = ProcessPars(testMaterialProperties(), testBC3D(), testLoad3D(), generateTestMesh3D())
+    # Model type
+    model_type = default_modeltype
+
+    parameters = ProcessPars(testMaterialProperties(), testBC3D(), testLoad3D(), 
+        generateTestMesh3D(), ModelPars(model_type))
 
     # 3. Reading mesh
     parameters.mesh = read_mesh_from_med(mesh_path, mesh_type)
@@ -291,7 +299,7 @@ function elasmech_3d(mesh_path::String, data_path::String, elem_type_id::FETypes
     # 6. Problem constants
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]
-    C = elasticityMatrix(E, nu, problem3D)
+    C = elasticityMatrix(E, nu, parameters.model.type)
 
     # 7. Stiffness matrix (left part of final equation)
     @info("Assembling left part...")
@@ -353,24 +361,16 @@ function elasmech_3d(mesh_path::String, data_path::String, elem_type_id::FETypes
 end  # fem3D
 
 """
-	elasmech_2d_nonloc(mesh_path::String, data_path::String, impactdist::Number, 
-        beta_loc::Number, beta_nonloc::Number, elem_type_id::FETypes)
+	elasmech_2d_nonloc(mesh_path::String, data_path::String, elem_type_id::FETypes)
 
-Start calculation of 2D elastic non-local mechanical problem. `beta_loc` and `beta_nonloc`
-are coefficients which define impact of local and non-local parts of stiffness matrix 
-appropriately.
+Start calculation of 2D elastic non-local mechanical problem.
 
 # Arguments
 - `mesh_path::String`: path to mesh;
 - `data_path::String`: path to initial data;
-- `impactdist::Number`: impact distance;
-- `beta_loc::Number`: coefficient which defines impact of local part of stiffness matrix;
-- `beta_nonloc::Number`: coefficient which defines impact of non-local part of stiffness 
-    matrix;
 - `elem_type_id::FETypes`: ID of finite element type.
 """
-function elasmech_2d_nonloc(mesh_path::String, data_path::String, impactdist::Number, 
-        beta_loc::Number, beta_nonloc::Number, elem_type_id::FETypes
+function elasmech_2d_nonloc(mesh_path::String, data_path::String, elem_type_id::FETypes
 )
     freedom_deg = 2
 
@@ -384,8 +384,11 @@ function elasmech_2d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
     # 2. Getting mesh type
     mesh_type = typeMeshFromElement(elem_type_id)
 
+    # Model type
+    model_type = default_modeltype
+
     parameters = ProcessPars(testMaterialProperties(), testBC(), testLoad(), 
-        generateTestMesh2D(2))
+        generateTestMesh2D(2), ModelPars(model_type))
 
     # 3. Reading mesh
     parameters.mesh = read_mesh_from_med(mesh_path, mesh_type)
@@ -393,13 +396,22 @@ function elasmech_2d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
     # 4. Reading problem data
     read_params_JSON!(data_path, parameters)
 
+    if (!isnonloc(parameters))
+        @error("Input non-local parameter are not found in elasmech_2d_nonloc()")
+        return
+    end
+
+    beta_loc = parameters.model.nlpars.locimpact_coeff
+    beta_nonloc = parameters.model.nlpars.nonlocimpact_coeff
+    impactdist = parameters.model.nlpars.impactdist
+
     # 5. Integration order
     int_order = 2
 
     # 6. Problem constants
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]
-    C = elasticityMatrix(E, nu, plainStrain)
+    C = elasticityMatrix(E, nu, parameters.model.type)
 
     # 7. Local part of stiffness matrix (left part of final equation)
     ensemble_matrix = zeros(2 * size(parameters.mesh.nodes)[1], 2 * 
@@ -472,24 +484,16 @@ function elasmech_2d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
 end
 
 """
-	elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Number, 
-        beta_loc::Number, beta_nonloc::Number, elem_type_id::FETypes)
+	elasmech_3d_nonloc(mesh_path::String, data_path::String, elem_type_id::FETypes)
 
-Start calculation of 3D elastic non-local mechanical problem. `beta_loc` and `beta_nonloc`
-are coefficients which define impact of local and non-local parts of stiffness matrix 
-appropriately.
+Start calculation of 3D elastic non-local mechanical problem.
 
 # Arguments
 - `mesh_path::String`: path to mesh;
 - `data_path::String`: path to initial data;
-- `impactdist::Number`: impact distance;
-- `beta_loc::Number`: coefficient which defines impact of local part of stiffness matrix;
-- `beta_nonloc::Number`: coefficient which defines impact of non-local part of stiffness 
-    matrix;
 - `elem_type_id::FETypes`: ID of finite element type.
 """
-function elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Number, 
-        beta_loc::Number, beta_nonloc::Number, elem_type_id::FETypes
+function elasmech_3d_nonloc(mesh_path::String, data_path::String, elem_type_id::FETypes
 )
     freedom_deg = 3
 
@@ -503,8 +507,11 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
     # 2. Getting mesh type
     mesh_type = typeMeshFromElement(elem_type_id)
 
+    # Model type
+    model_type = default_modeltype
+
     parameters = ProcessPars(testMaterialProperties(), testBC3D(), testLoad3D(), 
-        generateTestMesh3D())
+        generateTestMesh3D(), ModelPars(model_type))
 
     # 3. Reading mesh
     parameters.mesh = read_mesh_from_med(mesh_path, mesh_type)
@@ -512,13 +519,22 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
     # 4. Reading problem data
     read_params_JSON!(data_path, parameters)
 
+    if (!isnonloc(parameters))
+        @error("Input non-local parameter are not found in elasmech_3d_nonloc()")
+        return
+    end
+
+    beta_loc = parameters.model.nlpars.locimpact_coeff
+    beta_nonloc = parameters.model.nlpars.nonlocimpact_coeff
+    impactdist = parameters.model.nlpars.impactdist
+
     # 5. Integration order
     int_order = 2
 
     # 6. Problem constants
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]
-    C = elasticityMatrix(E, nu, problem3D)
+    C = elasticityMatrix(E, nu, parameters.model.type)
 
     # 7. Local part of stiffness matrix (left part of final equation)
     ensemble_matrix = zeros(3 * size(parameters.mesh.nodes)[1], 3 * 
@@ -608,7 +624,7 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
     end  # @time
 
     # 15. Verifying result
-    if TestFEM.verify_example(mesh_path, data_path, result, true)
+    if TestFEM.verify_example(mesh_path, data_path, result)
         @info "Result is correct"
     else
         @info "Result is INcorrect"
