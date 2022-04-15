@@ -219,7 +219,7 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     intOrder = 3
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]
-    C = elasticityMatrix(E, nu, plainStrain)
+    C = elasticityMatrix(E, nu, parameters.model.type)
     ensembleMatrix = zeros(Float64, 2 * size(parameters.mesh.nodes)[1], 2 * size(parameters.mesh.nodes)[1])
     for elementNum in eachindex(parameters.mesh.elements)
         K = stiffnessMatrix(C, parameters, elementNum, intOrder, elementType)
@@ -299,7 +299,7 @@ function elasmech_3d(mesh_path::String, data_path::String, elem_type_id::FETypes
     # 6. Problem constants
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]
-    C = elasticityMatrix(E, nu, problem3D)
+    C = elasticityMatrix(E, nu, parameters.model.type)
 
     # 7. Stiffness matrix (left part of final equation)
     @info("Assembling left part...")
@@ -410,7 +410,7 @@ function elasmech_2d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
     # 6. Problem constants
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]
-    C = elasticityMatrix(E, nu, plainStrain)
+    C = elasticityMatrix(E, nu, parameters.model.type)
 
     # 7. Local part of stiffness matrix (left part of final equation)
     ensemble_matrix = zeros(2 * size(parameters.mesh.nodes)[1], 2 * 
@@ -532,7 +532,7 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
     # 6. Problem constants
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]
-    C = elasticityMatrix(E, nu, problem3D)
+    C = elasticityMatrix(E, nu, parameters.model.type)
 
     # 7. Local part of stiffness matrix (left part of final equation)
     ensemble_matrix = zeros(3 * size(parameters.mesh.nodes)[1], 3 * 

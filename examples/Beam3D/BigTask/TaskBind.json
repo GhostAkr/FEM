@@ -1,4 +1,7 @@
 {
+    "Model": {
+        "Type": "gen_3d"
+    },
     "Material": {
         "PRatio": 0.3,
         "YoungMod": 210000
