@@ -24,13 +24,10 @@ begin
 end
 
 # Beam3D/SmallTask (non-local model)
+# TODO: Create test for this example
 begin
-    impactdist = 5
-    beta_loc = 0.8
-    beta_nonloc = 0.2
     CoreFEM.elasmech_3d_nonloc("examples/Beam3D/SmallTask/Mesh.med",
-        "examples/Beam3D/SmallTask/TaskStretch.json", impactdist, beta_loc, beta_nonloc, 
-        Iso8Pts3DTypeID)
+        "examples/Beam3D/SmallTask/TaskStretchNL.json", Iso8Pts3DTypeID)
 end
 
 # Beam3D/BigTask
@@ -46,13 +43,10 @@ begin
 end
 
 # Beam3D/Analogue2D (non-local model)
+# TODO: Create test for this example
 begin
-    impactdist = 5
-    beta_loc = 0.8
-    beta_nonloc = 0.2
     CoreFEM.elasmech_3d_nonloc("examples/Beam3D/Analogue2D/Mesh.med", 
-        "examples/Beam3D/Analogue2D/TaskStretch.json", impactdist, beta_loc, beta_nonloc, 
-        Iso8Pts3DTypeID)
+        "examples/Beam3D/Analogue2D/TaskStretchNL.json", Iso8Pts3DTypeID)
 end
 
 # Beam3D/MiniTask
@@ -62,11 +56,8 @@ begin
 end
 
 # Beam3D/MiniTask (non-local model)
+# TODO: Create test for this example
 begin
-    impactdist = 5
-    beta_loc = 0.8
-    beta_nonloc = 0.2
     CoreFEM.elasmech_3d_nonloc("examples/Beam3D/MiniTask/Mesh.med", 
-        "examples/Beam3D/MiniTask/TaskStretch.json", impactdist, beta_loc, beta_nonloc, 
-        Iso8Pts3DTypeID)
+        "examples/Beam3D/MiniTask/TaskStretchNL.json", Iso8Pts3DTypeID)
 end

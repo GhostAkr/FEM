@@ -1,0 +1,21 @@
+{
+    "Model": {
+        "Type": "gen_3d",
+        "NonLocParams": {
+            "LocImpact": 0.8,
+            "NonLocImpact": 0.2,
+            "ImpactDistance": 5
+        }
+    },
+    "Material": {
+        "PRatio": 0.3,
+        "YoungMod": 210000
+    },
+    "Constraints": {
+        "fixedXYZ": "StartSide"
+    },
+    "DistributedLoad": {
+        "Load": [10, 0, 0],
+        "Elements": "EndSide"
+    }
+}

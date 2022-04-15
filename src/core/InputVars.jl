@@ -39,5 +39,5 @@ true if given instance can be applied to non-local simulation and false - otherw
 `params::ProcessPars`: simulation parameters.
 """
 function isnonloc(params::ProcessPars)
-    return isnothing(pars.model.nlpars)
+    return !isnothing(params.model.nlpars)
 end
