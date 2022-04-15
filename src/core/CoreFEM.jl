@@ -196,7 +196,11 @@ function fem2D(meshPath::String, dataPath::String, elemTypeID::FETypes)
     # Getting mesh type
     meshType = typeMeshFromElement(elemTypeID)
 
-    parameters = ProcessPars(testMaterialProperties(), testBC(), testLoad(), generateTestMesh2D(2))
+    # Model type
+    model_type = default_modeltype
+
+    parameters = ProcessPars(testMaterialProperties(), testBC(), testLoad(), 
+        generateTestMesh2D(2), ModelPars(model_type))
 
     # Reading mesh
     split_path = splitext(meshPath)
@@ -277,7 +281,11 @@ function elasmech_3d(mesh_path::String, data_path::String, elem_type_id::FETypes
     # 2. Getting mesh type
     mesh_type = typeMeshFromElement(elem_type_id)
 
-    parameters = ProcessPars(testMaterialProperties(), testBC3D(), testLoad3D(), generateTestMesh3D())
+    # Model type
+    model_type = default_modeltype
+
+    parameters = ProcessPars(testMaterialProperties(), testBC3D(), testLoad3D(), 
+        generateTestMesh3D(), ModelPars(model_type))
 
     # 3. Reading mesh
     parameters.mesh = read_mesh_from_med(mesh_path, mesh_type)
@@ -384,8 +392,11 @@ function elasmech_2d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
     # 2. Getting mesh type
     mesh_type = typeMeshFromElement(elem_type_id)
 
+    # Model type
+    model_type = default_modeltype
+
     parameters = ProcessPars(testMaterialProperties(), testBC(), testLoad(), 
-        generateTestMesh2D(2))
+        generateTestMesh2D(2), ModelPars(model_type))
 
     # 3. Reading mesh
     parameters.mesh = read_mesh_from_med(mesh_path, mesh_type)
@@ -503,8 +514,11 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, impactdist::Nu
     # 2. Getting mesh type
     mesh_type = typeMeshFromElement(elem_type_id)
 
+    # Model type
+    model_type = default_modeltype
+
     parameters = ProcessPars(testMaterialProperties(), testBC3D(), testLoad3D(), 
-        generateTestMesh3D())
+        generateTestMesh3D(), ModelPars(model_type))
 
     # 3. Reading mesh
     parameters.mesh = read_mesh_from_med(mesh_path, mesh_type)
