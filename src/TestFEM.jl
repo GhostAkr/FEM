@@ -30,6 +30,9 @@ function verify_example(meshPath::String, dataPath::String, result::Array)
     elseif meshPath == "examples/Beam3D/Analogue2D/Mesh.med" &&
         dataPath == "examples/Beam3D/Analogue2D/TaskStretchNL.json"
         answer = beam3danalogue2d_nl_example()
+    elseif meshPath == "examples/Beam3D/MiniTask/Mesh.med" &&
+        dataPath == "examples/Beam3D/MiniTask/TaskStretchNL.json"
+        answer = beam3dmini_nl_example()
     else
         @warn "Example answer wasn't found"
         return false
@@ -88,6 +91,12 @@ end
 
 function beam3dmini_example()
     answer_path = "examples/Beam3D/MiniTask/AnswerStretch"
+    answer = readdlm(answer_path, '\t', Float64, '\n')
+    return answer
+end
+
+function beam3dmini_nl_example()
+    answer_path = "examples/Beam3D/MiniTask/AnswerStretchNL"
     answer = readdlm(answer_path, '\t', Float64, '\n')
     return answer
 end
