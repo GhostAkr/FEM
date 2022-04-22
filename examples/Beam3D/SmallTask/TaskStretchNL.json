@@ -4,7 +4,7 @@
         "NonLocParams": {
             "LocImpact": 0.8,
             "NonLocImpact": 0.2,
-            "ImpactDistance": 5
+            "ImpactDistance": 10
         }
     },
     "Material": {

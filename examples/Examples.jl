@@ -24,7 +24,6 @@ begin
 end
 
 # Beam3D/SmallTask (non-local model)
-# TODO: Create test for this example
 begin
     CoreFEM.elasmech_3d_nonloc("examples/Beam3D/SmallTask/Mesh.med",
         "examples/Beam3D/SmallTask/TaskStretchNL.json", Iso8Pts3DTypeID)
