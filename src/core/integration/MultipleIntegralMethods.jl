@@ -509,6 +509,7 @@ Integrate matrix of functions depending on 3 variables with Gauss method.
 """
 function gaussmethod_matrix_3d_nonloc(f::Function, int_order::Int)
     # Defining integration points and weights
+    # @time begin
     if int_order == 2
         r = [-1 / sqrt(3), 1 / sqrt(3)]
         s = [-1 / sqrt(3), 1 / sqrt(3)]
@@ -549,7 +550,12 @@ function gaussmethod_matrix_3d_nonloc(f::Function, int_order::Int)
             end
         end
     end
+    # end
 
+    # @time begin
+    # matrix_calc_time_total = 0
+    # weights_contr_time_total = 0
+    # matrix_contr_time_total = 0
     # Integrating
     for i_loc in 1:int_order
         for j_loc in 1:int_order
@@ -557,11 +563,19 @@ function gaussmethod_matrix_3d_nonloc(f::Function, int_order::Int)
                 for i_imp in 1:int_order
                     for j_imp in 1:int_order
                         for v_imp in 1:int_order
+                            # matrix_calc_time = @elapsed begin
                             fmatrix = f(r[i_loc], s[j_loc], t[v_loc], r[i_imp], s[j_imp], 
                                 t[v_imp])
+                            # end
+                            # matrix_calc_time_total += matrix_calc_time
+
+                            # weights_contr_time = @elapsed begin
                             fmatrix .*= weights_matr[i_loc, j_loc, v_loc]
                             fmatrix .*= weights_matr[i_imp, j_imp, v_imp]
+                            # end
+                            # weights_contr_time_total += weights_contr_time
 
+                            # matrix_contr_time = @elapsed begin
                             for k in 1:n_cols
                                 for l in k:n_rows
                                     result_matrix[l, k] += fmatrix[l, k]
@@ -570,12 +584,19 @@ function gaussmethod_matrix_3d_nonloc(f::Function, int_order::Int)
                                     end
                                 end
                             end
+                            # end
+                            # matrix_contr_time_total += matrix_contr_time
                         end
                     end
                 end
             end
         end
     end
+    # println("Matrix calculation total time: ", matrix_calc_time_total)
+    # println("Weight contribution total time: ", weights_contr_time_total)
+    # println("Matrix contribution total time: ", matrix_contr_time_total)
+    # println()
+    # end
 
     return result_matrix
 end

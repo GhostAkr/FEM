@@ -230,18 +230,29 @@ function stiffnessintegrand_3d_nonloc(r_source, s_source, t_source,
     x_impact::Array{Float64}, y_impact::Array{Float64}, z_impact::Array{Float64},
     impactdist::Number, elasticitymatrix::AbstractArray, elemtype::FiniteElement
 )
+    # integr_terms_time = @elapsed begin
+    # b_matrix_time = @elapsed begin
+    b_src_time = @elapsed begin
     b_source = transpose(gradMatr(r_source, s_source, t_source, x_source, y_source, 
         z_source, elemtype))
+    end
+    b_imp_time = @elapsed begin
     b_impact = gradMatr(r_impact, s_impact, t_impact, x_impact, y_impact, z_impact, 
         elemtype)
+    end
+    # jac_time = @elapsed begin
     jac_source = jacGlobToLoc(r_source, s_source, t_source, x_source, y_source, z_source, 
         elemtype)
     jac_impact = jacGlobToLoc(r_impact, s_impact, t_impact, x_impact, y_impact, z_impact, 
         elemtype)
+    # end
 
+    # integr_calc_time = @elapsed begin
     integrmatr = b_source * elasticitymatrix * b_impact * det(jac_source) * det(jac_impact)
+    # end
 
     # Calculating impact function
+    # impact_calc_time = @elapsed begin
     sourcept_glob = conv_loc_to_glob(r_source, s_source, t_source, x_source, y_source, 
         z_source, elemtype)
     impactpt_glob = conv_loc_to_glob(r_impact, s_impact, t_impact, x_impact, y_impact, 
@@ -250,8 +261,21 @@ function stiffnessintegrand_3d_nonloc(r_source, s_source, t_source,
     currdist = veclength_3d(impactvec)
     normfact = 1 / (8 * pi * impactdist^3)
     impact = nonloc_gaussimpact(normfact, impactdist, currdist)
+    # end
 
+    # impact_contr_time = @elapsed begin
     integrmatr .*= impact
+    # end
+
+    # println("Calculating terms for integrand: ", integr_terms_time)
+    # println("Calculating integrand: ", integr_calc_time)
+    # println("Calculating impact function: ", impact_calc_time)
+    # println("Impact function contribution: ", impact_contr_time)
+    # println("B-matrix calculation: ", b_matrix_time)
+    # println("Jac calculation: ", jac_time)
+    # println("Source B time: ", b_src_time)
+    # println("Impact B time: ", b_imp_time)
+    # println()
 
     return integrmatr
 end
@@ -319,6 +343,7 @@ function stiffnessmatr_3d_nonloc(elasmatr::Array, parameters::ProcessPars,
 	source_elemnum::Int, impact_elemnum::Int, impactdist::Number, intorder::Int, 
 	elemtype::FiniteElement
 )
+    # @time begin
     nodes_source_cnt = length(parameters.mesh.elements[source_elemnum])
     nodes_impact_cnt = length(parameters.mesh.elements[impact_elemnum])
 
@@ -335,12 +360,17 @@ function stiffnessmatr_3d_nonloc(elasmatr::Array, parameters::ProcessPars,
         for i in 1:nodes_impact_cnt]
     z_impact = [parameters.mesh.nodes[parameters.mesh.elements[impact_elemnum][i]][3] 
         for i in 1:nodes_impact_cnt]
+    # end
 
+    # @time begin
     f_integrand(r_loc, s_loc, t_loc, r_imp, s_imp, t_imp) = stiffnessintegrand_3d_nonloc(
         r_loc, s_loc, t_loc, r_imp, s_imp, t_imp, x_source, y_source, z_source, x_impact, 
         y_impact, z_impact, impactdist, elasmatr, elemtype
     )
+    # end
 
+    # @time begin
     nonloc_matr = MultipleIntegral.gaussmethod_matrix_3d_nonloc(f_integrand, intorder)
+    # end
     return nonloc_matr
 end

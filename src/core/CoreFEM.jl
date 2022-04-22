@@ -495,6 +495,8 @@ Start calculation of 3D elastic non-local mechanical problem.
 """
 function elasmech_3d_nonloc(mesh_path::String, data_path::String, elem_type_id::FETypes
 )
+    @info "Importing task and mesh"
+    @time begin
     freedom_deg = 3
 
     # 1. Getting element type
@@ -535,7 +537,10 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, elem_type_id::
     nu = parameters.materialProperties[poisC]
     E = parameters.materialProperties[youngMod]
     C = elasticityMatrix(E, nu, parameters.model.type)
+    end
 
+    @info "Assembling local part"
+    @time begin
     # 7. Local part of stiffness matrix (left part of final equation)
     ensemble_matrix = zeros(3 * size(parameters.mesh.nodes)[1], 3 * 
         size(parameters.mesh.nodes)[1])
@@ -544,10 +549,13 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, elem_type_id::
         k .*= beta_loc;
         assembly_left_part!(parameters, ensemble_matrix, k, element_num, freedom_deg)
     end
+    end
 
     @info("Assembling non-local part")
-    @time begin
+    # @time begin
     # 8. Non-local part of stiffness matrix (left part of final equation)
+    @info "Searching for neighbours"
+    # @time begin
     global_neighbours = Dict()
     for elem_source in eachindex(parameters.mesh.elements)
         # Get list of neighbours
@@ -573,7 +581,10 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, elem_type_id::
         global_neighbours[elem_source] = neighbours
 
     end
+    # end
 
+    @info "Synchronizing neighbours"
+    # @time begin
     # Synchronize neighbours
     for (elem, neighbours) in global_neighbours
         for neighbour in neighbours
@@ -584,26 +595,47 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, elem_type_id::
             end
         end
     end
+    # end
 
-
+    @info "Calculating non-local stiffness matrices and contributing"
+    # @time begin
+    # matr_calc_time = 0
+    # contribution_time = 0
     for (elem_source, neighbours) in global_neighbours
         # Contribute neighbours impact
         for elem_impact in neighbours
+            # elem_matr_calc_time = @elapsed begin
             nonloc_matr = stiffnessmatr_3d_nonloc(C, parameters, elem_source, elem_impact, 
                 impactdist, int_order, element_type)
+            # end
+            # matr_calc_time += elem_matr_calc_time
             nonloc_matr .*= beta_nonloc
+            # elem_contribution_time = @elapsed begin
             contribute_leftpart_nonloc!(parameters, ensemble_matrix, nonloc_matr, 
                 elem_source, elem_impact, freedom_deg)
+            # end
+            # contribution_time += elem_contribution_time
         end
     end
-    end
+    # println("Matrices total calculation time: ", matr_calc_time)
+    # println("Matrices total contribution time: ", contribution_time)
+    # end
+    # end
 
+    @info "Constructing load vector"
+    @time begin
     # 9. Load vector (right part og final equation)
     load_vector = assembly_loads!(parameters, int_order, element_type, freedom_deg)
+    end
 
+    @info "Applying constraints"
+    @time begin
     # 10. Applying constraints to equation
     applyConstraints3D(parameters, load_vector, ensemble_matrix)
+    end
 
+    @info "Writing equations to files"
+    @time begin
     # 11. Creating folder for the equation entities
     mkpath("equation")
 
@@ -616,6 +648,7 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, elem_type_id::
     open("equation/F", "w") do file
         writedlm(file, load_vector)
     end
+    end
 
     # 14. Solving equation
     @info("Solving...")
@@ -623,20 +656,26 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, elem_type_id::
     result = solve(ensemble_matrix, load_vector)
     end  # @time
 
+    @info "Verifying result"
+    @time begin
     # 15. Verifying result
     if TestFEM.verify_example(mesh_path, data_path, result)
         @info "Result is correct"
     else
         @info "Result is INcorrect"
     end
+    end
 
+    @info "Writing displacemets to text file"
+    @time begin
     # 16. Writing result to file
     open("equation/result", "w") do file
         writedlm(file, result)
     end
+    end
 
     # 17. Calclualting deformations
-    deformations = calculate_deformations_3d(result, parameters, element_type)
+    # deformations = calculate_deformations_3d(result, parameters, element_type)
 
     # 18. Calcualting stresses
     # stresses = calulate_stresses_3d_nonloc(deformations, result, C, beta_loc, beta_nonloc,
@@ -645,8 +684,11 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, elem_type_id::
     # 19. Calculating Von-Mises stresses
     # von_mises = calculateVonMises(stresses)
 
+    @info "Exporting results to VTK"
+    @time begin
     # 20. Exporting result to VTK
-    exportToVTK(result, deformations, nothing, nothing, parameters, mesh_type)
+    exportToVTK(result, nothing, nothing, nothing, parameters, mesh_type)
+    end
 end
 
 end  # Core
