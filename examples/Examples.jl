@@ -42,7 +42,6 @@ begin
 end
 
 # Beam3D/Analogue2D (non-local model)
-# TODO: Create test for this example
 begin
     CoreFEM.elasmech_3d_nonloc("examples/Beam3D/Analogue2D/Mesh.med", 
         "examples/Beam3D/Analogue2D/TaskStretchNL.json", Iso8Pts3DTypeID)
