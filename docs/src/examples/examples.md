@@ -37,6 +37,10 @@ mesh refinement is presented.
 
 - **TaskStretch**. Beam is fixed at one side. On the opposite side pressure is applied to
     the end of beam.
+- **TaskStretchNL**. The same as usual **TaskStretch** but with non-local parameters:
+    - local impact: ``0.8``;
+    - non-local impact: ``0.2``;
+    - impact distance: ``10``.
 
 
 ## Beam3D. Big task
@@ -62,6 +66,10 @@ this example is that mesh has only one element along Z axis.
 
 - **TaskStretch**. Beam is fixed at one side. On the opposite side pressure is applied to
     the end of beam.
+- **TaskStretchNL**. The same as usual **TaskStretch** but with non-local parameters:
+    - local impact: ``0.8``;
+    - non-local impact: ``0.2``;
+    - impact distance: ``10``.
 
 ## Beam3D. Mini task
 
@@ -75,3 +83,7 @@ check how neighbours interaction works for each element.
 
 - **TaskStretch**. Beam is fixed at one side. On the opposite side pressure is applied to
     the end of beam.
+- **TaskStretchNL**. The same as usual **TaskStretch** but with non-local parameters:
+    - local impact: ``0.8``;
+    - non-local impact: ``0.2``;
+    - impact distance: ``10``.
