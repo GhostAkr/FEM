@@ -13,6 +13,7 @@ using ElementTypes
 using TestFEM
 using BenchmarkTools
 using SparseArrays
+using Base.Threads
 
 using Quad4Pts
 using Quad8Pts
@@ -539,7 +540,7 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, elem_type_id::
     # 7. Local part of stiffness matrix (left part of final equation)
     ensemble_matrix = zeros(3 * size(parameters.mesh.nodes)[1], 3 * 
         size(parameters.mesh.nodes)[1])
-    for element_num in eachindex(parameters.mesh.elements)
+    @threads for element_num in eachindex(parameters.mesh.elements)
         k = stiffnessMatrix3D(C, parameters, element_num, int_order, element_type)
         k .*= beta_loc;
         assembly_left_part!(parameters, ensemble_matrix, k, element_num, freedom_deg)
@@ -549,7 +550,7 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, elem_type_id::
     @time begin
     # 8. Non-local part of stiffness matrix (left part of final equation)
     global_neighbours = Dict()
-    for elem_source in eachindex(parameters.mesh.elements)
+    @threads for elem_source in eachindex(parameters.mesh.elements)
         # Get list of neighbours
         nodes = parameters.mesh.elements[elem_source]
         neighbours = []
@@ -585,10 +586,9 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, elem_type_id::
         end
     end
 
-
     for (elem_source, neighbours) in global_neighbours
         # Contribute neighbours impact
-        for elem_impact in neighbours
+        @threads for elem_impact in neighbours
             nonloc_matr = stiffnessmatr_3d_nonloc(C, parameters, elem_source, elem_impact, 
                 impactdist, int_order, element_type)
             nonloc_matr .*= beta_nonloc
