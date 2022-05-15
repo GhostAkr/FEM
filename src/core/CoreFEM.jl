@@ -302,11 +302,13 @@ function elasmech_3d(mesh_path::String, data_path::String, elem_type_id::FETypes
     E = parameters.materialProperties[youngMod]
     C = elasticityMatrix(E, nu, parameters.model.type)
 
+    println("Number of threads: ", nthreads())
+
     # 7. Stiffness matrix (left part of final equation)
     @info("Assembling left part...")
     @time begin
     ensemble_matrix = zeros(3 * size(parameters.mesh.nodes)[1], 3 * size(parameters.mesh.nodes)[1])
-    for element_num in eachindex(parameters.mesh.elements)
+    @threads for element_num in eachindex(parameters.mesh.elements)
         k = stiffnessMatrix3D(C, parameters, element_num, int_order, element_type)
         assembly_left_part!(parameters, ensemble_matrix, k, element_num, freedom_deg)
     end
@@ -324,41 +326,43 @@ function elasmech_3d(mesh_path::String, data_path::String, elem_type_id::FETypes
     applyConstraints3D(parameters, load_vector, ensemble_matrix)
     end
 
+    # println(load_vector)
+
     # 10. Creating folder for the equation entities
-    mkpath("equation")
+    #mkpath("equation")
 
     # 11. Writing left part to file
-    open("equation/K", "w") do file
-        writedlm(file, ensemble_matrix)
-    end
+    #open("equation/K", "w") do file
+    #    writedlm(file, ensemble_matrix)
+    #end
 
     # 12. Writing right part to file
-    open("equation/F", "w") do file
-        writedlm(file, load_vector)
-    end
+    #open("equation/F", "w") do file
+    #    writedlm(file, load_vector)
+    #end
 
     # 13. Solving equation
     @info("Solving...")
-    @time begin
+    begin
     result = solve(ensemble_matrix, load_vector)
     end  # @time
 
     # 14. Verifying result
-    if TestFEM.verify_example(mesh_path, data_path, result)
-        @info "Result is correct"
-    else
-        @info "Result is INcorrect"
-    end
+    #if TestFEM.verify_example(mesh_path, data_path, result)
+    #    @info "Result is correct"
+    #else
+    #    @info "Result is INcorrect"
+    #end
 
     # 15. Writing result to file
-    open("equation/result", "w") do file
-        writedlm(file, result)
-    end
+    #open("equation/result", "w") do file
+    #    writedlm(file, result)
+    #end
 
     # 16. Exporting result to VTK
     exportToVTK(result, nothing, nothing, nothing, parameters, mesh_type)
 
-    return result
+    #return result
 end  # fem3D
 
 """

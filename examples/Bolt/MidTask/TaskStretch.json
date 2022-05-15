@@ -1,0 +1,16 @@
+{
+    "Model": {
+        "Type": "gen_3d"
+    },
+    "Material": {
+        "PRatio": 0.3,
+        "YoungMod": 210000
+    },
+    "Constraints": {
+        "fixedXYZ": "HeadTop"
+    },
+    "DistributedLoad": {
+        "Load": [0, 0, -10],
+        "Elements": "BodyBottom"
+    }
+}
