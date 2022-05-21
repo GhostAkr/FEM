@@ -326,8 +326,6 @@ function elasmech_3d(mesh_path::String, data_path::String, elem_type_id::FETypes
     applyConstraints3D(parameters, load_vector, ensemble_matrix)
     end
 
-    # println(load_vector)
-
     # 10. Creating folder for the equation entities
     #mkpath("equation")
 
@@ -359,8 +357,11 @@ function elasmech_3d(mesh_path::String, data_path::String, elem_type_id::FETypes
     #    writedlm(file, result)
     #end
 
+    # 16. Calculating deformations
+    deformations = calculate_deformations_3d(result, parameters, element_type)
+
     # 16. Exporting result to VTK
-    exportToVTK(result, nothing, nothing, nothing, parameters, mesh_type)
+    exportToVTK(result, deformations, nothing, nothing, parameters, mesh_type)
 
     #return result
 end  # fem3D
