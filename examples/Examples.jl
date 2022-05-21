@@ -58,3 +58,15 @@ begin
     CoreFEM.elasmech_3d_nonloc("examples/Beam3D/MiniTask/Mesh.med", 
         "examples/Beam3D/MiniTask/TaskStretchNL.json", Iso8Pts3DTypeID)
 end
+
+# Bolt/MidTask
+begin
+    CoreFEM.elasmech_3d("examples/Bolt/MidTask/Mesh.med", 
+        "examples/Bolt/MidTask/TaskStretch.json", Iso8Pts3DTypeID)
+end
+
+# Bolt/MidTask (non-local model)
+begin
+    CoreFEM.elasmech_3d_nonloc("examples/Bolt/MidTask/Mesh.med", 
+        "examples/Bolt/MidTask/TaskStretchNL.json", Iso8Pts3DTypeID)
+end
