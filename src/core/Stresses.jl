@@ -88,7 +88,7 @@ function nonloc_stresses_integrand(r_source, s_source, t_source, r_impact, s_imp
 end
 
 """
-    calulate_stresses_3d_nonloc(deformations::Array, displacements::Array, 
+    calulate_stresses_3d_nonloc_depr(deformations::Array, displacements::Array, 
         elasticitymatrix::Matrix, beta_loc::Number, beta_nonloc::Number, neighbours::Array, 
         impactdist::Number, pars::ProcessPars, intorder::Int, elemtype::FiniteElement)
 
@@ -107,7 +107,7 @@ Calculate stresses in non-local case taking neighbours impact into account.
 - `intorder::Int`: integration order;
 - `elemtype::FiniteElement`: type of finite element.
 """
-function calulate_stresses_3d_nonloc(deformations::Array, displacements::Array, 
+function calulate_stresses_3d_nonloc_depr(deformations::Array, displacements::Array, 
     elasticitymatrix::Matrix, beta_loc::Number, beta_nonloc::Number, neighbours::Array, 
     impactdist::Number, pars::ProcessPars, intorder::Int, elemtype::FiniteElement
 )
@@ -218,3 +218,23 @@ function calculateVonMises(stresses::Array)
     end
     return von_mises
 end  # calculateVonMises
+
+"""
+    calculate_stresses_3d_nl(displ::Vector, pars::ProcessPars, elemtype::FiniteElement)
+
+Calculate stresses according to non-local elasticity theory.
+
+# Arguments
+- `displ::Vector`: displacements vector;
+- `pars::ProcessPars`: process parameters;
+- `elemtype::FiniteElement`: type of finite element.
+"""
+function calculate_stresses_3d_nl(displ::Vector, pars::ProcessPars, 
+    elemtype::FiniteElement
+)
+    n_nodes = length(displ)
+    stresses = []
+    els_cnts = zeros(n_nodes)
+
+    
+end
