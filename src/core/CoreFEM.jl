@@ -363,8 +363,11 @@ function elasmech_3d(mesh_path::String, data_path::String, elem_type_id::FETypes
     # 17. Calculating stresses
     stresses = calculateStresses(deformations, C)
 
-    # 18. Exporting result to VTK
-    exportToVTK(result, deformations, stresses, nothing, parameters, mesh_type)
+    # 18. Calculate Von Mises stresses
+    von_mises = calculateVonMises(stresses)
+
+    # 19. Exporting result to VTK
+    exportToVTK(result, deformations, stresses, von_mises, parameters, mesh_type)
 
     #return result
 end  # fem3D
