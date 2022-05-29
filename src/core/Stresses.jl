@@ -3,6 +3,20 @@ using Quad8Pts
 using Iso8Pts3D
 using MultipleIntegral
 
+"""
+    calculateStresses(deformations::Array, elasticityMatrix::Matrix)
+
+Calculate stresses for usual elastic mechanical problem.
+
+Param `deformations::Array`:
+    Elements of this array are arrays of deformations in different directions for given 
+    node. Length of each such array depends on model. For example in 2D model we have only 3
+    deformation directions and in 3D model we have 6 of these.
+
+# Arguments
+- `deformations::Array`: array of deformations;
+- `elasticityMatrix::Matrix`: elasticity matrix.
+"""
 function calculateStresses(deformations::Array, elasticityMatrix::Matrix)
     defsize = size(deformations)
     rowscnt = defsize[1]
