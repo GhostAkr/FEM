@@ -55,7 +55,7 @@ function calculate_deformations_3d(displacements::Array, pars::ProcessPars,
     elemtype::FiniteElement
 )
     n_of_nodes = size(pars.mesh.nodes)[1]
-    n_of_deformations_types = 6
+    n_of_deformations_types = 6  # TODO: Compute this value
     deformations = zeros(Float64, n_of_nodes, n_of_deformations_types)
     averaging_nums = zeros(Int, n_of_nodes)
     for element in pars.mesh.elements

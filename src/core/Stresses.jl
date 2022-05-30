@@ -220,21 +220,119 @@ function calculateVonMises(stresses::Array)
 end  # calculateVonMises
 
 """
-    calculate_stresses_3d_nl(displ::Vector, pars::ProcessPars, elemtype::FiniteElement)
+    calculate_stresses_3d_nl(displ::Vector, pars::ProcessPars, beta_loc::Number, 
+        beta_nl::Number, imp_dist::Number, elas_matr::Array, neighbours::Dict, 
+        intorder::Int, elemtype::FiniteElement)
 
 Calculate stresses according to non-local elasticity theory.
 
 # Arguments
 - `displ::Vector`: displacements vector;
 - `pars::ProcessPars`: process parameters;
+- `beta_loc::Number`: local part impact coefficient;
+- `beta_nl::Number`: non-local part impact coefficient;
+- `imp_dist::Number`: impact distance;
+- `elas_matr::Array`: elasticity matrix;
+- `neighbours::Dict`: global list of neighbours;
+- `intorder::Int`: integration order;
 - `elemtype::FiniteElement`: type of finite element.
 """
-function calculate_stresses_3d_nl(displ::Vector, pars::ProcessPars, 
-    elemtype::FiniteElement
+function calculate_stresses_3d_nl(displ::Vector, pars::ProcessPars, beta_loc::Number, 
+    beta_nl::Number, imp_dist::Number, elas_matr::Array, neighbours::Dict, 
+    intorder::Int, elemtype::FiniteElement
 )
     n_nodes = length(displ)
-    stresses = []
+    n_of_stresses_types = 6  # TODO: Compute this value
+    stresses = zeros(Float64, n_nodes, n_of_stresses_types)
     els_cnts = zeros(n_nodes)
 
-    
+    for elemix in eachindex(pars.mesh.elements)
+        element = pars.mesh.elements[elemix]
+        nodes_per_elem = length(element)
+        displ_source = []
+        for node in element
+            push!(displ_source, displ[3 * node - 2])
+            push!(displ_source, displ[3 * node - 1])
+            push!(displ_source, displ[3 * node])
+        end
+
+        for nodeix in eachindex(element)
+            # Local part
+            loc_coords = getRSFromNode(nodeix, elemtype)
+            x_coords = [pars.mesh.nodes[element[i]][1] for i in 1:nodes_per_elem]
+            y_coords = [pars.mesh.nodes[element[i]][2] for i in 1:nodes_per_elem]
+            z_coords = [pars.mesh.nodes[element[i]][3] for i in 1:nodes_per_elem]
+
+            grad_matr_source = gradMatr(loc_coords[1], loc_coords[2], loc_coords[3], 
+                x_coords, y_coords, z_coords, elemtype)
+
+            stresses_loc = beta_loc .* (elas_matr * grad_matr_source * displ_source)
+
+            sourcept_glob = conv_loc_to_glob(loc_coords[1], loc_coords[2], loc_coords[3], 
+                x_coords, y_coords, z_coords, elemtype)
+
+            # Non-local part
+            stresses_nl = zeros(length(stresses_loc))
+            for elem_impact in neighbours[elemix]
+                elem_nodes = pars.mesh.elements[elem_impact]
+                x_coords_imp = [pars.mesh.nodes[elem_nodes[i]][1]
+                    for i in 1:nodes_per_elem]
+                y_coords_imp = [pars.mesh.nodes[elem_nodes[i]][2]
+                    for i in 1:nodes_per_elem]
+                z_coords_imp = [pars.mesh.nodes[elem_nodes[i]][3]
+                    for i in 1:nodes_per_elem]
+
+                displ_imp = []
+                for node_imp in elem_nodes
+                    push!(displ_imp, displ[3 * node_imp - 2])
+                    push!(displ_imp, displ[3 * node_imp - 1])
+                    push!(displ_imp, displ[3 * node_imp])
+                end
+
+                f_integrand(r_imp, s_imp, t_imp) = stresses_nl_integrand_3d(r_imp, s_imp, 
+                    t_imp, x_coords_imp, y_coords_imp, z_coords_imp, elas_matr, imp_dist,
+                    sourcept_glob, displ_imp, elemtype)
+
+                stress = MultipleIntegral.gaussmethod_matrix_3d_nonsym(f_integrand, 
+                    intorder)
+                stresses_nl += stress
+            end
+
+            stresses_nl .*= beta_nl
+
+            stresses_total = stresses_loc + stresses_nl
+
+            node = element[nodeix]
+
+            for direction in 1:n_of_stresses_types
+                stresses[node, direction] += stresses_total[direction]
+            end
+            els_cnts[node] += 1
+        end
+    end
+
+    for nodeidx in 1:size(stresses)[1]
+        for typeidx in 1:size(stresses)[2]
+            stresses[nodeidx, typeidx] /= els_cnts[nodeidx]
+        end
+    end
+
+    return stresses
+end
+
+function stresses_nl_integrand_3d(r, s, t, x_coords, y_coords, z_coords, elas_matr::Array,
+    imp_dist::Number, sourcept_glob::Tuple, elem_displ::Vector, elemtype::FiniteElement
+)
+    b_matr = gradMatr(r, s, t, x_coords, y_coords, z_coords, elemtype)
+
+    # Calculating impact function
+    impactpt_glob = conv_loc_to_glob(r, s, t, x_coords, y_coords, z_coords, elemtype)
+    impactvec = vecfrompoints_3d(sourcept_glob, impactpt_glob)
+    currdist = veclength_3d(impactvec)
+    normfact = 1 / (8 * pi * imp_dist^3)
+    impact = nonloc_gaussimpact(normfact, imp_dist, currdist)
+
+    res_matr = impact .* (elas_matr * b_matr * elem_displ)
+
+    return res_matr
 end

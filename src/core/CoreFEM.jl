@@ -619,14 +619,14 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, elem_type_id::
     mkpath("equation")
 
     # 12. Writing left part to file
-    open("equation/K", "w") do file
-        writedlm(file, ensemble_matrix)
-    end
+    # open("equation/K", "w") do file
+        # writedlm(file, ensemble_matrix)
+    # end
 
     # 13. Writing right part to file
-    open("equation/F", "w") do file
-        writedlm(file, load_vector)
-    end
+    # open("equation/F", "w") do file
+        # writedlm(file, load_vector)
+    # end
 
     # 14. Solving equation
     @info("Solving...")
@@ -653,11 +653,14 @@ function elasmech_3d_nonloc(mesh_path::String, data_path::String, elem_type_id::
     # stresses = calulate_stresses_3d_nonloc(deformations, result, C, beta_loc, beta_nonloc,
         # global_neighbours, impactdist, parameters, int_order, element_type)
 
+    stresses = calculate_stresses_3d_nl(result, parameters, beta_loc, beta_nonloc,
+        impactdist, C, global_neighbours, int_order, element_type)
+
     # 19. Calculating Von-Mises stresses
-    # von_mises = calculateVonMises(stresses)
+    von_mises = calculateVonMises(stresses)
 
     # 20. Exporting result to VTK
-    exportToVTK(result, deformations, nothing, nothing, parameters, mesh_type)
+    exportToVTK(result, deformations, stresses, von_mises, parameters, mesh_type)
 end
 
 end  # Core
